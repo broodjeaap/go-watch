@@ -21,3 +21,5 @@
 # Go workspace file
 go.work
 
+tmp/build-errors.log
+tmp/main
