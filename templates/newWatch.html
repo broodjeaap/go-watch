@@ -1,0 +1,24 @@
+{{template "base" .}}
+{{define "title"}}
+{{end}}
+{{define "navbar"}}
+{{end}}
+{{define "head"}}
+{{end}}
+{{define "left"}}
+{{end}}
+{{define "content"}}
+<form action="/watch/create" method="post">
+    <div class="mb-3">
+        <label for="name" class="form-label">Watch Name</label>
+        <input name="name" type="text" class="form-control" id="name" placeholder="Watch">
+    </div>
+    <div class="mb-3">
+        <label for="interval" class="form-label">Interval (seconds) - TODO </label>
+        <input type="number" name="interval" class="form-control" id="interval" value="60">
+    </div>
+    <input type="submit" class="btn btn-primary mb-3" value="Create">
+</form>
+{{end}}
+{{define "right"}}
+{{end}}
