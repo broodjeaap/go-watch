@@ -1,87 +1,89 @@
 {{define "content"}}
-<div class="">
-    <table class="table table-hover caption-top" style="width:100%">
-        <caption>
-            <div class="container">
-                <div class="row">
-                    <div class="col">
-                        <h1>{{ .Name }}</h1>
-                    </div>
-                    <div class="col">
-                        <h1>{{ $.Interval }}</h1>
-                    </div>
-                </div>
-            </div>
-        </caption>
-        <thead class="thead-dark">
-            <tr>
-                <th scope="col" style="width: 10%">URL Name</th>
-                <th scope="col" style="width: 10%">Query Name</th>
-                <th scope="col" style="width: 70%">URL / Query</th>
-                <th scope="col" style="width: 10%">-</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{ range .URLs }}
-                <tr class="table-primary">
-                    <td scope="row">{{ .Name }}</td>
-                    <td></td>
-                    <td>{{ .URL }}</td>
-                    <td>
-                        <form action="/url/delete" method="post">
-                            <input type="hidden" name="id" value="{{ .ID }}">
-                            <input type="submit" class="btn btn-danger" value="Delete">
-                        </form>
-                    </td>
-                </tr>
-                {{ range .Queries }}
-                <tr>
-                    <td scope="row"></td>
-                    <td>{{ .Name }}</td>
-                    <td>{{ .Query }}</td>
-                    <td>
-                        <form action="/query/delete" method="post">
-                            <input type="hidden" name="id" value="{{ .ID }}">
-                            <input type="submit" class="btn btn-danger" value="Delete">
-                        </form>
-                    </td>
-                </tr>
-                {{ end }}
-                <tr>
-                    <td scope="row"></td>
-                    <td class=""><input type="text" id="queryNameFrom" name="name" placeholder="name"></td>
-                    <td class=""><input type="text" id="queryFrom" name="url" placeholder="query"></td>    
-                    <td class="">
-                        <form action="/query/create" id="newQueryForm" method="post">
-                            <input type="hidden" id="queryNameTo" name="name" value="" >
-                            <input type="hidden" id="queryTo" name="query" value="" >
-                            <input type="hidden" name="url_id" value="{{ .ID }}" >
-                            <input type="hidden" name="watch_id" value="{{ $.ID }}" >
-                            <button class="btn btn-primary" onclick="submitNewQueryForm()">New Query</button>
-                        </form>
-                    </td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            {{ end }}
-            <tr>
-                <td class=""><input type="text" id="urlNameFrom" name="name" placeholder="name"></td>
-                <td class=""></td>
-                <td class=""><input type="text" id="urlFrom" name="url" placeholder="URL"></td>
-                <td class="">
-                    <form action="/url/create" id="newUrlForm" method="post">
-                        <input type="hidden" id="urlNameTo" name="name" value="" >
-                        <input type="hidden" id="urlTo" name="url" value="" >
-                        <input type="hidden" name="watch_id" value="{{ .ID }}" >
-                        <button class="btn btn-primary" onclick="submitNewUrlForm()">New URL</button>
-                    </form>
-                </td>
-            </tr>
-        </tbody>
-    </table>            
+<div class="container">
+    <div class="row">
+        <div class="col h1">
+            {{ .Name }}
+        </div>
+        <div class="col h1">
+            {{ $.Interval }}
+        </div>
+    </div>
 </div>
-{{end}}
+{{ range .URLs }}
+    <div class="card mb-5">
+        <div class="card-header text-center text-white bg-dark ">
+            <div class="h5">{{ .Name }}</div>
+        </div>
+        <div class="card-header bg-secondary text-white text-center">
+            <div>{{ .URL }}</div>
+        </div>
+        <div class="card-body">
+            <form action="/query/create" method="post">
+                <table class="table table-hover caption-top">
+                    <thead>
+                        <tr class="table-secondary">
+                            <th scope="col">Name</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Query</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Queries }}
+                            <tr>
+                                <td>{{ .Name }}</td>
+                                <td>{{ .Type }}</td>
+                                <td>{{ .Query }}</td>
+                                <td>Delete</td>
+                            </tr>
+                        {{ end }}
+                        <tr>
+                            <td>
+                                <input type="text" class="form-control" name="name" placeholder="Name">
+                            </td>
+                            <td>
+                                <select class="form-control" id="type" name="type">
+                                    <option>CSS Selector</option>
+                                    <option>XPath</option>
+                                    <option>Regex</option>
+                                    <option>JSON</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" class="form-control" name="query" placeholder="Query">
+                            </td>
+                            <td>
+                                <button class="btn btn-primary">Add Query</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                
+                <input type="hidden" name="url_id" value="{{ .ID }}" >
+                <input type="hidden" name="watch_id" value="{{ $.ID }}" >
+                
+            </form>
+        </div>
+    </div>
+{{ end }}
+<div class="card mb-5">
+    <div class="card-header text-center bg-light ">
+        <div class="h5">New URL</div>
+    </div>
+    <div class="card-body">
+        <form action="/url/create" method="post">
+            <div class="form-group mb-2">
+                <input type="text" class="form-control" name="name" id="urlName" placeholder="Name">
+            </div>
+            <div class="form-group mb-2">
+                <input type="url" class="form-control" name="url" id="url" placeholder="URL">
+            </div>
+            
+            <input type="hidden" name="watch_id" value="{{ .ID }}" >
+            <input class="btn btn-primary" type="submit" value="Create URL">
+        </form>
+    </div>
+</div>
+
+{{ end }}

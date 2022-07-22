@@ -23,5 +23,6 @@ type Query struct {
 	gorm.Model
 	URLID uint
 	Name  string
+	Type  string
 	Query string
 }

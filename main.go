@@ -118,10 +118,16 @@ func (web Web) createQuery(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, "/watch/new")
 		return
 	}
+	typ := c.PostForm("type")
+	if typ == "" {
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return
+	}
 
 	query_model := &Query{
 		URLID: uint(url_id),
 		Name:  name,
+		Type:  typ,
 		Query: query,
 	}
 	web.db.Create(query_model)
