@@ -38,17 +38,12 @@ func (web Web) newWatch(c *gin.Context) {
 }
 
 func (web Web) createWatch(c *gin.Context) {
-	interval, err := strconv.Atoi(c.PostForm("interval"))
+	var watch Watch
+	errMap, err := bindAndValidateWatch(&watch, c)
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
+		c.HTML(http.StatusBadRequest, "500", errMap)
 	}
-
-	watch := &Watch{
-		Name:     c.PostForm("name"),
-		Interval: interval,
-	}
-	web.db.Create(watch)
+	web.db.Create(&watch)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch.ID))
 }
 
@@ -72,29 +67,15 @@ func (web Web) viewWatch(c *gin.Context) {
 }
 
 func (web Web) createURL(c *gin.Context) {
-	watch_id, err := strconv.ParseUint(c.PostForm("watch_id"), 10, 64)
+	var url URL
+	errMap, err := bindAndValidateURL(&url, c)
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return // TODO response
-	}
-	name := c.PostForm("name")
-	if name == "" {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
+		log.Print(err)
+		c.HTML(http.StatusInternalServerError, "500", errMap)
 		return
 	}
-	url := c.PostForm("url")
-	if url == "" {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
-	}
-
-	url_model := &URL{
-		WatchID: uint(watch_id),
-		Name:    name,
-		URL:     url,
-	}
-	web.db.Create(url_model)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch_id))
+	web.db.Create(url)
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", url.WatchID))
 }
 
 func (web Web) createQuery(c *gin.Context) {
@@ -253,6 +234,8 @@ func main() {
 	templates.AddFromFiles("newWatch", "templates/base.html", "templates/newWatch.html")
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
 	templates.AddFromFiles("editQuery", "templates/base.html", "templates/editQuery.html")
+
+	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
 
 	router.GET("/", web.index)
