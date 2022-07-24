@@ -14,6 +14,7 @@ type Watch struct {
 type URL struct {
 	gorm.Model
 	WatchID uint
+	Watch   Watch
 	Name    string
 	URL     string
 	Queries []Query
@@ -21,8 +22,20 @@ type URL struct {
 
 type Query struct {
 	gorm.Model
-	URLID uint
-	Name  string
-	Type  string
-	Query string
+	URLID   uint
+	URL     URL
+	Name    string
+	Type    string
+	Query   string
+	Filters []Filter
+}
+
+type Filter struct {
+	gorm.Model
+	QueryID uint
+	Query   Query
+	Name    string
+	Type    string
+	From    string
+	To      string
 }

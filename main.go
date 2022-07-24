@@ -67,7 +67,7 @@ func (web Web) viewWatch(c *gin.Context) {
 	id := c.Param("id")
 
 	var watch Watch
-	web.db.Model(&Watch{}).Preload("URLs.Queries").First(&watch, id)
+	web.db.Model(&Watch{}).Preload("URLs.Queries.Filters").First(&watch, id)
 	c.HTML(http.StatusOK, "viewWatch", watch)
 }
 
@@ -113,13 +113,13 @@ func (web Web) createQuery(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, "/watch/new")
 		return
 	}
-	query := c.PostForm("query")
-	if query == "" {
+	typ := c.PostForm("type")
+	if typ == "" {
 		c.Redirect(http.StatusSeeOther, "/watch/new")
 		return
 	}
-	typ := c.PostForm("type")
-	if typ == "" {
+	query := c.PostForm("query")
+	if query == "" {
 		c.Redirect(http.StatusSeeOther, "/watch/new")
 		return
 	}
@@ -132,6 +132,59 @@ func (web Web) createQuery(c *gin.Context) {
 	}
 	web.db.Create(query_model)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch_id))
+}
+
+func (web Web) createFilter(c *gin.Context) {
+	query_id, err := strconv.ParseUint(c.PostForm("query_id"), 10, 64)
+	if err != nil {
+		log.Print(err)
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return // TODO response
+	}
+	name := c.PostForm("name")
+	if name == "" {
+		log.Print(name)
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return
+	}
+	typ := c.PostForm("type")
+	if typ == "" {
+		log.Print(typ)
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return
+	}
+	from := c.PostForm("from")
+	if from == "" {
+		log.Print(from)
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return
+	}
+	to := c.PostForm("to")
+	log.Print("To:", to)
+	filter_model := &Filter{
+		QueryID: uint(query_id),
+		Name:    name,
+		Type:    typ,
+		From:    from,
+		To:      to,
+	}
+	web.db.Create(filter_model)
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", query_id))
+}
+
+func (web Web) editQuery(c *gin.Context) {
+	query_id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return // TODO response
+	}
+	var query Query
+	web.db.Preload("URL.Watch").Preload("Filters").Preload("URL").First(&query, query_id)
+
+	c.HTML(http.StatusOK, "editQuery", gin.H{
+		"Query":         query,
+		"currentResult": getQueryResult(&query),
+	})
 }
 
 func passiveBot(bot *tgbotapi.BotAPI) {
@@ -177,7 +230,7 @@ func main() {
 	}
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
-	db.AutoMigrate(&Watch{}, &URL{}, &Query{})
+	db.AutoMigrate(&Watch{}, &URL{}, &Query{}, &Filter{})
 
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
@@ -199,6 +252,7 @@ func main() {
 	templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
 	templates.AddFromFiles("newWatch", "templates/base.html", "templates/newWatch.html")
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
+	templates.AddFromFiles("editQuery", "templates/base.html", "templates/editQuery.html")
 	router.HTMLRender = templates
 
 	router.GET("/", web.index)
@@ -208,6 +262,8 @@ func main() {
 	router.GET("/watch/view/:id/", web.viewWatch)
 	router.POST("/url/create/", web.createURL)
 	router.POST("/query/create/", web.createQuery)
+	router.GET("/query/edit/:id", web.editQuery)
+	router.POST("/filter/create/", web.createFilter)
 
 	router.Run("0.0.0.0:8080")
 }

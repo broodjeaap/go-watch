@@ -12,58 +12,90 @@
 {{ range .URLs }}
     <div class="card mb-5">
         <div class="card-header text-center text-white bg-dark ">
-            <div class="h5">{{ .Name }}</div>
+            <div class="h3">{{ .Name }} URL</div>
         </div>
         <div class="card-header bg-secondary text-white text-center">
             <div>{{ .URL }}</div>
         </div>
         <div class="card-body">
-            <form action="/query/create" method="post">
-                <table class="table table-hover caption-top">
-                    <thead>
-                        <tr class="table-secondary">
-                            <th scope="col">Name</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Query</th>
-                            <th scope="col"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{ range .Queries }}
+                {{ range .Queries }}
+                    <div class="card mb-2">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col h5 text-start">{{ .Type }}</div>
+                                <div class="col h4 text-center" >{{ .Name }}</div>
+                                <div class="col h5 text-end"><a class="btn btn-success btn-sm" href="/query/edit/{{ .ID }}">Edit</a></div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form action="/filter/create" method="post">
+                                <input type="hidden" name="query_id" value="{{ .ID }}" >
+                                <input type="hidden" name="watch_id" value="{{ $.ID }}" >
+                                <table class="table table-hover caption-top">
+                                    <tbody>
+                                        {{ range .Filters }}
+                                            <tr>
+                                                <td>{{ .Name }}</td>
+                                                <td>{{ .Type }}</td>
+                                                <td>{{ .From }}</td>
+                                                <td>{{ .To }}</td>
+                                                <td></td>
+                                            </tr>
+                                        {{ end }}
+                                        <tr>
+                                            <td><input type="text" class="form-control" name="name" placeholder="Filter Name"></td>
+                                            <td>
+                                                <select class="form-control" id="type" name="type">
+                                                    <option>Replace</option>
+                                                    <option>Regex Replace</option>
+                                                    <option>Substring</option>
+                                                    <option>Lua</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="text" class="form-control" name="from" placeholder="From"></td>
+                                            <td><input type="text" class="form-control" name="to" placeholder="To"></td>
+                                            <td><button class="btn btn-primary">Add Filter</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <div class="card-footer">
+                            <div class="row">
+                                <div class="col-2">{{ .Type }}</div>
+                                <div class="col-8">{{ .Query }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {{ end }}
+                <form action="/query/create" method="post">
+                    <input type="hidden" name="url_id" value="{{ .ID }}" >
+                    <input type="hidden" name="watch_id" value="{{ $.ID }}" >
+                    <table class="table table-hover caption-top">
+                        <tbody>
                             <tr>
-                                <td>{{ .Name }}</td>
-                                <td>{{ .Type }}</td>
-                                <td>{{ .Query }}</td>
-                                <td>Delete</td>
+                                <td>
+                                    <input type="text" class="form-control" name="name" placeholder="Query Name">
+                                </td>
+                                <td>
+                                    <select class="form-control" id="type" name="type">
+                                        <option>CSS Selector</option>
+                                        <option>XPath</option>
+                                        <option>Regex</option>
+                                        <option>JSON</option>
+                                        <option>Lua</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="query" placeholder="Query">
+                                </td>
+                                <td>
+                                    <button class="btn btn-primary">Add Query</button>
+                                </td>
                             </tr>
-                        {{ end }}
-                        <tr>
-                            <td>
-                                <input type="text" class="form-control" name="name" placeholder="Name">
-                            </td>
-                            <td>
-                                <select class="form-control" id="type" name="type">
-                                    <option>CSS Selector</option>
-                                    <option>XPath</option>
-                                    <option>Regex</option>
-                                    <option>JSON</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" name="query" placeholder="Query">
-                            </td>
-                            <td>
-                                <button class="btn btn-primary">Add Query</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                
-                <input type="hidden" name="url_id" value="{{ .ID }}" >
-                <input type="hidden" name="watch_id" value="{{ $.ID }}" >
-                
-            </form>
+                        </tbody>
+                    </table>
+                </form>
         </div>
     </div>
 {{ end }}
@@ -74,7 +106,7 @@
     <div class="card-body">
         <form action="/url/create" method="post">
             <div class="form-group mb-2">
-                <input type="text" class="form-control" name="name" id="urlName" placeholder="Name">
+                <input type="text" class="form-control" name="name" id="urlName" placeholder="URL Name">
             </div>
             <div class="form-group mb-2">
                 <input type="url" class="form-control" name="url" id="url" placeholder="URL">
