@@ -15,6 +15,7 @@ func getQueryResult(query *Query) []string {
 	doc, err := htmlquery.LoadURL(query.URL.URL)
 	if err != nil {
 		log.Print("Something went wrong loading loading", query.URL.URL)
+		return []string{}
 	}
 	nodes, _ := htmlquery.QueryAll(doc, query.Query)
 	nodeStrings := make([]string, len(nodes))
