@@ -17,6 +17,16 @@ func bindAndValidateURL(url *URL, c *gin.Context) (map[string]string, error) {
 	return validate(err), err
 }
 
+func bindAndValidateQuery(query *Query, c *gin.Context) (map[string]string, error) {
+	err := c.ShouldBind(query)
+	return validate(err), err
+}
+
+func bindAndValidateFilter(filter *Filter, c *gin.Context) (map[string]string, error) {
+	err := c.ShouldBind(filter)
+	return validate(err), err
+}
+
 func prettyError(fieldError validator.FieldError) string {
 	switch fieldError.Tag() {
 	case "required":

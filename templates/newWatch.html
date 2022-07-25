@@ -2,7 +2,7 @@
 <form action="/watch/create" method="post">
     <div class="mb-3">
         <label for="name" class="form-label">Watch Name</label>
-        <input name="name" type="text" class="form-control" id="name" placeholder="Watch">
+        <input name="watch_name" type="text" class="form-control" id="name" placeholder="Watch">
     </div>
     <div class="mb-3">
         <label for="interval" class="form-label">Interval (seconds) - TODO </label>
@@ -10,5 +10,4 @@
     </div>
     <input type="submit" class="btn btn-primary mb-3" value="Create">
 </form>
-{{ . }}
 {{end}}

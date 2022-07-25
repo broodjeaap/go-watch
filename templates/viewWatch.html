@@ -26,13 +26,16 @@
                                 <div class="col h4 text-center" >{{ .Name }}</div>
                                 <div class="col h5 text-end"><a class="btn btn-success btn-sm" href="/query/edit/{{ .ID }}">Edit</a></div>
                             </div>
+                            <div class="text-center text-muted">
+                                {{ .Query }}
+                            </div>
                         </div>
                         <div class="card-body">
-                            <form action="/filter/create" method="post">
-                                <input type="hidden" name="query_id" value="{{ .ID }}" >
-                                <input type="hidden" name="watch_id" value="{{ $.ID }}" >
-                                <table class="table table-hover caption-top">
-                                    <tbody>
+                            <input type="hidden" name="query_id" value="{{ .ID }}" >
+                            <input type="hidden" name="w_id" value="{{ $.ID }}" >
+                            <table class="table table-hover caption-top">
+                                <tbody>
+                                    {{ if .Filters }}
                                         {{ range .Filters }}
                                             <tr>
                                                 <td>{{ .Name }}</td>
@@ -42,48 +45,35 @@
                                                 <td></td>
                                             </tr>
                                         {{ end }}
+                                    {{ else }}
                                         <tr>
-                                            <td><input type="text" class="form-control" name="name" placeholder="Filter Name"></td>
-                                            <td>
-                                                <select class="form-control" id="type" name="type">
-                                                    <option>Replace</option>
-                                                    <option>Regex Replace</option>
-                                                    <option>Substring</option>
-                                                    <option>Lua</option>
-                                                </select>
-                                            </td>
-                                            <td><input type="text" class="form-control" name="from" placeholder="From"></td>
-                                            <td><input type="text" class="form-control" name="to" placeholder="To"></td>
-                                            <td><button class="btn btn-primary">Add Filter</button></td>
+                                            <td class="text-center h3">No filters yet, click "Edit" to add</td>
                                         </tr>
-                                    </tbody>
-                                </table>
-                            </form>
+                                    {{ end }}
+                                </tbody>
+                            </table>
                         </div>
                         <div class="card-footer">
-                            <div class="row">
-                                <div class="col-2">{{ .Type }}</div>
-                                <div class="col-8">{{ .Query }}</div>
-                            </div>
+                            
                         </div>
                     </div>
                 {{ end }}
                 <form action="/query/create" method="post">
-                    <input type="hidden" name="url_id" value="{{ .ID }}" >
-                    <input type="hidden" name="watch_id" value="{{ $.ID }}" >
+                    <input type="hidden" name="query_url_id" value="{{ .ID }}" >
+                    <input type="hidden" name="w_id" value="{{ $.ID }}" >
                     <table class="table table-hover caption-top">
                         <tbody>
                             <tr>
                                 <td>
-                                    <input type="text" class="form-control" name="name" placeholder="Query Name">
+                                    <input type="text" class="form-control" name="query_name" placeholder="Query Name">
                                 </td>
                                 <td>
-                                    <select class="form-control" id="type" name="type">
-                                        <option>CSS Selector</option>
-                                        <option>XPath</option>
-                                        <option>Regex</option>
-                                        <option>JSON</option>
-                                        <option>Lua</option>
+                                    <select class="form-control" id="query_type" name="query_type">
+                                        <option value="css">CSS Selector</option>
+                                        <option value="xpath">XPath</option>
+                                        <option value="regex">Regex</option>
+                                        <option value="json">JSON</option>
+                                        <!-- additions/changes should also be added to Query.Type oneof validator -->
                                     </select>
                                 </td>
                                 <td>
@@ -106,13 +96,13 @@
     <div class="card-body">
         <form action="/url/create" method="post">
             <div class="form-group mb-2">
-                <input type="text" class="form-control" name="name" id="urlName" placeholder="URL Name">
+                <input type="text" class="form-control" name="url_name" id="urlName" placeholder="URL Name">
             </div>
             <div class="form-group mb-2">
                 <input type="url" class="form-control" name="url" id="url" placeholder="URL">
             </div>
             
-            <input type="hidden" name="watch_id" value="{{ .ID }}" >
+            <input type="hidden" name="url_watch_id" value="{{ .ID }}" >
             <input class="btn btn-primary" type="submit" value="Create URL">
         </form>
     </div>

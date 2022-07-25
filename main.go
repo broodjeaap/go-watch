@@ -42,6 +42,7 @@ func (web Web) createWatch(c *gin.Context) {
 	errMap, err := bindAndValidateWatch(&watch, c)
 	if err != nil {
 		c.HTML(http.StatusBadRequest, "500", errMap)
+		return
 	}
 	web.db.Create(&watch)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch.ID))
@@ -74,83 +75,37 @@ func (web Web) createURL(c *gin.Context) {
 		c.HTML(http.StatusInternalServerError, "500", errMap)
 		return
 	}
-	web.db.Create(url)
+	web.db.Create(&url)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", url.WatchID))
 }
 
 func (web Web) createQuery(c *gin.Context) {
-	watch_id, err := strconv.ParseUint(c.PostForm("watch_id"), 10, 64)
+	watch_id, err := strconv.ParseUint(c.PostForm("w_id"), 10, 64)
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return // TODO response
+		log.Print(err)
+		c.HTML(http.StatusInternalServerError, "500", gin.H{})
+		return
 	}
-	url_id, err := strconv.ParseUint(c.PostForm("url_id"), 10, 64)
+	var query Query
+	errMap, err := bindAndValidateQuery(&query, c)
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return // TODO response
-	}
-	name := c.PostForm("name")
-	if name == "" {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
+		c.HTML(http.StatusBadRequest, "500", errMap)
 		return
 	}
-	typ := c.PostForm("type")
-	if typ == "" {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
-	}
-	query := c.PostForm("query")
-	if query == "" {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
-	}
-
-	query_model := &Query{
-		URLID: uint(url_id),
-		Name:  name,
-		Type:  typ,
-		Query: query,
-	}
-	web.db.Create(query_model)
+	web.db.Create(&query)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch_id))
 }
 
 func (web Web) createFilter(c *gin.Context) {
-	query_id, err := strconv.ParseUint(c.PostForm("query_id"), 10, 64)
+	var filter Filter
+	errMap, err := bindAndValidateFilter(&filter, c)
 	if err != nil {
 		log.Print(err)
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return // TODO response
-	}
-	name := c.PostForm("name")
-	if name == "" {
-		log.Print(name)
-		c.Redirect(http.StatusSeeOther, "/watch/new")
+		c.HTML(http.StatusBadRequest, "500", errMap)
 		return
 	}
-	typ := c.PostForm("type")
-	if typ == "" {
-		log.Print(typ)
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
-	}
-	from := c.PostForm("from")
-	if from == "" {
-		log.Print(from)
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
-	}
-	to := c.PostForm("to")
-	log.Print("To:", to)
-	filter_model := &Filter{
-		QueryID: uint(query_id),
-		Name:    name,
-		Type:    typ,
-		From:    from,
-		To:      to,
-	}
-	web.db.Create(filter_model)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", query_id))
+	web.db.Create(&filter)
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", filter.QueryID))
 }
 
 func (web Web) editQuery(c *gin.Context) {
