@@ -9,9 +9,9 @@
     </thead>
     <tbody>
         {{ range . }}
-        <tr>
-            <td>{{ .Name }}</td>
-            <td>{{ .Interval }}</td>
+        <tr class="pointer" onclick="window.location='/watch/view/{{ .ID }}'">
+            <td class="h3">{{ .Name }}</td>
+            <td class="h3">{{ .Interval }}</td>
             <td>
                 <form action="/query/delete" method="post">
                     <input type="hidden" name="id" value="{{ .ID }}">
