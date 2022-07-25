@@ -21,7 +21,7 @@ func getQueryResult(query *Query) []string {
 	for i, node := range nodes {
 		var b bytes.Buffer
 		html.Render(&b, node)
-		nodeStrings[i] = b.String()
+		nodeStrings[i] = html.UnescapeString(b.String())
 	}
 	for _, filter := range query.Filters {
 		for i, nodeString := range nodeStrings {
