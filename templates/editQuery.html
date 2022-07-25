@@ -6,8 +6,17 @@
     </div>
     <div class="card-header text-white bg-secondary">
         <div class="row">
-            <div class="col-2">{{ .Query.Type }}</div>
-            <div class="col-8">{{ .Query.Query }}</div>
+            <div class="col-2">
+                {{ .Query.Type }}
+            </div>
+            <div class="col-8">
+                {{ .Query.Query }}
+            </div>
+            <div class="col-1">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateQueryModal">
+                    Update
+                </button>
+            </div>
         </div>
     </div>
     <div class="card-body">
@@ -56,90 +65,126 @@
 </div>
 {{ end }}
 
-<div class="modal fade" id="newFilterModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+
+<div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="updateQueryModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="modalLabel">Add Filter</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateQueryModal">Update Query</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/query/update" method="post">
+                    <input type="hidden" name="query_id" value="{{ .Query.ID }}" >
+                    <div class="col">
+                        <div class="mb-3 m-3 row">
+                            <input type="text" name="query_name" value="{{ .Query.Name }}" class="form-control">
+                        </div>
+                        <div class="mb-3 m-3 row">
+                            <select name="query_type" class="form-control" >
+                                <option value="css" {{ if eq .Query.Type "css" }} selected="true" {{ end }}>CSS</option>
+                                <option value="xpath" {{ if eq .Query.Type "xpath" }} selected="true" {{ end }}>XPath</option>
+                                <option value="regex" {{ if eq .Query.Type "regex" }} selected="true" {{ end }}>Regex</option>
+                                <option value="json" {{ if eq .Query.Type "json" }} selected="true" {{ end }}>JSON</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 m-3 row">
+                            <input type="text" name="query" class="form-control" value="{{ .Query.Query }}">
+                        </div>
+                        <button class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="modal-body">
+    </div>
+</div>
 
-            <ul class="nav nav-tabs" id="newFilterTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="replace-tab" data-bs-toggle="tab" data-bs-target="#replace-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Replace</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="regex-tab" data-bs-toggle="tab" data-bs-target="#regex-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Regex</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="substring-tab" data-bs-toggle="tab" data-bs-target="#substring-tab-pane" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Substring</button>
-                </li>
-            </ul>
-            <div class="tab-content" id="newFilterTabsContent">
-                <div class="tab-pane fade show active" id="replace-tab-pane" role="tabpanel" aria-labelledby="replace-tab" tabindex="0">
 
-                    <form action="/filter/create" method="post">
-                        <div class="mb-3 m-3 row">
-                            <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
-                            <input type="hidden" name="filter_type" value="replace" >
-                        
-                            <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+<div class="modal fade" id="newFilterModal" tabindex="-1" aria-labelledby="newFilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newFilterModalLabel">Add Filter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <ul class="nav nav-tabs" id="newFilterTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="replace-tab" data-bs-toggle="tab" data-bs-target="#replace-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Replace</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="regex-tab" data-bs-toggle="tab" data-bs-target="#regex-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Regex</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="substring-tab" data-bs-toggle="tab" data-bs-target="#substring-tab-pane" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Substring</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="newFilterTabsContent">
+                    <div class="tab-pane fade show active" id="replace-tab-pane" role="tabpanel" aria-labelledby="replace-tab" tabindex="0">
+
+                        <form action="/filter/create" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
+                                <input type="hidden" name="filter_type" value="replace" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="Something">
+                                </div>
+                                <label for="toInput" class="col-sm-2 col-form-label">To:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="to" id="toInput" placeholder="Else">
+                                </div>
+                                <button class="btn btn-primary mt-4">Add Filter</button>
                             </div>
-                            <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="from" id="fromInput" placeholder="Something">
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="regex-tab-pane" role="tabpanel" aria-labelledby="regex-tab" tabindex="0">
+                        <form action="/filter/create" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
+                                <input type="hidden" name="filter_type" value="regex" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="So[mM]e(thing|where)">
+                                </div>
+                                <label for="toInput" class="col-sm-2 col-form-label">To:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="to" id="toInput" placeholder="Else">
+                                </div>
+                                <button class="btn btn-primary mt-4">Add Filter</button>
                             </div>
-                            <label for="toInput" class="col-sm-2 col-form-label">To:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="to" id="toInput" placeholder="Else">
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="substring-tab-pane" role="tabpanel" aria-labelledby="substring-tab" tabindex="0">
+                        <form action="/filter/create" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
+                                <input type="hidden" name="filter_type" value="substring" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="0-3,4,6,10-13">
+                                </div>
+                                <button class="btn btn-primary mt-4">Add Filter</button>
                             </div>
-                            <button class="btn btn-primary mt-4">Add Filter</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="tab-pane fade" id="regex-tab-pane" role="tabpanel" aria-labelledby="regex-tab" tabindex="0">
-                    <form action="/filter/create" method="post">
-                        <div class="mb-3 m-3 row">
-                            <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
-                            <input type="hidden" name="filter_type" value="regex" >
-                        
-                            <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
-                            </div>
-                            <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="from" id="fromInput" placeholder="So[mM]e(thing|where)">
-                            </div>
-                            <label for="toInput" class="col-sm-2 col-form-label">To:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="to" id="toInput" placeholder="Else">
-                            </div>
-                            <button class="btn btn-primary mt-4">Add Filter</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="tab-pane fade" id="substring-tab-pane" role="tabpanel" aria-labelledby="substring-tab" tabindex="0">
-                    <form action="/filter/create" method="post">
-                        <div class="mb-3 m-3 row">
-                            <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
-                            <input type="hidden" name="filter_type" value="substring" >
-                            <input type="hidden" name="to" value="-" >
-                        
-                            <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
-                            </div>
-                            <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
-                            <div class="col-sm-10 p-2">
-                                <input type="text" class="form-control" name="from" id="fromInput" placeholder="0-3,4,6,10-13">
-                            </div>
-                            <button class="btn btn-primary mt-4">Add Filter</button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

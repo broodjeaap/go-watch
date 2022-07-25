@@ -123,6 +123,23 @@ func (web Web) editQuery(c *gin.Context) {
 	})
 }
 
+func (web Web) updateQuery(c *gin.Context) {
+	var queryUpdate QueryUpdate
+	errMap, err := bindAndValidateQueryUpdate(&queryUpdate, c)
+	if err != nil {
+		log.Print(err)
+		c.HTML(http.StatusBadRequest, "500", errMap)
+		return
+	}
+	var query Query
+	web.db.First(&query, queryUpdate.ID)
+	query.Name = queryUpdate.Name
+	query.Type = queryUpdate.Type
+	query.Query = queryUpdate.Query
+	web.db.Save(&query)
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", +query.ID))
+}
+
 func passiveBot(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -201,6 +218,7 @@ func main() {
 	router.POST("/url/create/", web.createURL)
 	router.POST("/query/create/", web.createQuery)
 	router.GET("/query/edit/:id", web.editQuery)
+	router.POST("/query/update", web.updateQuery)
 	router.POST("/filter/create/", web.createFilter)
 
 	router.Run("0.0.0.0:8080")

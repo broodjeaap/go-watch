@@ -27,6 +27,11 @@ func bindAndValidateFilter(filter *Filter, c *gin.Context) (map[string]string, e
 	return validate(err), err
 }
 
+func bindAndValidateQueryUpdate(query *QueryUpdate, c *gin.Context) (map[string]string, error) {
+	err := c.ShouldBind(query)
+	return validate(err), err
+}
+
 func prettyError(fieldError validator.FieldError) string {
 	switch fieldError.Tag() {
 	case "required":
