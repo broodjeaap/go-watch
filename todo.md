@@ -1,5 +1,6 @@
 # Todo
 - scheduled tasks -> ticker/gocron ?
-- add filter types
+- change filter types
   - regex -> regex replace
   - regex extract (with groups?)
+  - substring ":4" "28:" "-100:"
