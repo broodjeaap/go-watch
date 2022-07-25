@@ -1,4 +1,5 @@
 # Todo
 - scheduled tasks -> ticker/gocron ?
-- database -> gorm ?
-- scraping -> gocolly/goquery ?
+- add filter types
+  - regex -> regex replace
+  - regex extract (with groups?)
