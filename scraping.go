@@ -69,23 +69,45 @@ func getFilterResultSubstring(s string, filter *Filter) string {
 	asRunes := []rune(s)
 
 	for _, substring := range substrings {
-		if strings.Contains(substring, "-") {
-			from_to := strings.Split(substring, "-")
+		if strings.Contains(substring, ":") {
+			from_to := strings.Split(substring, ":")
 			if len(from_to) != 2 {
 				return s
 			}
-			from, err := strconv.ParseInt(from_to[0], 10, 32)
-			if err != nil {
-				return s
+			fromStr := from_to[0]
+			var hasFrom bool = true
+			if fromStr == "" {
+				hasFrom = false
 			}
-			to, err := strconv.ParseInt(from_to[1], 10, 32)
-			if err != nil {
+			from64, err := strconv.ParseInt(fromStr, 10, 32)
+			var from = int(from64)
+			if hasFrom && err != nil {
 				return s
+			} else if from < 0 {
+				from = len(asRunes) + from
 			}
-			sb.WriteString(string(asRunes[from:to]))
+			toStr := from_to[1]
+			var hasTo bool = true
+			if toStr == "" {
+				hasTo = false
+			}
+			to64, err := strconv.ParseInt(toStr, 10, 32)
+			var to = int(to64)
+			if hasTo && err != nil {
+				return s
+			} else if to < 0 {
+				to = len(asRunes) + to
+			}
+			if hasFrom && hasTo {
+				sb.WriteString(string(asRunes[from:to]))
+			} else if hasFrom {
+				sb.WriteString(string(asRunes[from:]))
+			} else if hasTo {
+				sb.WriteString(string(asRunes[:to]))
+			}
 		} else {
 			pos, err := strconv.ParseInt(substring, 10, 32)
-			if err != nil {
+			if err != nil || pos < 0 {
 				return s
 			}
 			sb.WriteRune(asRunes[pos])
