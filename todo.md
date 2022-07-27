@@ -5,3 +5,4 @@
   - regex extract (with groups?)
   - substring ":4" "28:" "-100:"
 - add error reporting to filters
+- add tests for whole query/filtering system
