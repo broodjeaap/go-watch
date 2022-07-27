@@ -6,7 +6,7 @@ steps:
     image: golang
     commands:
       - go build
-      - go test
+      - go test -v
 trigger:
   branch:
     - master
