@@ -20,3 +20,29 @@
 .pointer {
     cursor: pointer;
 }
+
+.node-card {
+  width: 18rem;
+  position: absolute;
+}
+
+.node-inputs {
+  float: left;
+}
+
+.node-input {
+  background-color: red;
+}
+
+.node-outputs {
+  float: right;
+}
+
+.node-output {
+  margin-bottom: 1rem;
+  background-color: red;
+}
+
+#node-canvas {
+  position: absolute;
+}

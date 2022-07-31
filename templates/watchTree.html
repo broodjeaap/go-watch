@@ -1,0 +1,60 @@
+{{define "content"}}
+
+<canvas id="node-canvas" width="1000px" height="1000px">
+
+</canvas>
+
+<div class="card node-card">
+    <div class="card-header text-center">
+        <div class="h5">Tweakers LG C2 42"</div>
+    </div>
+    <div class="card-body">
+        https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html
+    </div>
+    <div class="node-inputs">
+        <div class="node-input">
+        </div>
+    </div>
+    <div class="node-outputs">
+        <div class="node-output">
+        </div>
+    </div>
+</div>
+
+<div class="card node-card">
+    <div class="card-header text-center">
+        <div class="h5">XPath</div>
+    </div>
+    <div class="card-header text-center">
+        <code>//td[@class='shop-price']//a </code>
+    </div>
+    <div class="card-body">
+        <div class="node-inputs">
+            <div class="node-input">
+                Input
+            </div>
+        </div>
+        <div class="node-outputs">
+            <div class="node-output">
+                Output
+            </div>
+            <div class="node-output">
+                Output
+            </div>
+            <div class="node-output">
+                Output
+            </div>
+        </div>
+    </div>
+</div>
+
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+
+    <path d="M 10 10 C 100 10, 100 10, 100 100" stroke="black" fill="transparent"/>
+</svg>
+
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/graph.js"></script>
+{{end}}
