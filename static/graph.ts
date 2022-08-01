@@ -64,6 +64,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
     [].forEach.call(inputs, function(input: HTMLElement){
         input.onmousedown = log;
     });
+    let outputs = document.getElementsByClassName("node-output");
+    [].forEach.call(outputs, function(output: HTMLElement){
+        output.onmousedown = log;
+    });
 
     let c = document.getElementById("node-canvas") as HTMLCanvasElement;
     let ctx = c.getContext("2d");

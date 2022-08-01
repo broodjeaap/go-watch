@@ -52,6 +52,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
     [].forEach.call(inputs, function (input) {
         input.onmousedown = log;
     });
+    var outputs = document.getElementsByClassName("node-output");
+    [].forEach.call(outputs, function (output) {
+        output.onmousedown = log;
+    });
     var c = document.getElementById("node-canvas");
     var ctx = c.getContext("2d");
     if (ctx === null) {
