@@ -140,10 +140,6 @@ func (web Web) updateQuery(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", +query.ID))
 }
 
-func (web Web) watchTree(c *gin.Context) {
-	c.HTML(http.StatusOK, "tree", gin.H{})
-}
-
 func passiveBot(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -211,8 +207,6 @@ func main() {
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
 	templates.AddFromFiles("editQuery", "templates/base.html", "templates/editQuery.html")
 
-	templates.AddFromFiles("tree", "templates/base.html", "templates/watchTree.html")
-
 	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
 
@@ -226,8 +220,6 @@ func main() {
 	router.GET("/query/edit/:id", web.editQuery)
 	router.POST("/query/update", web.updateQuery)
 	router.POST("/filter/create/", web.createFilter)
-
-	router.GET("/watch/tree/", web.watchTree)
 
 	router.Run("0.0.0.0:8080")
 }
