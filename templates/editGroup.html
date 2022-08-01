@@ -1,19 +1,16 @@
 {{define "content"}}
 <div class="card mb-5">
     <div class="card-header text-center text-white bg-dark ">
-        <div class="h2">{{ .Query.URL.Watch.Name }} - {{ .Query.Name }}</div>
-        <div class="h6">{{ .Query.URL.URL }}</div>
+        <div class="h2">{{ .Group.URL.Watch.Name }} - {{ .Group.Name }}</div>
+        <div class="h6">{{ .Group.URL.URL }}</div>
     </div>
     <div class="card-header text-white bg-secondary">
         <div class="row">
             <div class="col-2">
-                {{ .Query.Type }}
-            </div>
-            <div class="col-8">
-                {{ .Query.Query }}
+                {{ .Group.Type }}
             </div>
             <div class="col-1">
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateQueryModal">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#updateGroupModal">
                     Update
                 </button>
             </div>
@@ -22,17 +19,22 @@
     <div class="card-body">
         <div class="card mb-2">
             <form action="/filter/create" method="post">
-                <input type="hidden" name="query_id" value="{{ .ID }}" >
+                <input type="hidden" name="group_id" value="{{ .ID }}" >
                 <input type="hidden" name="watch_id" value="{{ $.ID }}" >
                 <table class="table table-hover caption-top">
                     <tbody>
-                        {{ range .Query.Filters }}
+                        {{ range .Group.Filters }}
                             <tr>
                                 <td>{{ .Name }}</td>
                                 <td>{{ .Type }}</td>
                                 <td>{{ .From }}</td>
                                 <td>{{ .To }}</td>
-                                <td></td>
+                                <td>
+                                    <form action="/filter/delete" method="post">
+                                        <input type="hidden" name="filter_id" value="{{ .ID }}">
+                                        <input type="submit" class="btn btn-sm btn-danger" value="X">
+                                    </form>
+                                </td>
                             </tr>
                         {{ end }}
                         <tr>
@@ -68,30 +70,27 @@
 {{ end }}
 
 
-<div class="modal fade" id="updateQueryModal" tabindex="-1" aria-labelledby="updateQueryModal" aria-hidden="true">
+<div class="modal fade" id="updateGroupModal" tabindex="-1" aria-labelledby="updateGroupModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="updateQueryModal">Update Query</h5>
+                <h5 class="modal-title" id="updateGroupModal">Update Group</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="/query/update" method="post">
-                    <input type="hidden" name="query_id" value="{{ .Query.ID }}" >
+                <form action="/group/update" method="post">
+                    <input type="hidden" name="group_id" value="{{ .Group.ID }}" >
                     <div class="col">
                         <div class="mb-3 m-3 row">
-                            <input type="text" name="query_name" value="{{ .Query.Name }}" class="form-control">
+                            <input type="text" name="group_name" value="{{ .Group.Name }}" class="form-control">
                         </div>
                         <div class="mb-3 m-3 row">
-                            <select name="query_type" class="form-control" >
-                                <option value="css" {{ if eq .Query.Type "css" }} selected="true" {{ end }}>CSS</option>
-                                <option value="xpath" {{ if eq .Query.Type "xpath" }} selected="true" {{ end }}>XPath</option>
-                                <option value="regex" {{ if eq .Query.Type "regex" }} selected="true" {{ end }}>Regex</option>
-                                <option value="json" {{ if eq .Query.Type "json" }} selected="true" {{ end }}>JSON</option>
+                            <select name="group_type" class="form-control" >
+                                <option value="diff" {{ if eq .Group.Type "diff" }} selected="true" {{ end }}>Diff</option>
+                                <option value="enum" {{ if eq .Group.Type "enum" }} selected="true" {{ end }}>Enum</option>
+                                <option value="number" {{ if eq .Group.Type "number" }} selected="true" {{ end }}>Number</option>
+                                <option value="bool" {{ if eq .Group.Type "bool" }} selected="true" {{ end }}>Boolean</option>
                             </select>
-                        </div>
-                        <div class="mb-3 m-3 row">
-                            <input type="text" name="query" class="form-control" value="{{ .Query.Query }}">
                         </div>
                         <button class="btn btn-primary">Update</button>
                     </div>
@@ -113,21 +112,65 @@
 
                 <ul class="nav nav-tabs" id="newFilterTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="replace-tab" data-bs-toggle="tab" data-bs-target="#replace-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Replace</button>
+                        <button class="nav-link active" id="xpath-tab" data-bs-toggle="tab" data-bs-target="#xpath-tab-pane" aria-controls="xpath-tab-pane" type="button" role="tab" aria-selected="true">XPath</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="regex-tab" data-bs-toggle="tab" data-bs-target="#regex-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Regex</button>
+                        <button class="nav-link" id="css-tab" data-bs-toggle="tab" data-bs-target="#css-tab-pane" aria-controls="css-tab-pane" type="button" role="tab" aria-selected="false">CSS</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="substring-tab" data-bs-toggle="tab" data-bs-target="#substring-tab-pane" type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Substring</button>
+                        <button class="nav-link" id="replace-tab" data-bs-toggle="tab" data-bs-target="#replace-tab-pane" aria-controls="replace-tab-pane" type="button" role="tab" aria-selected="false">Replace</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="regex-tab" data-bs-toggle="tab" data-bs-target="#regex-tab-pane" aria-controls="regex-tab-pane" type="button" role="tab" aria-selected="false">Regex</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="substring-tab" data-bs-toggle="tab" data-bs-target="#substring-tab-pane" aria-controls="substring-tab-pane" type="button" role="tab" aria-selected="false">Substring</button>
                     </li>
                 </ul>
                 <div class="tab-content" id="newFilterTabsContent">
-                    <div class="tab-pane fade show active" id="replace-tab-pane" role="tabpanel" aria-labelledby="replace-tab" tabindex="0">
+                    <div class="tab-pane fade show active" id="xpath-tab-pane" role="tabpanel" aria-labelledby="xpath-tab" tabindex="0">
+                        <form action="/filter/create" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
+                                <input type="hidden" name="filter_type" value="xpath" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">XPath:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="//a[@class='price']">
+                                </div>
+                                <button class="btn btn-primary mt-4">Add Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="css-tab-pane" role="tabpanel" aria-labelledby="css-tab" tabindex="0">
+                        <form action="/filter/create" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
+                                <input type="hidden" name="filter_type" value="css" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">Selector:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder=".price">
+                                </div>
+                                <button class="btn btn-primary mt-4">Add Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="replace-tab-pane" role="tabpanel" aria-labelledby="replace-tab" tabindex="0">
 
                         <form action="/filter/create" method="post">
                             <div class="mb-3 m-3 row">
-                                <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
                                 <input type="hidden" name="filter_type" value="replace" >
                             
                                 <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
@@ -149,7 +192,7 @@
                     <div class="tab-pane fade" id="regex-tab-pane" role="tabpanel" aria-labelledby="regex-tab" tabindex="0">
                         <form action="/filter/create" method="post">
                             <div class="mb-3 m-3 row">
-                                <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
                                 <input type="hidden" name="filter_type" value="regex" >
                             
                                 <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
@@ -171,7 +214,7 @@
                     <div class="tab-pane fade" id="substring-tab-pane" role="tabpanel" aria-labelledby="substring-tab" tabindex="0">
                         <form action="/filter/create" method="post">
                             <div class="mb-3 m-3 row">
-                                <input type="hidden" name="filter_query_id" value="{{ .Query.ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
                                 <input type="hidden" name="filter_type" value="substring" >
                                 <input type="hidden" name="to" value="-" >
                             

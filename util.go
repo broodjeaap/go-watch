@@ -17,8 +17,8 @@ func bindAndValidateURL(url *URL, c *gin.Context) (map[string]string, error) {
 	return validate(err), err
 }
 
-func bindAndValidateQuery(query *Query, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(query)
+func bindAndValidateGroup(group *FilterGroup, c *gin.Context) (map[string]string, error) {
+	err := c.ShouldBind(group)
 	return validate(err), err
 }
 
@@ -27,8 +27,8 @@ func bindAndValidateFilter(filter *Filter, c *gin.Context) (map[string]string, e
 	return validate(err), err
 }
 
-func bindAndValidateQueryUpdate(query *QueryUpdate, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(query)
+func bindAndValidateGroupUpdate(group *FilterGroupUpdate, c *gin.Context) (map[string]string, error) {
+	err := c.ShouldBind(group)
 	return validate(err), err
 }
 

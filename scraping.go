@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,43 +13,68 @@ import (
 	"golang.org/x/net/html"
 )
 
-func getQueryResult(query *Query) []string {
-	doc, err := htmlquery.LoadURL(query.URL.URL)
+func getGroupResult(group *FilterGroup) []string {
+	resp, err := http.Get(group.URL.URL)
 	if err != nil {
-		log.Print("Something went wrong loading loading", query.URL.URL)
+		log.Print("Something went wrong loading", group.URL.URL)
 		return []string{}
 	}
-	nodes, _ := htmlquery.QueryAll(doc, query.Query)
-	nodeStrings := make([]string, len(nodes))
-	for i, node := range nodes {
-		var b bytes.Buffer
-		html.Render(&b, node)
-		nodeStrings[i] = html.UnescapeString(b.String())
+	defer resp.Body.Close()
+	html, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Print("Something went wrong loading ", group.URL.URL)
+		return []string{}
 	}
-	for _, filter := range query.Filters {
-		for i, nodeString := range nodeStrings {
-			nodeStrings[i] = getFilterResult(nodeString, &filter)
+	resultStrings := []string{string(html)}
+	newStrings := []string{}
+	for _, filter := range group.Filters {
+		for _, resultString := range resultStrings {
+			getFilterResult(resultString, &filter, &newStrings)
 		}
+		resultStrings = newStrings
+		log.Println(resultStrings)
 	}
-	return nodeStrings
+	return resultStrings
 }
 
-func getFilterResult(s string, filter *Filter) string {
+func getFilterResult(s string, filter *Filter, newStrings *[]string) {
 	switch {
+	case filter.Type == "css":
+		{
+			//getFilterResultReplace(s, filter, newStrings)
+		}
+	case filter.Type == "xpath":
+		{
+			getFilterResultXPath(s, filter, newStrings)
+		}
 	case filter.Type == "replace":
 		{
-			return getFilterResultReplace(s, filter)
+			//getFilterResultReplace(s, filter, newStrings)
 		}
 	case filter.Type == "regex":
 		{
-			return getFilterResultRegex(s, filter)
+			//getFilterResultRegex(s, filter, newStrings)
 		}
 	case filter.Type == "substring":
 		{
-			return getFilterResultSubstring(s, filter)
+			//getFilterResultSubstring(s, filter, newStrings)
 		}
 	default:
-		return s
+
+	}
+}
+
+func getFilterResultXPath(s string, filter *Filter, newStrings *[]string) {
+	doc, err := htmlquery.Parse(strings.NewReader(s))
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	nodes, _ := htmlquery.QueryAll(doc, filter.From)
+	for _, node := range nodes {
+		var b bytes.Buffer
+		html.Render(&b, node)
+		*newStrings = append(*newStrings, html.UnescapeString(b.String()))
 	}
 }
 

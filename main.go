@@ -63,7 +63,7 @@ func (web Web) viewWatch(c *gin.Context) {
 	id := c.Param("id")
 
 	var watch Watch
-	web.db.Model(&Watch{}).Preload("URLs.Queries.Filters").First(&watch, id)
+	web.db.Model(&Watch{}).Preload("URLs.GroupFilters.Filters").First(&watch, id)
 	c.HTML(http.StatusOK, "viewWatch", watch)
 }
 
@@ -79,20 +79,20 @@ func (web Web) createURL(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", url.WatchID))
 }
 
-func (web Web) createQuery(c *gin.Context) {
+func (web Web) createFilterGroup(c *gin.Context) {
 	watch_id, err := strconv.ParseUint(c.PostForm("w_id"), 10, 64)
 	if err != nil {
 		log.Print(err)
 		c.HTML(http.StatusInternalServerError, "500", gin.H{})
 		return
 	}
-	var query Query
-	errMap, err := bindAndValidateQuery(&query, c)
+	var group FilterGroup
+	errMap, err := bindAndValidateGroup(&group, c)
 	if err != nil {
 		c.HTML(http.StatusBadRequest, "500", errMap)
 		return
 	}
-	web.db.Create(&query)
+	web.db.Create(&group)
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch_id))
 }
 
@@ -105,39 +105,38 @@ func (web Web) createFilter(c *gin.Context) {
 		return
 	}
 	web.db.Create(&filter)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", filter.QueryID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", filter.FilterGroupID))
 }
 
-func (web Web) editQuery(c *gin.Context) {
-	query_id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+func (web Web) editGroup(c *gin.Context) {
+	group_id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		c.Redirect(http.StatusSeeOther, "/watch/new")
 		return // TODO response
 	}
-	var query Query
-	web.db.Preload("URL.Watch").Preload("Filters").Preload("URL").First(&query, query_id)
+	var group FilterGroup
+	web.db.Preload("URL.Watch").Preload("Filters").Preload("URL").First(&group, group_id)
 
-	c.HTML(http.StatusOK, "editQuery", gin.H{
-		"Query":         query,
-		"currentResult": getQueryResult(&query),
+	c.HTML(http.StatusOK, "editGroup", gin.H{
+		"Group":         group,
+		"currentResult": getGroupResult(&group),
 	})
 }
 
-func (web Web) updateQuery(c *gin.Context) {
-	var queryUpdate QueryUpdate
-	errMap, err := bindAndValidateQueryUpdate(&queryUpdate, c)
+func (web Web) updateGroup(c *gin.Context) {
+	var groupUpdate FilterGroupUpdate
+	errMap, err := bindAndValidateGroupUpdate(&groupUpdate, c)
 	if err != nil {
 		log.Print(err)
 		c.HTML(http.StatusBadRequest, "500", errMap)
 		return
 	}
-	var query Query
-	web.db.First(&query, queryUpdate.ID)
-	query.Name = queryUpdate.Name
-	query.Type = queryUpdate.Type
-	query.Query = queryUpdate.Query
-	web.db.Save(&query)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/query/edit/%d", +query.ID))
+	var group FilterGroup
+	web.db.First(&group, groupUpdate.ID)
+	group.Name = groupUpdate.Name
+	group.Type = groupUpdate.Type
+	web.db.Save(&group)
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", +group.ID))
 }
 
 func passiveBot(bot *tgbotapi.BotAPI) {
@@ -183,7 +182,7 @@ func main() {
 	}
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
-	db.AutoMigrate(&Watch{}, &URL{}, &Query{}, &Filter{})
+	db.AutoMigrate(&Watch{}, &URL{}, &FilterGroup{}, &Filter{})
 
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
@@ -205,7 +204,7 @@ func main() {
 	templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
 	templates.AddFromFiles("newWatch", "templates/base.html", "templates/newWatch.html")
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
-	templates.AddFromFiles("editQuery", "templates/base.html", "templates/editQuery.html")
+	templates.AddFromFiles("editGroup", "templates/base.html", "templates/editGroup.html")
 
 	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
@@ -216,9 +215,9 @@ func main() {
 	router.POST("/watch/delete", web.deleteWatch)
 	router.GET("/watch/view/:id/", web.viewWatch)
 	router.POST("/url/create/", web.createURL)
-	router.POST("/query/create/", web.createQuery)
-	router.GET("/query/edit/:id", web.editQuery)
-	router.POST("/query/update", web.updateQuery)
+	router.POST("/group/create/", web.createFilterGroup)
+	router.GET("/group/edit/:id", web.editGroup)
+	router.POST("/group/update", web.updateGroup)
 	router.POST("/filter/create/", web.createFilter)
 
 	router.Run("0.0.0.0:8080")

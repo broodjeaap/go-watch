@@ -18,20 +18,19 @@
             <div>{{ .URL }}</div>
         </div>
         <div class="card-body">
-                {{ range .Queries }}
+                {{ range .GroupFilters }}
                     <div class="card mb-2">
                         <div class="card-header">
                             <div class="row">
-                                <div class="col h5 text-start">{{ .Type }}</div>
-                                <div class="col h4 text-center" >{{ .Name }}</div>
-                                <div class="col h5 text-end"><a class="btn btn-success btn-sm" href="/query/edit/{{ .ID }}">Edit</a></div>
+                                <div class="col h4 text-start" >{{ .Name }}</div>
+                                <div class="col h5 text-end"><a class="btn btn-success btn-sm" href="/group/edit/{{ .ID }}">Edit</a></div>
                             </div>
                             <div class="text-center text-muted">
-                                {{ .Query }}
+                                {{ .Type }}
                             </div>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="query_id" value="{{ .ID }}" >
+                            <input type="hidden" name="group_id" value="{{ .ID }}" >
                             <input type="hidden" name="w_id" value="{{ $.ID }}" >
                             <table class="table table-hover caption-top">
                                 <tbody>
@@ -53,34 +52,28 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="card-footer">
-                            
-                        </div>
                     </div>
                 {{ end }}
-                <form action="/query/create" method="post">
-                    <input type="hidden" name="query_url_id" value="{{ .ID }}" >
+                <form action="/group/create" method="post">
+                    <input type="hidden" name="group_url_id" value="{{ .ID }}" >
                     <input type="hidden" name="w_id" value="{{ $.ID }}" >
                     <table class="table table-hover caption-top">
                         <tbody>
                             <tr>
                                 <td>
-                                    <input type="text" class="form-control" name="query_name" placeholder="Query Name">
+                                    <input type="text" class="form-control" name="group_name" placeholder="Group Name">
                                 </td>
                                 <td>
-                                    <select class="form-control" id="query_type" name="query_type">
-                                        <option value="css">CSS Selector</option>
-                                        <option value="xpath">XPath</option>
-                                        <option value="regex">Regex</option>
-                                        <option value="json">JSON</option>
-                                        <!-- additions/changes should also be added to Query.Type oneof validator -->
+                                    <select class="form-control" id="group_type" name="group_type">
+                                        <option value="diff">Difference</option>
+                                        <option value="enum">Enum</option>
+                                        <option value="number">Number</option>
+                                        <option value="bool">Boolean</option>
+                                        <!-- additions/changes should also be added to GroupFilter.Type oneof validator -->
                                     </select>
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control" name="query" placeholder="Query">
-                                </td>
-                                <td>
-                                    <button class="btn btn-primary">Add Query</button>
+                                    <button class="btn btn-primary">Add Group</button>
                                 </td>
                             </tr>
                         </tbody>
