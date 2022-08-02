@@ -108,7 +108,7 @@ func (web Web) createFilter(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", filter.FilterGroupID))
 }
 
-func (web Web) editFilter(c *gin.Context) {
+func (web Web) updateFilter(c *gin.Context) {
 	var filterUpdate FilterUpdate
 	errMap, err := bindAndValidateFilterUpdate(&filterUpdate, c)
 	if err != nil {
@@ -249,7 +249,7 @@ func main() {
 	router.GET("/group/edit/:id", web.editGroup)
 	router.POST("/group/update", web.updateGroup)
 	router.POST("/filter/create/", web.createFilter)
-	router.POST("/filter/edit/", web.editFilter)
+	router.POST("/filter/update/", web.updateFilter)
 	router.POST("/filter/delete/", web.deleteFilter)
 
 	router.Run("0.0.0.0:8080")

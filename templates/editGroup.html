@@ -27,8 +27,8 @@
                             <td>{{ .From }}</td>
                             <td>{{ .To }}</td>
                             <td>
-                                <button type="button" class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#editFilterModal_{{ .ID }}">
-                                    Edit
+                                <button type="button" class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#updateFilterModal_{{ .ID }}">
+                                    Update
                                 </button>
                             </td>
                             <td>
@@ -245,19 +245,19 @@
 
 <!--
     ----------------
-    Edit Filter Modals
+    Update Filter Modals
     ----------------
 -->
 {{ range .Group.Filters }}
-<div class="modal fade" id="editFilterModal_{{ .ID }}" tabindex="-1" aria-labelledby="editFilterModalLabel_{{ .ID }}" aria-hidden="true">
+<div class="modal fade" id="updateFilterModal_{{ .ID }}" tabindex="-1" aria-labelledby="updateFilterModalLabel_{{ .ID }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editFilterModalLabel_{{ .ID }}">Edit Filter: {{ .Name }}</h5>
+                <h5 class="modal-title" id="updateFilterModalLabel_{{ .ID }}">Update Filter: {{ .Name }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs" id="editFilterTabs" role="tablist">
+                <ul class="nav nav-tabs" id="updateFilterTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ if eq .Type "xpath" }} active {{ end }}" id="xpath-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#xpath-tab-pane-{{ .ID }}" aria-controls="xpath-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "xpath" }} true {{ else }} false {{ end }}">XPath</button>
                     </li>
@@ -274,9 +274,9 @@
                         <button class="nav-link {{ if eq .Type "substring" }} active {{ end }}" id="substring-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#substring-tab-pane-{{ .ID }}" aria-controls="substring-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "substring" }} true {{ else }} false {{ end }}">Substring</button>
                     </li>
                 </ul>
-                <div class="tab-content" id="editFilterTabsContent">
+                <div class="tab-content" id="updateFilterTabsContent">
                     <div class="tab-pane fade {{ if eq .Type "xpath" }} show active {{ end }}" id="xpath-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="xpath-tab-{{ .ID }}" tabindex="0">
-                        <form action="/filter/edit" method="post">
+                        <form action="/filter/update" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_id" value="{{ .ID }}" >
                                 <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
@@ -291,12 +291,12 @@
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "xpath" }}{{ .From }}{{ end }}" placeholder="//a[@class='price']">
                                 </div>
-                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                                <button class="btn btn-primary mt-4">Update</button>
                             </div>
                         </form>
                     </div>
                     <div class="tab-pane fade {{ if eq .Type "css" }} show active {{ end }}" id="css-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="css-tab-{{ .ID }}" tabindex="0">
-                        <form action="/filter/edit" method="post">
+                        <form action="/filter/update" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_id" value="{{ .ID }}" >
                                 <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
@@ -311,12 +311,12 @@
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "css" }}{{ .From }}{{ end }}" placeholder=".price">
                                 </div>
-                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                                <button class="btn btn-primary mt-4">Update</button>
                             </div>
                         </form>
                     </div>
                     <div class="tab-pane fade {{ if eq .Type "replace" }} show active {{ end }}" id="replace-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="replace-tab-{{ .ID }}" tabindex="0">
-                        <form action="/filter/edit" method="post">
+                        <form action="/filter/update" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_id" value="{{ .ID }}" >
                                 <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
@@ -334,12 +334,12 @@
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "replace" }}{{ .To }}{{ end }}" placeholder="Else">
                                 </div>
-                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                                <button class="btn btn-primary mt-4">Update</button>
                             </div>
                         </form>
                     </div>
                     <div class="tab-pane fade {{ if eq .Type "regex" }} show active {{ end }}" id="regex-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="regex-tab-{{ .ID }}" tabindex="0">
-                        <form action="/filter/edit" method="post">
+                        <form action="/filter/update" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_id" value="{{ .ID }}" >
                                 <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
@@ -357,12 +357,12 @@
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "regex" }}{{ .To }}{{ end }}" placeholder="Else">
                                 </div>
-                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                                <button class="btn btn-primary mt-4">Update</button>
                             </div>
                         </form>
                     </div>
                     <div class="tab-pane fade {{ if eq .Type "substring" }} show active {{ end }}" id="substring-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="substring-tab-{{ .ID }}" tabindex="0">
-                        <form action="/filter/edit" method="post">
+                        <form action="/filter/update" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_id" value="{{ .ID }}" >
                                 <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
@@ -377,7 +377,7 @@
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "substring" }}{{ .From }}{{ end }}" placeholder=":20,25-40,45,47,49,-20:">
                                 </div>
-                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                                <button class="btn btn-primary mt-4">Update</button>
                             </div>
                         </form>
                     </div>
