@@ -108,6 +108,36 @@ func (web Web) createFilter(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", filter.FilterGroupID))
 }
 
+func (web Web) editFilter(c *gin.Context) {
+	var filterUpdate FilterUpdate
+	errMap, err := bindAndValidateFilterUpdate(&filterUpdate, c)
+	if err != nil {
+		log.Print(err)
+		c.HTML(http.StatusBadRequest, "500", errMap)
+		return
+	}
+	var filter Filter
+	web.db.First(&filter, filterUpdate.ID)
+	filter.Name = filterUpdate.Name
+	filter.Type = filterUpdate.Type
+	filter.From = filterUpdate.From
+	filter.To = filterUpdate.To
+	web.db.Save(&filter)
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", +filter.FilterGroupID))
+}
+
+func (web Web) deleteFilter(c *gin.Context) {
+	id, err := strconv.Atoi(c.PostForm("filter_id"))
+	if err != nil {
+		c.Redirect(http.StatusSeeOther, "/watch/new")
+		return
+	}
+
+	group_id := c.PostForm("group_id")
+	web.db.Delete(&Filter{}, id)
+	c.Redirect(http.StatusSeeOther, "/group/edit/"+group_id)
+}
+
 func (web Web) editGroup(c *gin.Context) {
 	group_id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -219,6 +249,8 @@ func main() {
 	router.GET("/group/edit/:id", web.editGroup)
 	router.POST("/group/update", web.updateGroup)
 	router.POST("/filter/create/", web.createFilter)
+	router.POST("/filter/edit/", web.editFilter)
+	router.POST("/filter/delete/", web.deleteFilter)
 
 	router.Run("0.0.0.0:8080")
 }

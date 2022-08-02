@@ -18,41 +18,43 @@
     </div>
     <div class="card-body">
         <div class="card mb-2">
-            <form action="/filter/create" method="post">
-                <input type="hidden" name="group_id" value="{{ .ID }}" >
-                <input type="hidden" name="watch_id" value="{{ $.ID }}" >
-                <table class="table table-hover caption-top">
-                    <tbody>
-                        {{ range .Group.Filters }}
-                            <tr>
-                                <td>{{ .Name }}</td>
-                                <td>{{ .Type }}</td>
-                                <td>{{ .From }}</td>
-                                <td>{{ .To }}</td>
-                                <td>
-                                    <form action="/filter/delete" method="post">
-                                        <input type="hidden" name="filter_id" value="{{ .ID }}">
-                                        <input type="submit" class="btn btn-sm btn-danger" value="X">
-                                    </form>
-                                </td>
-                            </tr>
-                        {{ end }}
+            <table class="table table-hover caption-top">
+                <tbody>
+                    {{ range .Group.Filters }}
                         <tr>
-                            <td colspan="5">
-                                <div class="row text-center">
-                                    <div class="col"></div>
-                                    <div class="col">
-                                        <button type="button" class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#newFilterModal">
-                                            Add Filter
-                                        </button>
-                                    </div>
-                                    <div class="col"></div>
-                                </div>
-                            </td>    
+                            <td>{{ .Name }}</td>
+                            <td>{{ .Type }}</td>
+                            <td>{{ .From }}</td>
+                            <td>{{ .To }}</td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#editFilterModal_{{ .ID }}">
+                                    Edit
+                                </button>
+                            </td>
+                            <td>
+                                <form action="/filter/delete" method="post">
+                                    <input type="hidden" name="filter_id" value="{{ .ID }}">
+                                    <input type="hidden" name="group_id" value="{{ $.Group.ID }}" >
+                                    <input type="submit" class="btn btn-sm btn-danger" value="X">
+                                </form>
+                            </td>
                         </tr>
-                    </tbody>
-                </table>
-            </form>
+                    {{ end }}
+                    <tr>
+                        <td colspan="5">
+                            <div class="row text-center">
+                                <div class="col"></div>
+                                <div class="col">
+                                    <button type="button" class="btn btn-primary btn-block" data-bs-toggle="modal" data-bs-target="#newFilterModal">
+                                        Add Filter
+                                    </button>
+                                </div>
+                                <div class="col"></div>
+                            </div>
+                        </td>    
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -100,6 +102,11 @@
     </div>
 </div>
 
+<!--
+    ----------------
+    New Filter Modal
+    ----------------
+-->
 
 <div class="modal fade" id="newFilterModal" tabindex="-1" aria-labelledby="newFilterModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -235,6 +242,151 @@
         </div>
     </div>
 </div>
-  
+
+<!--
+    ----------------
+    Edit Filter Modals
+    ----------------
+-->
+{{ range .Group.Filters }}
+<div class="modal fade" id="editFilterModal_{{ .ID }}" tabindex="-1" aria-labelledby="editFilterModalLabel_{{ .ID }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editFilterModalLabel_{{ .ID }}">Edit Filter: {{ .Name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="editFilterTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ if eq .Type "xpath" }} active {{ end }}" id="xpath-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#xpath-tab-pane-{{ .ID }}" aria-controls="xpath-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "xpath" }} true {{ else }} false {{ end }}">XPath</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ if eq .Type "css" }} active {{ end }}" id="css-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#css-tab-pane-{{ .ID }}" aria-controls="css-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "css" }} true {{ else }} false {{ end }}">CSS</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link{{ if eq .Type "replace" }} active {{ end }}" id="replace-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#replace-tab-pane-{{ .ID }}" aria-controls="replace-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "replace" }} true {{ else }} false {{ end }}">Replace</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ if eq .Type "regex" }} active {{ end }}" id="regex-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#regex-tab-pane-{{ .ID }}" aria-controls="regex-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "regex" }} true {{ else }} false {{ end }}">Regex</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ if eq .Type "substring" }} active {{ end }}" id="substring-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#substring-tab-pane-{{ .ID }}" aria-controls="substring-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "substring" }} true {{ else }} false {{ end }}">Substring</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="editFilterTabsContent">
+                    <div class="tab-pane fade {{ if eq .Type "xpath" }} show active {{ end }}" id="xpath-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="xpath-tab-{{ .ID }}" tabindex="0">
+                        <form action="/filter/edit" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_id" value="{{ .ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
+                                <input type="hidden" name="filter_type" value="xpath" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="name" id="nameInput" value="{{ .Name }}" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">XPath:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "xpath" }}{{ .From }}{{ end }}" placeholder="//a[@class='price']">
+                                </div>
+                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade {{ if eq .Type "css" }} show active {{ end }}" id="css-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="css-tab-{{ .ID }}" tabindex="0">
+                        <form action="/filter/edit" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_id" value="{{ .ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
+                                <input type="hidden" name="filter_type" value="css" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="name" id="nameInput" value="{{ .Name }}" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">Selector:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "css" }}{{ .From }}{{ end }}" placeholder=".price">
+                                </div>
+                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade {{ if eq .Type "replace" }} show active {{ end }}" id="replace-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="replace-tab-{{ .ID }}" tabindex="0">
+                        <form action="/filter/edit" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_id" value="{{ .ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
+                                <input type="hidden" name="filter_type" value="replace" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="name" id="nameInput" value="{{ .Name }}" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "replace" }}{{ .From }}{{ end }}" placeholder="Something">
+                                </div>
+                                <label for="toInput" class="col-sm-2 col-form-label">To:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "replace" }}{{ .To }}{{ end }}" placeholder="Else">
+                                </div>
+                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade {{ if eq .Type "regex" }} show active {{ end }}" id="regex-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="regex-tab-{{ .ID }}" tabindex="0">
+                        <form action="/filter/edit" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_id" value="{{ .ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
+                                <input type="hidden" name="filter_type" value="regex" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="name" id="nameInput" value="{{ .Name }}" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "regex" }}{{ .From }}{{ end }}" placeholder="So[mM]e(thing|where)">
+                                </div>
+                                <label for="toInput" class="col-sm-2 col-form-label">To:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "regex" }}{{ .To }}{{ end }}" placeholder="Else">
+                                </div>
+                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade {{ if eq .Type "substring" }} show active {{ end }}" id="substring-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="substring-tab-{{ .ID }}" tabindex="0">
+                        <form action="/filter/edit" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_id" value="{{ .ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
+                                <input type="hidden" name="filter_type" value="substring" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="name" id="nameInput" value="{{ .Name }}" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "substring" }}{{ .From }}{{ end }}" placeholder=":20,25-40,45,47,49,-20:">
+                                </div>
+                                <button class="btn btn-primary mt-4">Edit Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ end }}
   
 {{ end }}

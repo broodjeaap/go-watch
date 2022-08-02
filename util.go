@@ -32,6 +32,11 @@ func bindAndValidateGroupUpdate(group *FilterGroupUpdate, c *gin.Context) (map[s
 	return validate(err), err
 }
 
+func bindAndValidateFilterUpdate(filter *FilterUpdate, c *gin.Context) (map[string]string, error) {
+	err := c.ShouldBind(filter)
+	return validate(err), err
+}
+
 func prettyError(fieldError validator.FieldError) string {
 	switch fieldError.Tag() {
 	case "required":
