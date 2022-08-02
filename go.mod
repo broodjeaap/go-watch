@@ -3,6 +3,7 @@ module broodjeaap.net/go-watch-and-tel
 go 1.18
 
 require (
+	github.com/andybalholm/cascadia v1.3.1
 	github.com/antchfx/htmlquery v1.2.5
 	github.com/gin-contrib/multitemplate v0.0.0-20220705015713-e21a0ba39de3
 	github.com/gin-gonic/gin v1.8.1

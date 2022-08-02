@@ -39,14 +39,16 @@ func TestFilterSubstring(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
 		t.Run(testname, func(t *testing.T) {
-			result := getFilterResultSubstring(
+			want := []string{test.Want}
+			getFilterResultSubstring(
 				test.Input,
 				&Filter{
 					From: test.Query,
 				},
+				&want,
 			)
-			if result != test.Want {
-				t.Errorf("Got %s, want %s", result, test.Want)
+			if want[0] != test.Want {
+				t.Errorf("Got %s, want %s", want[0], test.Want)
 			}
 		})
 	}

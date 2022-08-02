@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/andybalholm/cascadia"
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 )
@@ -31,33 +32,34 @@ func getGroupResult(group *FilterGroup) []string {
 		for _, resultString := range resultStrings {
 			getFilterResult(resultString, &filter, &newStrings)
 		}
+		log.Println(len(resultStrings), len(newStrings))
 		resultStrings = newStrings
-		log.Println(resultStrings)
+		newStrings = nil
 	}
 	return resultStrings
 }
 
 func getFilterResult(s string, filter *Filter, newStrings *[]string) {
 	switch {
-	case filter.Type == "css":
-		{
-			//getFilterResultReplace(s, filter, newStrings)
-		}
 	case filter.Type == "xpath":
 		{
 			getFilterResultXPath(s, filter, newStrings)
 		}
+	case filter.Type == "css":
+		{
+			getFilterResultCSS(s, filter, newStrings)
+		}
 	case filter.Type == "replace":
 		{
-			//getFilterResultReplace(s, filter, newStrings)
+			getFilterResultReplace(s, filter, newStrings)
 		}
 	case filter.Type == "regex":
 		{
-			//getFilterResultRegex(s, filter, newStrings)
+			getFilterResultRegex(s, filter, newStrings)
 		}
 	case filter.Type == "substring":
 		{
-			//getFilterResultSubstring(s, filter, newStrings)
+			getFilterResultSubstring(s, filter, newStrings)
 		}
 	default:
 
@@ -78,19 +80,40 @@ func getFilterResultXPath(s string, filter *Filter, newStrings *[]string) {
 	}
 }
 
-func getFilterResultReplace(s string, filter *Filter) string {
-	return strings.ReplaceAll(s, filter.From, filter.To)
+func getFilterResultCSS(s string, filter *Filter, newStrings *[]string) {
+	doc, err := html.Parse(strings.NewReader(s))
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	sel, err := cascadia.Parse(filter.From)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	for _, node := range cascadia.QueryAll(doc, sel) {
+		var b bytes.Buffer
+		html.Render(&b, node)
+		log.Println("test")
+		log.Println(html.UnescapeString(b.String()))
+		*newStrings = append(*newStrings, html.UnescapeString(b.String()))
+	}
 }
 
-func getFilterResultRegex(s string, filter *Filter) string {
+func getFilterResultReplace(s string, filter *Filter, newStrings *[]string) {
+	*newStrings = append(*newStrings, strings.ReplaceAll(s, filter.From, filter.To))
+}
+
+func getFilterResultRegex(s string, filter *Filter, newStrings *[]string) {
 	regex, err := regexp.Compile(filter.From)
 	if err != nil {
-		return s
+		log.Print(err)
+		return
 	}
-	return regex.ReplaceAllString(s, filter.To)
+	*newStrings = append(*newStrings, regex.ReplaceAllString(s, filter.To))
 }
 
-func getFilterResultSubstring(s string, filter *Filter) string {
+func getFilterResultSubstring(s string, filter *Filter, newStrings *[]string) {
 	substrings := strings.Split(filter.From, ",")
 	var sb strings.Builder
 	asRunes := []rune(s)
@@ -99,7 +122,7 @@ func getFilterResultSubstring(s string, filter *Filter) string {
 		if strings.Contains(substring, ":") {
 			from_to := strings.Split(substring, ":")
 			if len(from_to) != 2 {
-				return s
+				return
 			}
 			fromStr := from_to[0]
 			var hasFrom bool = true
@@ -109,7 +132,7 @@ func getFilterResultSubstring(s string, filter *Filter) string {
 			from64, err := strconv.ParseInt(fromStr, 10, 32)
 			var from = int(from64)
 			if hasFrom && err != nil {
-				return s
+				return
 			} else if from < 0 {
 				from = len(asRunes) + from
 			}
@@ -121,7 +144,7 @@ func getFilterResultSubstring(s string, filter *Filter) string {
 			to64, err := strconv.ParseInt(toStr, 10, 32)
 			var to = int(to64)
 			if hasTo && err != nil {
-				return s
+				return
 			} else if to < 0 {
 				to = len(asRunes) + to
 			}
@@ -135,10 +158,10 @@ func getFilterResultSubstring(s string, filter *Filter) string {
 		} else {
 			pos, err := strconv.ParseInt(substring, 10, 32)
 			if err != nil || pos < 0 {
-				return s
+				return
 			}
 			sb.WriteRune(asRunes[pos])
 		}
 	}
-	return sb.String()
+	*newStrings = append(*newStrings, sb.String())
 }
