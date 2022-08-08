@@ -116,7 +116,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-
                 <ul class="nav nav-tabs" id="newFilterTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="xpath-tab" data-bs-toggle="tab" data-bs-target="#xpath-tab-pane" aria-controls="xpath-tab-pane" type="button" role="tab" aria-selected="true">XPath</button>
@@ -128,7 +127,7 @@
                         <button class="nav-link" id="replace-tab" data-bs-toggle="tab" data-bs-target="#replace-tab-pane" aria-controls="replace-tab-pane" type="button" role="tab" aria-selected="false">Replace</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="regex-tab" data-bs-toggle="tab" data-bs-target="#regex-tab-pane" aria-controls="regex-tab-pane" type="button" role="tab" aria-selected="false">Regex</button>
+                        <button class="nav-link" id="match-tab" data-bs-toggle="tab" data-bs-target="#match-tab-pane" aria-controls="match-tab-pane" type="button" role="tab" aria-selected="false">Match</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="substring-tab" data-bs-toggle="tab" data-bs-target="#substring-tab-pane" aria-controls="substring-tab-pane" type="button" role="tab" aria-selected="false">Substring</button>
@@ -186,21 +185,22 @@
                                 </div>
                                 <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
                                 <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="Something">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="So[mM]e(thing|where)">
                                 </div>
                                 <label for="toInput" class="col-sm-2 col-form-label">To:</label>
                                 <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="to" id="toInput" placeholder="Else">
+                                    <input type="text" class="form-control" name="to" id="toInput" placeholder="Else $1">
                                 </div>
                                 <button class="btn btn-primary mt-4">Add Filter</button>
                             </div>
                         </form>
                     </div>
-                    <div class="tab-pane fade" id="regex-tab-pane" role="tabpanel" aria-labelledby="regex-tab" tabindex="0">
+                    <div class="tab-pane fade" id="match-tab-pane" role="tabpanel" aria-labelledby="match-tab" tabindex="0">
                         <form action="/filter/create" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
-                                <input type="hidden" name="filter_type" value="regex" >
+                                <input type="hidden" name="filter_type" value="match" >
+                                <input type="hidden" name="to" value="-" >
                             
                                 <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
                                 <div class="col-sm-10 p-2">
@@ -209,10 +209,6 @@
                                 <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="from" id="fromInput" placeholder="So[mM]e(thing|where)">
-                                </div>
-                                <label for="toInput" class="col-sm-2 col-form-label">To:</label>
-                                <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="to" id="toInput" placeholder="Else">
                                 </div>
                                 <button class="btn btn-primary mt-4">Add Filter</button>
                             </div>
@@ -268,7 +264,7 @@
                         <button class="nav-link{{ if eq .Type "replace" }} active {{ end }}" id="replace-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#replace-tab-pane-{{ .ID }}" aria-controls="replace-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "replace" }} true {{ else }} false {{ end }}">Replace</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ if eq .Type "regex" }} active {{ end }}" id="regex-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#regex-tab-pane-{{ .ID }}" aria-controls="regex-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "regex" }} true {{ else }} false {{ end }}">Regex</button>
+                        <button class="nav-link {{ if eq .Type "match" }} active {{ end }}" id="match-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#match-tab-pane-{{ .ID }}" aria-controls="match-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "match" }} true {{ else }} false {{ end }}">Match</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ if eq .Type "substring" }} active {{ end }}" id="substring-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#substring-tab-pane-{{ .ID }}" aria-controls="substring-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "substring" }} true {{ else }} false {{ end }}">Substring</button>
@@ -328,22 +324,22 @@
                                 </div>
                                 <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
                                 <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "replace" }}{{ .From }}{{ end }}" placeholder="Something">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "replace" }}{{ .From }}{{ end }}" placeholder="So[mM]e(thing|where)">
                                 </div>
                                 <label for="toInput" class="col-sm-2 col-form-label">To:</label>
                                 <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "replace" }}{{ .To }}{{ end }}" placeholder="Else">
+                                    <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "replace" }}{{ .To }}{{ end }}" placeholder="Else $1">
                                 </div>
                                 <button class="btn btn-primary mt-4">Update</button>
                             </div>
                         </form>
                     </div>
-                    <div class="tab-pane fade {{ if eq .Type "regex" }} show active {{ end }}" id="regex-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="regex-tab-{{ .ID }}" tabindex="0">
+                    <div class="tab-pane fade {{ if eq .Type "match" }} show active {{ end }}" id="match-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="match-tab-{{ .ID }}" tabindex="0">
                         <form action="/filter/update" method="post">
                             <div class="mb-3 m-3 row">
                                 <input type="hidden" name="filter_id" value="{{ .ID }}" >
                                 <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
-                                <input type="hidden" name="filter_type" value="regex" >
+                                <input type="hidden" name="filter_type" value="match" >
                             
                                 <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
                                 <div class="col-sm-10 p-2">
@@ -351,11 +347,11 @@
                                 </div>
                                 <label for="fromInput" class="col-sm-2 col-form-label">From:</label>
                                 <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "regex" }}{{ .From }}{{ end }}" placeholder="So[mM]e(thing|where)">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "match" }}{{ .From }}{{ end }}" placeholder="So[mM]e(thing|where)">
                                 </div>
                                 <label for="toInput" class="col-sm-2 col-form-label">To:</label>
                                 <div class="col-sm-10 p-2">
-                                    <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "regex" }}{{ .To }}{{ end }}" placeholder="Else">
+                                    <input type="text" class="form-control" name="to" id="toInput" value="{{ if eq .Type "match" }}{{ .To }}{{ end }}" placeholder="Else">
                                 </div>
                                 <button class="btn btn-primary mt-4">Update</button>
                             </div>

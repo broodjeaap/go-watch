@@ -55,7 +55,7 @@ func getFilterResult(s string, filter *Filter, newStrings *[]string) {
 		}
 	case filter.Type == "regex":
 		{
-			getFilterResultRegex(s, filter, newStrings)
+			getFilterResultMatch(s, filter, newStrings)
 		}
 	case filter.Type == "substring":
 		{
@@ -99,16 +99,21 @@ func getFilterResultCSS(s string, filter *Filter, newStrings *[]string) {
 }
 
 func getFilterResultReplace(s string, filter *Filter, newStrings *[]string) {
-	*newStrings = append(*newStrings, strings.ReplaceAll(s, filter.From, filter.To))
-}
-
-func getFilterResultRegex(s string, filter *Filter, newStrings *[]string) {
 	regex, err := regexp.Compile(filter.From)
 	if err != nil {
 		log.Print(err)
 		return
 	}
-	*newStrings = append(*newStrings, regex.ReplaceAllString(s, filter.To))
+	*newStrings = append(*newStrings, regex.ReplaceAllString(filter.From, filter.To))
+}
+
+func getFilterResultMatch(s string, filter *Filter, newStrings *[]string) {
+	r, err := regexp.Compile(filter.From)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	*newStrings = append(*newStrings, r.ReplaceAllString(s, filter.To))
 }
 
 func getFilterResultSubstring(s string, filter *Filter, newStrings *[]string) {
