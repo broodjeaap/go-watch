@@ -94,8 +94,6 @@ func getFilterResultCSS(s string, filter *Filter, newStrings *[]string) {
 	for _, node := range cascadia.QueryAll(doc, sel) {
 		var b bytes.Buffer
 		html.Render(&b, node)
-		log.Println("test")
-		log.Println(html.UnescapeString(b.String()))
 		*newStrings = append(*newStrings, html.UnescapeString(b.String()))
 	}
 }
