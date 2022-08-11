@@ -2,8 +2,60 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
+
+const HTML_STRING = `<html>
+<head>
+	<title>title</title>
+</head>
+<body>
+	<table class="product-table" id="product-table">
+		<caption>product-table-caption</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Stock</th>
+				<th>Price</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr><td>product1</td><td>10</td><td>100</td></tr>
+			<tr><td>product2</td><td>20</td><td>200</td></tr>
+			<tr><td>product3</td><td>30</td><td>300</td></tr>
+			<tr><td>product4</td><td>40</td><td>400</td></tr>
+		</tbody>
+	</table>
+</body>
+</html>`
+
+func TestFilterXPath(t *testing.T) {
+	var tests = []struct {
+		Query string
+		Want  []string
+	}{
+		{"//title", []string{"<title>title</title>"}},
+		{"//table[@id='product-table']//tr//td[last()]", []string{"<td>100</td>", "<td>200</td>", "<td>300</td>", "<td>400</td>"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Query)
+		t.Run(testname, func(t *testing.T) {
+			want := []string{}
+			getFilterResultXPath(
+				HTML_STRING,
+				&Filter{
+					From: test.Query,
+				},
+				&want,
+			)
+			if !reflect.DeepEqual(test.Want, want) {
+				t.Errorf("Got %s, want %s", want, test.Want)
+			}
+		})
+	}
+}
 
 func TestFilterSubstring(t *testing.T) {
 	var tests = []struct {
