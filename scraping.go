@@ -32,7 +32,6 @@ func getGroupResult(group *FilterGroup) []string {
 		for _, resultString := range resultStrings {
 			getFilterResult(resultString, &filter, &newStrings)
 		}
-		log.Println(len(resultStrings), len(newStrings))
 		resultStrings = newStrings
 		newStrings = nil
 	}
@@ -53,7 +52,7 @@ func getFilterResult(s string, filter *Filter, newStrings *[]string) {
 		{
 			getFilterResultReplace(s, filter, newStrings)
 		}
-	case filter.Type == "regex":
+	case filter.Type == "match":
 		{
 			getFilterResultMatch(s, filter, newStrings)
 		}
@@ -99,12 +98,12 @@ func getFilterResultCSS(s string, filter *Filter, newStrings *[]string) {
 }
 
 func getFilterResultReplace(s string, filter *Filter, newStrings *[]string) {
-	regex, err := regexp.Compile(filter.From)
+	r, err := regexp.Compile(filter.From)
 	if err != nil {
 		log.Print(err)
 		return
 	}
-	*newStrings = append(*newStrings, regex.ReplaceAllString(filter.From, filter.To))
+	*newStrings = append(*newStrings, r.ReplaceAllString(s, filter.To))
 }
 
 func getFilterResultMatch(s string, filter *Filter, newStrings *[]string) {
@@ -113,7 +112,10 @@ func getFilterResultMatch(s string, filter *Filter, newStrings *[]string) {
 		log.Print(err)
 		return
 	}
-	*newStrings = append(*newStrings, r.ReplaceAllString(s, filter.To))
+	for _, str := range r.FindAllString(s, -1) {
+
+		*newStrings = append(*newStrings, str)
+	}
 }
 
 func getFilterResultSubstring(s string, filter *Filter, newStrings *[]string) {
