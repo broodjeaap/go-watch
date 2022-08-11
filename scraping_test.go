@@ -21,10 +21,10 @@ const HTML_STRING = `<html>
 			</tr>
 		</thead>
 		<tbody>
-			<tr><td>product1</td><td>10</td><td>100</td></tr>
-			<tr><td>product2</td><td>20</td><td>200</td></tr>
-			<tr><td>product3</td><td>30</td><td>300</td></tr>
-			<tr><td>product4</td><td>40</td><td>400</td></tr>
+			<tr><td class="product">product1</td><td class="stock">10</td><td class="price">100</td></tr>
+			<tr><td class="product">product2</td><td class="stock">20</td><td class="price">200</td></tr>
+			<tr><td class="product">product3</td><td class="stock">30</td><td class="price">300</td></tr>
+			<tr><td class="product">product4</td><td class="stock">40</td><td class="price">400</td></tr>
 		</tbody>
 	</table>
 </body>
@@ -36,7 +36,10 @@ func TestFilterXPath(t *testing.T) {
 		Want  []string
 	}{
 		{"//title", []string{"<title>title</title>"}},
-		{"//table[@id='product-table']//tr//td[last()]", []string{"<td>100</td>", "<td>200</td>", "<td>300</td>", "<td>400</td>"}},
+		{"//table[@id='product-table']//tr//td[last()]", []string{`<td class="price">100</td>`, `<td class="price">200</td>`, `<td class="price">300</td>`, `<td class="price">400</td>`}},
+		{"//td[@class='price']", []string{`<td class="price">100</td>`, `<td class="price">200</td>`, `<td class="price">300</td>`, `<td class="price">400</td>`}},
+		{"//table[@id='product-table']//tr//td[2]", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
+		{"//td[@class='stock']", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
 	}
 
 	for _, test := range tests {
