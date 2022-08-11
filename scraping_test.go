@@ -123,6 +123,37 @@ func TestFilterReplace(t *testing.T) {
 	}
 }
 
+func TestFilterMatch(t *testing.T) {
+	var tests = []struct {
+		Input string
+		Query string
+		Want  []string
+	}{
+		{"0123456789", "0123|789", []string{"0123", "789"}},
+		{"0123456789", "abc|321", []string{}},
+		{"0123456789", "[0-9]{3}", []string{"012", "345", "678"}},
+		{"世界日本語", "日本", []string{"日本"}},
+		{"世界日本語_世界日本語_世界日本語", "日本", []string{"日本", "日本", "日本"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Query)
+		t.Run(testname, func(t *testing.T) {
+			want := []string{}
+			getFilterResultMatch(
+				test.Input,
+				&Filter{
+					From: test.Query,
+				},
+				&want,
+			)
+			if !reflect.DeepEqual(test.Want, want) {
+				t.Errorf("Got %s, want %s", want, test.Want)
+			}
+		})
+	}
+}
+
 func TestFilterSubstring(t *testing.T) {
 	var tests = []struct {
 		Input string
