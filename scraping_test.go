@@ -90,6 +90,39 @@ func TestFilterCSS(t *testing.T) {
 	}
 }
 
+func TestFilterReplace(t *testing.T) {
+	var tests = []struct {
+		Input string
+		Query string
+		Want  string
+	}{
+		{"0123456789", "0", "123456789"},
+		{"0123456789", "9", "012345678"},
+		{"0123456789", "3456", "01278"},
+		{"0123456789_0123456789", "3456", "01278_01278"},
+		{"世界日本語", "世", "界日本語"},
+		{"世界日本語", "語", "世界日本語"},
+		{"世界日_世界日_世界日", "界", "世日_世日_世日"},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
+		t.Run(testname, func(t *testing.T) {
+			want := []string{test.Want}
+			getFilterResultReplace(
+				test.Input,
+				&Filter{
+					From: test.Query,
+				},
+				&want,
+			)
+			if want[0] != test.Want {
+				t.Errorf("Got %s, want %s", want[0], test.Want)
+			}
+		})
+	}
+}
+
 func TestFilterSubstring(t *testing.T) {
 	var tests = []struct {
 		Input string
