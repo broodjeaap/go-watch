@@ -85,7 +85,8 @@ func getFilterResultXPath(s string, filter *Filter, newStrings *[]string) {
 }
 
 func getFilterResultJSON(s string, filter *Filter, newStrings *[]string) {
-	for _, result := range gjson.GetMany(filter.From) {
+
+	for _, result := range gjson.Get(s, filter.From).Array() {
 		*newStrings = append(*newStrings, result.String())
 	}
 }
