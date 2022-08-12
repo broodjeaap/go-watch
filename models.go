@@ -34,7 +34,7 @@ type Filter struct {
 	FilterGroupID uint `form:"filter_group_id" yaml:"filter_group_id" binding:"required"`
 	FilterGroup   *FilterGroup
 	Name          string `form:"filter_name" yaml:"filter_name" binding:"required" validate:"min=1"`
-	Type          string `form:"filter_type" yaml:"filter_type" binding:"required" validate:"oneof=xpath css replace match substring"`
+	Type          string `form:"filter_type" yaml:"filter_type" binding:"required" validate:"oneof=xpath json css replace match substring"`
 	From          string `form:"from" yaml:"from" binding:"required"`
 	To            string `form:"to" yaml:"to" binding:"required"`
 }

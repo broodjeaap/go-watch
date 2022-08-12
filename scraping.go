@@ -11,6 +11,7 @@ import (
 
 	"github.com/andybalholm/cascadia"
 	"github.com/antchfx/htmlquery"
+	"github.com/tidwall/gjson"
 	"golang.org/x/net/html"
 )
 
@@ -44,6 +45,10 @@ func getFilterResult(s string, filter *Filter, newStrings *[]string) {
 		{
 			getFilterResultXPath(s, filter, newStrings)
 		}
+	case filter.Type == "json":
+		{
+			getFilterResultJSON(s, filter, newStrings)
+		}
 	case filter.Type == "css":
 		{
 			getFilterResultCSS(s, filter, newStrings)
@@ -76,6 +81,12 @@ func getFilterResultXPath(s string, filter *Filter, newStrings *[]string) {
 		var b bytes.Buffer
 		html.Render(&b, node)
 		*newStrings = append(*newStrings, html.UnescapeString(b.String()))
+	}
+}
+
+func getFilterResultJSON(s string, filter *Filter, newStrings *[]string) {
+	for _, result := range gjson.GetMany(filter.From) {
+		*newStrings = append(*newStrings, result.String())
 	}
 }
 

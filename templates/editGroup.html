@@ -109,7 +109,7 @@
 -->
 
 <div class="modal fade" id="newFilterModal" tabindex="-1" aria-labelledby="newFilterModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="newFilterModalLabel">Add Filter</h5>
@@ -119,6 +119,9 @@
                 <ul class="nav nav-tabs" id="newFilterTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="xpath-tab" data-bs-toggle="tab" data-bs-target="#xpath-tab-pane" aria-controls="xpath-tab-pane" type="button" role="tab" aria-selected="true">XPath</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json-tab-pane" aria-controls="json-tab-pane" type="button" role="tab" aria-selected="false">JSON</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="css-tab" data-bs-toggle="tab" data-bs-target="#css-tab-pane" aria-controls="css-tab-pane" type="button" role="tab" aria-selected="false">CSS</button>
@@ -148,6 +151,25 @@
                                 <label for="fromInput" class="col-sm-2 col-form-label">XPath:</label>
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="from" id="fromInput" placeholder="//a[@class='price']">
+                                </div>
+                                <button class="btn btn-primary mt-4">Add Filter</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade show" id="json-tab-pane" role="tabpanel" aria-labelledby="json-tab" tabindex="0">
+                        <form action="/filter/create" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_group_id" value="{{ .Group.ID }}" >
+                                <input type="hidden" name="filter_type" value="json" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">JSON:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" placeholder="products.#.price">
                                 </div>
                                 <button class="btn btn-primary mt-4">Add Filter</button>
                             </div>
@@ -246,7 +268,7 @@
 -->
 {{ range .Group.Filters }}
 <div class="modal fade" id="updateFilterModal_{{ .ID }}" tabindex="-1" aria-labelledby="updateFilterModalLabel_{{ .ID }}" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="updateFilterModalLabel_{{ .ID }}">Update Filter: {{ .Name }}</h5>
@@ -256,6 +278,9 @@
                 <ul class="nav nav-tabs" id="updateFilterTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ if eq .Type "xpath" }} active {{ end }}" id="xpath-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#xpath-tab-pane-{{ .ID }}" aria-controls="xpath-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "xpath" }} true {{ else }} false {{ end }}">XPath</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ if eq .Type "json" }} active {{ end }}" id="json-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#json-tab-pane-{{ .ID }}" aria-controls="json-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "json" }} true {{ else }} false {{ end }}">JSON</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link {{ if eq .Type "css" }} active {{ end }}" id="css-tab-{{ .ID }}" data-bs-toggle="tab" data-bs-target="#css-tab-pane-{{ .ID }}" aria-controls="css-tab-pane-{{ .ID }}" type="button" role="tab" aria-selected="{{ if eq .Type "css" }} true {{ else }} false {{ end }}">CSS</button>
@@ -286,6 +311,26 @@
                                 <label for="fromInput" class="col-sm-2 col-form-label">XPath:</label>
                                 <div class="col-sm-10 p-2">
                                     <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "xpath" }}{{ .From }}{{ end }}" placeholder="//a[@class='price']">
+                                </div>
+                                <button class="btn btn-primary mt-4">Update</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade {{ if eq .Type "json" }} show active {{ end }}" id="json-tab-pane-{{ .ID }}" role="tabpanel" aria-labelledby="json-tab-{{ .ID }}" tabindex="0">
+                        <form action="/filter/update" method="post">
+                            <div class="mb-3 m-3 row">
+                                <input type="hidden" name="filter_id" value="{{ .ID }}" >
+                                <input type="hidden" name="filter_group_id" value="{{ .FilterGroupID }}" >
+                                <input type="hidden" name="filter_type" value="json" >
+                                <input type="hidden" name="to" value="-" >
+                            
+                                <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="name" id="nameInput" value="{{ .Name }}" placeholder="Name">
+                                </div>
+                                <label for="fromInput" class="col-sm-2 col-form-label">JSON:</label>
+                                <div class="col-sm-10 p-2">
+                                    <input type="text" class="form-control" name="from" id="fromInput" value="{{ if eq .Type "json" }}{{ .From }}{{ end }}" placeholder="products.#.price']">
                                 </div>
                                 <button class="btn btn-primary mt-4">Update</button>
                             </div>
