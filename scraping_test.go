@@ -30,6 +30,16 @@ const HTML_STRING = `<html>
 </body>
 </html>`
 
+const JSON_STRING = `{
+	"date": "1970-01-01",
+	"products": [
+		{"name": "product1", "stock": 10, "price": 100},
+		{"name": "product2", "stock": 20, "price": 200},
+		{"name": "product3", "stock": 30, "price": 300},
+		{"name": "product4", "stock": 40, "price": 400}
+	]
+}`
+
 func TestFilterXPath(t *testing.T) {
 	var tests = []struct {
 		Query string
@@ -48,6 +58,35 @@ func TestFilterXPath(t *testing.T) {
 			want := []string{}
 			getFilterResultXPath(
 				HTML_STRING,
+				&Filter{
+					From: test.Query,
+				},
+				&want,
+			)
+			if !reflect.DeepEqual(test.Want, want) {
+				t.Errorf("Got %s, want %s", want, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterJSON(t *testing.T) {
+	var tests = []struct {
+		Query string
+		Want  []string
+	}{
+		{"date", []string{"1970-01-01"}},
+		{"products.#.name", []string{"product1", "product2", "product3", "product4"}},
+		{"products.#.stock", []string{"10", "20", "30", "40"}},
+		{"products.#.price", []string{"100", "200", "300", "400"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Query)
+		t.Run(testname, func(t *testing.T) {
+			want := []string{}
+			getFilterResultJSON(
+				JSON_STRING,
 				&Filter{
 					From: test.Query,
 				},
