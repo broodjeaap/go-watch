@@ -1,5 +1,5 @@
-# go-watch-and-tel 
-[![Build Status](https://drone.broodjeaap.net/api/badges/broodjeaap/go-watch-and-tel/status.svg)](https://drone.broodjeaap.net/broodjeaap/go-watch-and-tel)
+# Go Watch
+[![Build Status](https://drone.broodjeaap.net/api/badges/broodjeaap/go-watch/status.svg)](https://drone.broodjeaap.net/broodjeaap/go-watch)
 
 
 A change detection server that notifies through Telegram written in Go

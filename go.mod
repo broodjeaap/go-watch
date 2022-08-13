@@ -1,4 +1,4 @@
-module broodjeaap.net/go-watch-and-tel
+module broodjeaap.net/go-watch
 
 go 1.18
 
