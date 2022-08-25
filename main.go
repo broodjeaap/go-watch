@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -59,41 +60,64 @@ func (web Web) deleteWatch(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
+type FilterDepth struct {
+	Filter Filter
+	Depth  int
+}
+
 func (web Web) viewWatch(c *gin.Context) {
 	id := c.Param("id")
 
 	var watch Watch
-	web.db.Model(&Watch{}).Preload("URLs.GroupFilters.Filters").First(&watch, id)
-	c.HTML(http.StatusOK, "viewWatch", watch)
-}
+	web.db.Model(&Watch{}).First(&watch, id)
 
-func (web Web) createURL(c *gin.Context) {
-	var url URL
-	errMap, err := bindAndValidateURL(&url, c)
-	if err != nil {
-		log.Print(err)
-		c.HTML(http.StatusInternalServerError, "500", errMap)
-		return
-	}
-	web.db.Create(&url)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", url.WatchID))
-}
+	var filters []Filter
+	web.db.Model(&Filter{}).Find(&filters)
 
-func (web Web) createFilterGroup(c *gin.Context) {
-	watch_id, err := strconv.ParseUint(c.PostForm("w_id"), 10, 64)
-	if err != nil {
-		log.Print(err)
-		c.HTML(http.StatusInternalServerError, "500", gin.H{})
-		return
+	queuedFilters := []*Filter{}
+	filterMap := make(map[uint]*Filter)
+	for _, filter := range filters {
+		filterMap[filter.ID] = &filter
+		if filter.ParentID == nil {
+			queuedFilters = append(queuedFilters, &filter)
+		}
+		s, _ := json.MarshalIndent(filter, "", "\t")
+		fmt.Println(s)
 	}
-	var group FilterGroup
-	errMap, err := bindAndValidateGroup(&group, c)
-	if err != nil {
-		c.HTML(http.StatusBadRequest, "500", errMap)
-		return
+
+	for _, filter := range filterMap {
+		if filter.Parent != nil {
+			parent := filterMap[*filter.ParentID]
+			parent.Filters = append(parent.Filters, *filter)
+		}
 	}
-	web.db.Create(&group)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch_id))
+
+	nextFilters := []*Filter{}
+	bftFilters := []FilterDepth{}
+	depth := 0
+	for len(queuedFilters) > 0 {
+		for _, f1 := range queuedFilters {
+			bftFilters = append(bftFilters, FilterDepth{
+				Filter: *f1,
+				Depth:  depth,
+			})
+			for _, f2 := range f1.Filters {
+				nextFilters = append(nextFilters, &f2)
+			}
+		}
+		log.Println(nextFilters)
+		queuedFilters = nextFilters
+		log.Println(queuedFilters)
+		nextFilters = []*Filter{}
+		log.Println(nextFilters)
+		depth += 1
+	}
+
+	c.HTML(http.StatusOK, "viewWatch", gin.H{
+		"Watch":    watch,
+		"Filters":  bftFilters,
+		"MaxDepth": depth,
+	})
 }
 
 func (web Web) createFilter(c *gin.Context) {
@@ -105,7 +129,7 @@ func (web Web) createFilter(c *gin.Context) {
 		return
 	}
 	web.db.Create(&filter)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", filter.FilterGroupID))
+	c.Redirect(http.StatusSeeOther, "/group/edit")
 }
 
 func (web Web) updateFilter(c *gin.Context) {
@@ -120,10 +144,10 @@ func (web Web) updateFilter(c *gin.Context) {
 	web.db.First(&filter, filterUpdate.ID)
 	filter.Name = filterUpdate.Name
 	filter.Type = filterUpdate.Type
-	filter.From = filterUpdate.From
-	filter.To = filterUpdate.To
+	filter.Var1 = filterUpdate.From
+	filter.Var2 = &filterUpdate.To
 	web.db.Save(&filter)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", +filter.FilterGroupID))
+	c.Redirect(http.StatusSeeOther, "/group/edit/")
 }
 
 func (web Web) deleteFilter(c *gin.Context) {
@@ -136,37 +160,6 @@ func (web Web) deleteFilter(c *gin.Context) {
 	group_id := c.PostForm("group_id")
 	web.db.Delete(&Filter{}, id)
 	c.Redirect(http.StatusSeeOther, "/group/edit/"+group_id)
-}
-
-func (web Web) editGroup(c *gin.Context) {
-	group_id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return // TODO response
-	}
-	var group FilterGroup
-	web.db.Preload("URL.Watch").Preload("Filters").Preload("URL").First(&group, group_id)
-
-	c.HTML(http.StatusOK, "editGroup", gin.H{
-		"Group":         group,
-		"currentResult": getGroupResult(&group),
-	})
-}
-
-func (web Web) updateGroup(c *gin.Context) {
-	var groupUpdate FilterGroupUpdate
-	errMap, err := bindAndValidateGroupUpdate(&groupUpdate, c)
-	if err != nil {
-		log.Print(err)
-		c.HTML(http.StatusBadRequest, "500", errMap)
-		return
-	}
-	var group FilterGroup
-	web.db.First(&group, groupUpdate.ID)
-	group.Name = groupUpdate.Name
-	group.Type = groupUpdate.Type
-	web.db.Save(&group)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/group/edit/%d", +group.ID))
 }
 
 func passiveBot(bot *tgbotapi.BotAPI) {
@@ -212,7 +205,35 @@ func main() {
 	}
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
-	db.AutoMigrate(&Watch{}, &URL{}, &FilterGroup{}, &Filter{})
+	db.AutoMigrate(&Watch{}, &Filter{})
+
+	filters := []Filter{}
+	watch := Watch{
+		Name:     "LG C2 42",
+		Interval: 60,
+		Filters:  filters,
+	}
+	db.Create(&watch)
+
+	urlFilter := Filter{
+		WatchID:  watch.ID,
+		ParentID: nil,
+		Parent:   nil,
+		Name:     "PriceWatch Fetch",
+		Type:     "url",
+		Var1:     "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
+	}
+	db.Create(&urlFilter)
+
+	xpathFilter := Filter{
+		WatchID:  watch.ID,
+		Watch:    watch,
+		ParentID: &urlFilter.ID,
+		Name:     "price select",
+		Type:     "xpath",
+		Var1:     "//td[@class='shop-price']",
+	}
+	db.Create(&xpathFilter)
 
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
@@ -244,10 +265,6 @@ func main() {
 	router.POST("/watch/create", web.createWatch)
 	router.POST("/watch/delete", web.deleteWatch)
 	router.GET("/watch/view/:id/", web.viewWatch)
-	router.POST("/url/create/", web.createURL)
-	router.POST("/group/create/", web.createFilterGroup)
-	router.GET("/group/edit/:id", web.editGroup)
-	router.POST("/group/update", web.updateGroup)
 	router.POST("/filter/create/", web.createFilter)
 	router.POST("/filter/update/", web.updateFilter)
 	router.POST("/filter/delete/", web.deleteFilter)

@@ -57,11 +57,9 @@ func TestFilterXPath(t *testing.T) {
 		t.Run(testname, func(t *testing.T) {
 			want := []string{}
 			getFilterResultXPath(
-				HTML_STRING,
 				&Filter{
-					From: test.Query,
+					Var1: test.Query,
 				},
-				&want,
 			)
 			if !reflect.DeepEqual(test.Want, want) {
 				t.Errorf("Got %s, want %s", want, test.Want)
@@ -86,11 +84,9 @@ func TestFilterJSON(t *testing.T) {
 		t.Run(testname, func(t *testing.T) {
 			want := []string{}
 			getFilterResultJSON(
-				JSON_STRING,
 				&Filter{
-					From: test.Query,
+					Var1: test.Query,
 				},
-				&want,
 			)
 			if !reflect.DeepEqual(test.Want, want) {
 				t.Errorf("Got %s, want %s", want, test.Want)
@@ -116,11 +112,9 @@ func TestFilterCSS(t *testing.T) {
 		t.Run(testname, func(t *testing.T) {
 			want := []string{}
 			getFilterResultCSS(
-				HTML_STRING,
 				&Filter{
-					From: test.Query,
+					Var1: test.Query,
 				},
-				&want,
 			)
 			if !reflect.DeepEqual(test.Want, want) {
 				t.Errorf("Got %s, want %s", want, test.Want)
@@ -149,11 +143,9 @@ func TestFilterReplace(t *testing.T) {
 		t.Run(testname, func(t *testing.T) {
 			want := []string{test.Want}
 			getFilterResultReplace(
-				test.Input,
 				&Filter{
-					From: test.Query,
+					Var1: test.Query,
 				},
-				&want,
 			)
 			if want[0] != test.Want {
 				t.Errorf("Got %s, want %s", want[0], test.Want)
@@ -180,11 +172,9 @@ func TestFilterMatch(t *testing.T) {
 		t.Run(testname, func(t *testing.T) {
 			want := []string{}
 			getFilterResultMatch(
-				test.Input,
 				&Filter{
-					From: test.Query,
+					Var1: test.Query,
 				},
-				&want,
 			)
 			if !reflect.DeepEqual(test.Want, want) {
 				t.Errorf("Got %s, want %s", want, test.Want)
@@ -229,11 +219,9 @@ func TestFilterSubstring(t *testing.T) {
 		t.Run(testname, func(t *testing.T) {
 			want := []string{test.Want}
 			getFilterResultSubstring(
-				test.Input,
 				&Filter{
-					From: test.Query,
+					Var1: test.Query,
 				},
-				&want,
 			)
 			if want[0] != test.Want {
 				t.Errorf("Got %s, want %s", want[0], test.Want)

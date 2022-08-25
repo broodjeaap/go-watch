@@ -2,103 +2,23 @@
 <div class="container">
     <div class="row">
         <div class="col h1">
-            {{ .Name }}
+            {{ .Watch.Name }}
         </div>
         <div class="col h1">
-            {{ $.Interval }}
+            {{ .Watch.Interval }}
         </div>
     </div>
 </div>
-{{ range .URLs }}
-    <div class="card mb-5">
-        <div class="card-header text-center text-white bg-dark ">
-            <div class="h3">{{ .Name }}</div>
-        </div>
-        <div class="card-header bg-secondary text-white text-center">
-            <div>{{ .URL }}</div>
-        </div>
-        <div class="card-body">
-                {{ range .GroupFilters }}
-                    <div class="card mb-2">
-                        <div class="card-header">
-                            <div class="row">
-                                <div class="col h4 text-start" >{{ .Name }}</div>
-                                <div class="col h5 text-end"><a class="btn btn-success btn-sm" href="/group/edit/{{ .ID }}">Edit</a></div>
-                            </div>
-                            <div class="text-center text-muted">
-                                {{ .Type }}
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <input type="hidden" name="group_id" value="{{ .ID }}" >
-                            <input type="hidden" name="w_id" value="{{ $.ID }}" >
-                            <table class="table table-hover caption-top">
-                                <tbody>
-                                    {{ if .Filters }}
-                                        {{ range .Filters }}
-                                            <tr>
-                                                <td>{{ .Name }}</td>
-                                                <td>{{ .Type }}</td>
-                                                <td>{{ .From }}</td>
-                                                <td>{{ .To }}</td>
-                                                <td></td>
-                                            </tr>
-                                        {{ end }}
-                                    {{ else }}
-                                        <tr>
-                                            <td class="text-center h3">No filters yet, click "Edit" to add</td>
-                                        </tr>
-                                    {{ end }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                {{ end }}
-                <form action="/group/create" method="post">
-                    <input type="hidden" name="group_url_id" value="{{ .ID }}" >
-                    <input type="hidden" name="w_id" value="{{ $.ID }}" >
-                    <table class="table table-hover caption-top">
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <input type="text" class="form-control" name="group_name" placeholder="Group Name">
-                                </td>
-                                <td>
-                                    <select class="form-control" id="group_type" name="group_type">
-                                        <option value="diff">Difference</option>
-                                        <option value="enum">Enum</option>
-                                        <option value="number">Number</option>
-                                        <option value="bool">Boolean</option>
-                                        <!-- additions/changes should also be added to GroupFilter.Type oneof validator -->
-                                    </select>
-                                </td>
-                                <td>
-                                    <button class="btn btn-primary">Add Group</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </form>
-        </div>
-    </div>
+
+<table class="table-sm">
+{{ range .Filters }}
+<tr>
+    <td>{{ .Depth }}</td>
+    <td>{{ .Filter.ID }}</td>
+    <td>{{ .Filter.ParentID }}</td>
+    <td>{{ .Filter.Name }}</td>
+</tr>
 {{ end }}
-<div class="card mb-5">
-    <div class="card-header text-center bg-light ">
-        <div class="h5">New URL</div>
-    </div>
-    <div class="card-body">
-        <form action="/url/create" method="post">
-            <div class="form-group mb-2">
-                <input type="text" class="form-control" name="url_name" id="urlName" placeholder="URL Name">
-            </div>
-            <div class="form-group mb-2">
-                <input type="url" class="form-control" name="url" id="url" placeholder="URL">
-            </div>
-            
-            <input type="hidden" name="url_watch_id" value="{{ .ID }}" >
-            <input class="btn btn-primary" type="submit" value="Create URL">
-        </form>
-    </div>
-</div>
+</table>
 
 {{ end }}

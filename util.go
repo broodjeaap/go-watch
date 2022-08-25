@@ -12,16 +12,6 @@ func bindAndValidateWatch(watch *Watch, c *gin.Context) (map[string]string, erro
 	return validate(err), err
 }
 
-func bindAndValidateURL(url *URL, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(url)
-	return validate(err), err
-}
-
-func bindAndValidateGroup(group *FilterGroup, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(group)
-	return validate(err), err
-}
-
 func bindAndValidateFilter(filter *Filter, c *gin.Context) (map[string]string, error) {
 	err := c.ShouldBind(filter)
 	return validate(err), err
