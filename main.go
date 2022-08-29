@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -61,8 +60,16 @@ func (web Web) deleteWatch(c *gin.Context) {
 }
 
 type FilterDepth struct {
-	Filter Filter
+	Filter *Filter
 	Depth  int
+}
+
+func FilterPrint(filter *Filter, depth int) {
+	for _, f := range filter.Filters {
+		log.Println("----")
+		log.Println(depth, f)
+		FilterPrint(&f, depth+1)
+	}
 }
 
 func (web Web) viewWatch(c *gin.Context) {
@@ -72,47 +79,59 @@ func (web Web) viewWatch(c *gin.Context) {
 	web.db.Model(&Watch{}).First(&watch, id)
 
 	var filters []Filter
-	web.db.Model(&Filter{}).Find(&filters)
+	web.db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
+
+	filterMap := make(map[uint]*Filter)
+	for i := range filters {
+		filterMap[filters[i].ID] = &filters[i]
+	}
 
 	queuedFilters := []*Filter{}
-	filterMap := make(map[uint]*Filter)
-	for _, filter := range filters {
-		filterMap[filter.ID] = &filter
-		if filter.ParentID == nil {
-			queuedFilters = append(queuedFilters, &filter)
-		}
-		s, _ := json.MarshalIndent(filter, "", "\t")
-		fmt.Println(s)
-	}
-
-	for _, filter := range filterMap {
-		if filter.Parent != nil {
+	for i := range filters {
+		filter := &filters[i]
+		if filter.ParentID != nil {
 			parent := filterMap[*filter.ParentID]
 			parent.Filters = append(parent.Filters, *filter)
+		} else {
+			queuedFilters = append(queuedFilters, filter)
 		}
 	}
 
-	nextFilters := []*Filter{}
 	bftFilters := []FilterDepth{}
 	depth := 0
 	for len(queuedFilters) > 0 {
-		for _, f1 := range queuedFilters {
-			bftFilters = append(bftFilters, FilterDepth{
-				Filter: *f1,
-				Depth:  depth,
-			})
-			for _, f2 := range f1.Filters {
-				nextFilters = append(nextFilters, &f2)
-			}
+		filter := queuedFilters[0]
+		bftFilters = append(bftFilters, FilterDepth{
+			Filter: filter,
+			Depth:  depth,
+		})
+		for _, filter := range filter.Filters {
+			queuedFilters = append(queuedFilters, &filter)
 		}
-		log.Println(nextFilters)
-		queuedFilters = nextFilters
-		log.Println(queuedFilters)
-		nextFilters = []*Filter{}
-		log.Println(nextFilters)
-		depth += 1
+		queuedFilters = queuedFilters[1:]
 	}
+	/*
+		nextFilters := []*Filter{}
+		depth := 0
+		for len(queuedFilters) > 0 {
+			for _, f1 := range queuedFilters {
+				bftFilters = append(bftFilters, FilterDepth{
+					Filter: *f1,
+					Depth:  depth,
+				})
+				for _, f2 := range f1.Filters {
+					nextFilters = append(nextFilters, &f2)
+				}
+			}
+			queuedFilters = nextFilters
+			nextFilters = []*Filter{}
+			depth += 1
+		}
 
+		for _, f := range bftFilters {
+			FilterPrint(&f.Filter, 0)
+		}
+	*/
 	c.HTML(http.StatusOK, "viewWatch", gin.H{
 		"Watch":    watch,
 		"Filters":  bftFilters,
