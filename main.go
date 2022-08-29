@@ -86,29 +86,35 @@ func (web Web) viewWatch(c *gin.Context) {
 		filterMap[filters[i].ID] = &filters[i]
 	}
 
-	queuedFilters := []*Filter{}
+	currentLayerFilters := []*Filter{}
 	for i := range filters {
 		filter := &filters[i]
 		if filter.ParentID != nil {
 			parent := filterMap[*filter.ParentID]
 			parent.Filters = append(parent.Filters, *filter)
 		} else {
-			queuedFilters = append(queuedFilters, filter)
+			currentLayerFilters = append(currentLayerFilters, filter)
 		}
 	}
 
 	bftFilters := []FilterDepth{}
+	nextLayerFilters := []*Filter{}
 	depth := 0
-	for len(queuedFilters) > 0 {
-		filter := queuedFilters[0]
-		bftFilters = append(bftFilters, FilterDepth{
-			Filter: filter,
-			Depth:  depth,
-		})
-		for _, filter := range filter.Filters {
-			queuedFilters = append(queuedFilters, &filter)
+	for len(nextLayerFilters) > 0 || len(currentLayerFilters) > 0 {
+		for len(currentLayerFilters) > 0 {
+			filter := currentLayerFilters[0]
+			bftFilters = append(bftFilters, FilterDepth{
+				Filter: filter,
+				Depth:  depth,
+			})
+			for _, filter := range filter.Filters {
+				nextLayerFilters = append(nextLayerFilters, &filter)
+			}
+			currentLayerFilters = currentLayerFilters[1:]
 		}
-		queuedFilters = queuedFilters[1:]
+		depth += 1
+		currentLayerFilters = nextLayerFilters
+		nextLayerFilters = []*Filter{}
 	}
 	/*
 		nextFilters := []*Filter{}
