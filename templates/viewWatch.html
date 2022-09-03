@@ -10,13 +10,26 @@
     </div>
 </div>
 
-<table class="table-sm">
+<table class="table">
+    <thead>
+        <tr>
+            <th colspan="{{ .MaxDepth }}">ID</th>
+            <th>ID</th>
+            <th>ParentID</th>
+            <th>Name</th>
+        </tr>
+    </thead>
 {{ range .Filters }}
 <tr>
-    <td>{{ .Depth }}</td>
+    {{ range .Depth }}
+        <td></td>
+    {{ end }}
     <td>{{ .Filter.ID }}</td>
     <td>{{ .Filter.ParentID }}</td>
     <td>{{ .Filter.Name }}</td>
+    {{ range .RevDepth }}
+        <td></td>
+    {{ end }}
 </tr>
 {{ end }}
 </table>

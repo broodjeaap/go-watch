@@ -23,5 +23,5 @@ type Filter struct {
 	Var2     *string  `form:"var2" yaml:"var2"`
 	Var3     *string  `form:"var3" yaml:"var3"`
 	Filters  []Filter `gorm:"-:all"`
-	results  []string `gorm:"-:all"`
+	Results  []string `gorm:"-:all"`
 }

@@ -60,8 +60,9 @@ func (web Web) deleteWatch(c *gin.Context) {
 }
 
 type FilterDepth struct {
-	Filter *Filter
-	Depth  int
+	Filter   *Filter
+	Depth    []struct{}
+	RevDepth []struct{}
 }
 
 func FilterPrint(filter *Filter, depth int) {
@@ -105,7 +106,7 @@ func (web Web) viewWatch(c *gin.Context) {
 			filter := currentLayerFilters[0]
 			bftFilters = append(bftFilters, FilterDepth{
 				Filter: filter,
-				Depth:  depth,
+				Depth:  make([]struct{}, depth),
 			})
 			for _, filter := range filter.Filters {
 				nextLayerFilters = append(nextLayerFilters, &filter)
@@ -116,28 +117,11 @@ func (web Web) viewWatch(c *gin.Context) {
 		currentLayerFilters = nextLayerFilters
 		nextLayerFilters = []*Filter{}
 	}
-	/*
-		nextFilters := []*Filter{}
-		depth := 0
-		for len(queuedFilters) > 0 {
-			for _, f1 := range queuedFilters {
-				bftFilters = append(bftFilters, FilterDepth{
-					Filter: *f1,
-					Depth:  depth,
-				})
-				for _, f2 := range f1.Filters {
-					nextFilters = append(nextFilters, &f2)
-				}
-			}
-			queuedFilters = nextFilters
-			nextFilters = []*Filter{}
-			depth += 1
-		}
 
-		for _, f := range bftFilters {
-			FilterPrint(&f.Filter, 0)
-		}
-	*/
+	for i := range bftFilters {
+		fd := &bftFilters[i]
+		fd.RevDepth = make([]struct{}, depth-len(fd.Depth))
+	}
 	c.HTML(http.StatusOK, "viewWatch", gin.H{
 		"Watch":    watch,
 		"Filters":  bftFilters,
