@@ -56,7 +56,7 @@ func getFilterResultXPath(filter *Filter) {
 		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
 		return
 	}
-	for _, result := range filter.Parent.results {
+	for _, result := range filter.Parent.Results {
 		doc, err := htmlquery.Parse(strings.NewReader(result))
 		if err != nil {
 			log.Print(err)
@@ -66,7 +66,7 @@ func getFilterResultXPath(filter *Filter) {
 		for _, node := range nodes {
 			var b bytes.Buffer
 			html.Render(&b, node)
-			filter.results = append(filter.results, html.UnescapeString(b.String()))
+			filter.Results = append(filter.Results, html.UnescapeString(b.String()))
 		}
 	}
 }
@@ -76,9 +76,9 @@ func getFilterResultJSON(filter *Filter) {
 		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
 		return
 	}
-	for _, result := range filter.Parent.results {
+	for _, result := range filter.Parent.Results {
 		for _, match := range gjson.Get(result, filter.Var1).Array() {
-			filter.results = append(filter.results, match.String())
+			filter.Results = append(filter.Results, match.String())
 		}
 	}
 }
@@ -88,7 +88,7 @@ func getFilterResultCSS(filter *Filter) {
 		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
 		return
 	}
-	for _, result := range filter.results {
+	for _, result := range filter.Parent.Results {
 		doc, err := html.Parse(strings.NewReader(result))
 		if err != nil {
 			log.Print(err)
@@ -102,7 +102,8 @@ func getFilterResultCSS(filter *Filter) {
 		for _, node := range cascadia.QueryAll(doc, sel) {
 			var b bytes.Buffer
 			html.Render(&b, node)
-			filter.results = append(filter.results, html.UnescapeString(b.String()))
+			log.Println(b.String())
+			filter.Results = append(filter.Results, html.UnescapeString(b.String()))
 		}
 	}
 }
@@ -112,16 +113,16 @@ func getFilterResultReplace(filter *Filter) {
 		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
 		return
 	}
-	for _, result := range filter.results {
+	for _, result := range filter.Parent.Results {
 		r, err := regexp.Compile(filter.Var1)
 		if err != nil {
 			log.Print(err)
 			continue
 		}
 		if filter.Var2 == nil {
-			filter.results = append(filter.results, r.ReplaceAllString(result, ""))
+			filter.Results = append(filter.Results, r.ReplaceAllString(result, ""))
 		} else {
-			filter.results = append(filter.results, r.ReplaceAllString(result, *filter.Var2))
+			filter.Results = append(filter.Results, r.ReplaceAllString(result, *filter.Var2))
 		}
 	}
 }
@@ -131,14 +132,16 @@ func getFilterResultMatch(filter *Filter) {
 		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
 		return
 	}
-	for _, result := range filter.results {
-		r, err := regexp.Compile(filter.Var1)
-		if err != nil {
-			log.Print(err)
-			continue
-		}
+	r, err := regexp.Compile(filter.Var1)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	for _, result := range filter.Parent.Results {
+		log.Println(">", result)
 		for _, str := range r.FindAllString(result, -1) {
-			filter.results = append(filter.results, str)
+			log.Println(">>", str)
+			filter.Results = append(filter.Results, str)
 		}
 	}
 }
@@ -148,7 +151,7 @@ func getFilterResultSubstring(filter *Filter) {
 		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
 		return
 	}
-	for _, result := range filter.results {
+	for _, result := range filter.Parent.Results {
 		substrings := strings.Split(filter.Var1, ",")
 		var sb strings.Builder
 		asRunes := []rune(result)
@@ -157,6 +160,7 @@ func getFilterResultSubstring(filter *Filter) {
 			if strings.Contains(substring, ":") {
 				from_to := strings.Split(substring, ":")
 				if len(from_to) != 2 {
+					filter.Results = filter.Parent.Results
 					return
 				}
 				fromStr := from_to[0]
@@ -167,6 +171,7 @@ func getFilterResultSubstring(filter *Filter) {
 				from64, err := strconv.ParseInt(fromStr, 10, 32)
 				var from = int(from64)
 				if hasFrom && err != nil {
+					filter.Results = filter.Parent.Results
 					return
 				} else if from < 0 {
 					from = len(asRunes) + from
@@ -179,6 +184,7 @@ func getFilterResultSubstring(filter *Filter) {
 				to64, err := strconv.ParseInt(toStr, 10, 32)
 				var to = int(to64)
 				if hasTo && err != nil {
+					filter.Results = filter.Parent.Results
 					return
 				} else if to < 0 {
 					to = len(asRunes) + to
@@ -193,11 +199,12 @@ func getFilterResultSubstring(filter *Filter) {
 			} else {
 				pos, err := strconv.ParseInt(substring, 10, 32)
 				if err != nil || pos < 0 {
+					filter.Results = filter.Parent.Results
 					return
 				}
 				sb.WriteRune(asRunes[pos])
 			}
 		}
-		filter.results = append(filter.results, sb.String())
+		filter.Results = append(filter.Results, sb.String())
 	}
 }

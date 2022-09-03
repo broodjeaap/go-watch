@@ -55,14 +55,17 @@ func TestFilterXPath(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
-			want := []string{}
-			getFilterResultXPath(
-				&Filter{
-					Var1: test.Query,
+			filter := Filter{
+				Parent: &Filter{
+					Results: []string{HTML_STRING},
 				},
+				Var1: test.Query,
+			}
+			getFilterResultXPath(
+				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, want) {
-				t.Errorf("Got %s, want %s", want, test.Want)
+			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
 	}
@@ -82,14 +85,17 @@ func TestFilterJSON(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
-			want := []string{}
-			getFilterResultJSON(
-				&Filter{
-					Var1: test.Query,
+			filter := Filter{
+				Parent: &Filter{
+					Results: []string{JSON_STRING},
 				},
+				Var1: test.Query,
+			}
+			getFilterResultJSON(
+				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, want) {
-				t.Errorf("Got %s, want %s", want, test.Want)
+			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
 	}
@@ -110,14 +116,17 @@ func TestFilterCSS(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
-			want := []string{}
-			getFilterResultCSS(
-				&Filter{
-					Var1: test.Query,
+			filter := Filter{
+				Parent: &Filter{
+					Results: []string{HTML_STRING},
 				},
+				Var1: test.Query,
+			}
+			getFilterResultCSS(
+				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, want) {
-				t.Errorf("Got %s, want %s", want, test.Want)
+			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
 	}
@@ -131,24 +140,30 @@ func TestFilterReplace(t *testing.T) {
 	}{
 		{"0123456789", "0", "123456789"},
 		{"0123456789", "9", "012345678"},
-		{"0123456789", "3456", "01278"},
-		{"0123456789_0123456789", "3456", "01278_01278"},
+		{"0123456789", "3456", "012789"},
+		{"0123456789_0123456789", "3456", "012789_012789"},
 		{"世界日本語", "世", "界日本語"},
-		{"世界日本語", "語", "世界日本語"},
+		{"世界日本語", "語", "世界日本"},
 		{"世界日_世界日_世界日", "界", "世日_世日_世日"},
+		// TODO add replace tests
+		// TODO add regex tests
+		// TODO add regex replace tests
 	}
 
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
 		t.Run(testname, func(t *testing.T) {
-			want := []string{test.Want}
-			getFilterResultReplace(
-				&Filter{
-					Var1: test.Query,
+			filter := Filter{
+				Parent: &Filter{
+					Results: []string{test.Input},
 				},
+				Var1: test.Query,
+			}
+			getFilterResultReplace(
+				&filter,
 			)
-			if want[0] != test.Want {
-				t.Errorf("Got %s, want %s", want[0], test.Want)
+			if filter.Results[0] != test.Want {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
 	}
@@ -170,14 +185,18 @@ func TestFilterMatch(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
-			want := []string{}
-			getFilterResultMatch(
-				&Filter{
-					Var1: test.Query,
+			filter := Filter{
+				Parent: &Filter{
+					Results: []string{test.Input},
 				},
+				Var1: test.Query,
+			}
+			getFilterResultMatch(
+				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, want) {
-				t.Errorf("Got %s, want %s", want, test.Want)
+			// len() thing cuz filterResults == nil and test.Want == [], same thing but not really...
+			if !(len(filter.Results) == 0 && len(test.Want) == 0) && !reflect.DeepEqual(filter.Results, test.Want) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
 	}
@@ -217,14 +236,17 @@ func TestFilterSubstring(t *testing.T) {
 	for _, test := range tests {
 		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
 		t.Run(testname, func(t *testing.T) {
-			want := []string{test.Want}
-			getFilterResultSubstring(
-				&Filter{
-					Var1: test.Query,
+			filter := Filter{
+				Parent: &Filter{
+					Results: []string{test.Input},
 				},
+				Var1: test.Query,
+			}
+			getFilterResultSubstring(
+				&filter,
 			)
-			if want[0] != test.Want {
-				t.Errorf("Got %s, want %s", want[0], test.Want)
+			if filter.Results[0] != test.Want {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
 	}
