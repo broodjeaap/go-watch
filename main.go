@@ -122,10 +122,13 @@ func (web Web) viewWatch(c *gin.Context) {
 		fd := &bftFilters[i]
 		fd.RevDepth = make([]struct{}, depth-len(fd.Depth))
 	}
+	numberOfColumns := depth + 4
 	c.HTML(http.StatusOK, "viewWatch", gin.H{
-		"Watch":    watch,
-		"Filters":  bftFilters,
-		"MaxDepth": depth,
+		"Watch":       watch,
+		"Filters":     bftFilters,
+		"MaxDepth":    depth,
+		"Columns":     make([]struct{}, numberOfColumns),
+		"ColumnWidth": 100 / numberOfColumns,
 	})
 }
 
