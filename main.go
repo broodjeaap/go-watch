@@ -33,6 +33,10 @@ func (web Web) index(c *gin.Context) {
 	c.HTML(http.StatusOK, "index", watches)
 }
 
+func (web Web) canvas(c *gin.Context) {
+	c.HTML(http.StatusOK, "canvas", gin.H{})
+}
+
 func (web Web) newWatch(c *gin.Context) {
 	c.HTML(http.StatusOK, "newWatch", gin.H{})
 }
@@ -219,34 +223,35 @@ func main() {
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
 	db.AutoMigrate(&Watch{}, &Filter{})
 
-	filters := []Filter{}
-	watch := Watch{
-		Name:     "LG C2 42",
-		Interval: 60,
-		Filters:  filters,
-	}
-	db.Create(&watch)
+	/*
+		filters := []Filter{}
+		watch := Watch{
+			Name:     "LG C2 42",
+			Interval: 60,
+			Filters:  filters,
+		}
+		db.Create(&watch)
 
-	urlFilter := Filter{
-		WatchID:  watch.ID,
-		ParentID: nil,
-		Parent:   nil,
-		Name:     "PriceWatch Fetch",
-		Type:     "url",
-		Var1:     "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
-	}
-	db.Create(&urlFilter)
+		urlFilter := Filter{
+			WatchID:  watch.ID,
+			ParentID: nil,
+			Parent:   nil,
+			Name:     "PriceWatch Fetch",
+			Type:     "url",
+			Var1:     "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
+		}
+		db.Create(&urlFilter)
 
-	xpathFilter := Filter{
-		WatchID:  watch.ID,
-		Watch:    watch,
-		ParentID: &urlFilter.ID,
-		Name:     "price select",
-		Type:     "xpath",
-		Var1:     "//td[@class='shop-price']",
-	}
-	db.Create(&xpathFilter)
-
+		xpathFilter := Filter{
+			WatchID:  watch.ID,
+			Watch:    watch,
+			ParentID: &urlFilter.ID,
+			Name:     "price select",
+			Type:     "xpath",
+			Var1:     "//td[@class='shop-price']",
+		}
+		db.Create(&xpathFilter)
+	*/
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
 	//bot.Debug = true
@@ -269,6 +274,8 @@ func main() {
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
 	templates.AddFromFiles("editGroup", "templates/base.html", "templates/editGroup.html")
 
+	templates.AddFromFiles("canvas", "templates/base.html", "templates/diagrams.html")
+
 	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
 
@@ -280,6 +287,8 @@ func main() {
 	router.POST("/filter/create/", web.createFilter)
 	router.POST("/filter/update/", web.updateFilter)
 	router.POST("/filter/delete/", web.deleteFilter)
+
+	router.GET("/canvas/", web.canvas)
 
 	router.Run("0.0.0.0:8080")
 }

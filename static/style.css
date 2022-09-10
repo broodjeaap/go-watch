@@ -20,3 +20,13 @@
 .pointer {
     cursor: pointer;
 }
+
+.canvas_parent {
+  width: 100%;
+  height: 95vh;
+  position: relative;
+}
+#canvas {
+  width: 100%;
+  height: 100%;
+}

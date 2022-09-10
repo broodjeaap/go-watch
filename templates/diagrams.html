@@ -1,0 +1,25 @@
+{{define "head"}}
+<script src="/static/diagram.js"></script>
+{{ end }}
+{{define "content"}}
+<div class="canvas_parent">
+    <canvas id="canvas">
+
+    </canvas>
+</div>
+{{ end }}
+
+{{define "scripts"}}
+<script>
+var diagrams;
+function canvasInit() {
+    diagrams = new Diagrams("canvas");
+    diagrams.addNode(100, 100, "Test");
+    diagrams.addNode(300, 300, "Test2");
+    diagrams.addNode(500, 500, "A much longer name");
+    diagrams.fillParent();
+}
+document.addEventListener('DOMContentLoaded', canvasInit, false);
+
+</script>
+{{ end }}
