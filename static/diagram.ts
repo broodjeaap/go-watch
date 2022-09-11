@@ -1,4 +1,5 @@
 class DiagramNode {
+    id: number;
     x: number;
     y: number;
     label: string;
@@ -13,12 +14,14 @@ class DiagramNode {
     children: Array<DiagramNode>;
 
     constructor(
+        id: number;
         x: number, 
         y: number, 
         width: number,
         height: number,
         label: string,
     ){
+        this.id = id;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -278,10 +281,10 @@ class Diagrams {
         }
     }
 
-    addNode(x: number, y: number, label: string){
+    addNode(id: number, x: number, y: number, label: string){
         let textSize = this.ctx.measureText(label);
         let textHeight = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.nodes.push(new DiagramNode(x, y, textSize.width + textHeight, textHeight, label));
+        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label));
     }
 
     addConnection(A: DiagramNode, B: DiagramNode){

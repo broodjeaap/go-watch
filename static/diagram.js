@@ -1,8 +1,9 @@
 var DiagramNode = /** @class */ (function () {
-    function DiagramNode(x, y, width, height, label) {
+    function DiagramNode(id, x, y, width, height, label) {
         this.hover = false;
         this.inputHover = false;
         this.outputHover = false;
+        this.id = id;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -234,10 +235,10 @@ var Diagrams = /** @class */ (function () {
             this.ctx.fill();
         }
     };
-    Diagrams.prototype.addNode = function (x, y, label) {
+    Diagrams.prototype.addNode = function (id, x, y, label) {
         var textSize = this.ctx.measureText(label);
         var textHeight = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.nodes.push(new DiagramNode(x, y, textSize.width + textHeight, textHeight, label));
+        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label));
     };
     Diagrams.prototype.addConnection = function (A, B) {
         this.connections.push([A, B]);
