@@ -5,6 +5,8 @@ class DiagramNode {
     width: number;
     height: number;
 
+    hover: boolean = false;
+
     parents: Array<DiagramNode>;
     children: Array<DiagramNode>;
 
@@ -22,7 +24,7 @@ class DiagramNode {
         this.label = label;
     }
 
-    pointInDiagram(x: number, y: number){
+    pointInNode(x: number, y: number){
         if (x < this.x){
             return false;
         }
@@ -57,17 +59,17 @@ class Diagrams {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
-    nodes: Array<DiagramNode>;
+    nodes: Array<DiagramNode> = new Array();
 
-    connections: Array<[DiagramNode, DiagramNode]>;
+    connections: Array<[DiagramNode, DiagramNode]> = new Array();
 
-    cameraX: number;
-    cameraY: number;
+    cameraX: number = 0;
+    cameraY: number = 0;
 
-    panning: boolean;
+    panning: boolean = false;
 
-    nodeDrag: boolean;
-    nodeDragged: DiagramNode | null;
+    nodeDragging: DiagramNode | null = null;
+    nodeHover: DiagramNode | null = null;
 
     constructor(canvasId: string){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -80,31 +82,39 @@ class Diagrams {
         }
         _diagram = this;
         this.ctx = ctx;
-        this.ctx.font = "30px Arial";
+        this.ctx.font = "30px Helvetica";
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
         window.onresize = diargramOnResize;
-
-        this.nodes = new Array();
-        this.connections = new Array();
-
-        this.cameraX = 0;
-        this.cameraY = 0;
     }
 
     onmousemove(ev: MouseEvent){
+        let canvasRect = this.canvas.getBoundingClientRect();
+        let mouseX = ev.x - canvasRect.left;
+        let mouseY = ev.y - canvasRect.top;
+
         if (this.panning){
             this.cameraX += ev.movementX;
             this.cameraY += ev.movementY;
         }
-        if (this.nodeDrag){
-            if (this.nodeDragged === null){
-                console.error("nodeDrag==true but nodeDragged==null");
-                return
+        else if (this.nodeDragging != null){
+            this.nodeDragging.x = mouseX - this.cameraX - this.nodeDragging.width / 2;
+            this.nodeDragging.y = mouseY - this.cameraY - this.nodeDragging.height / 2;
+        }
+        else if (this.nodeHover != null){
+            if (!this.nodeHover.pointInNode(mouseX - this.cameraX, mouseY - this.cameraY)){
+                this.nodeHover.hover = false;
+                this.nodeHover = null;
             }
-            this.nodeDragged.x += ev.movementX;
-            this.nodeDragged.y += ev.movementY;
+        }
+        else {
+            for (let node of this.nodes){
+                if (node.pointInNode(mouseX - this.cameraX, mouseY - this.cameraY)){
+                    node.hover = true;
+                    this.nodeHover = node;
+                }
+            }
         }
         this.draw();
     }
@@ -117,9 +127,8 @@ class Diagrams {
         let mouseX = ev.x - canvasRect.left;
         let mouseY = ev.y - canvasRect.top;
         for (let node of this.nodes){
-            if (node.pointInDiagram(mouseX, mouseY)) {
-                this.nodeDrag = true;
-                this.nodeDragged = node;
+            if (node.pointInNode(mouseX - this.cameraX, mouseY - this.cameraY)) {
+                this.nodeDragging = node;
                 return;
             }
         }
@@ -129,8 +138,7 @@ class Diagrams {
 
     onmouseup(ev: MouseEvent){
         this.panning = false;
-        this.nodeDrag = false;
-        this.nodeDragged = null;
+        this.nodeDragging = null;
     }
 
     drawBackground(){
@@ -144,16 +152,26 @@ class Diagrams {
     draw(){
         this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
         this.drawBackground();
+        let fullCircleRadians = Math.PI + (Math.PI * 3);
         for (let node of this.nodes){
-            this.ctx.fillStyle = "gray";
+            this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
             this.ctx.fillRect(node.x + this.cameraX, node.y + this.cameraY, node.width, node.height);
-            this.ctx.fillStyle = "black";
-            this.ctx.font = "30px Arial";
+            this.ctx.fillStyle = "#D3D3D3";
+            this.ctx.font = "30px Helvetica";
             this.ctx.fillText(
                 node.label, 
                 node.x + this.cameraX + node.height / 2, 
                 node.y + this.cameraY + node.height / 1.5
             );
+            this.ctx.strokeStyle = "red";
+            this.ctx.fillStyle = "red";
+            this.ctx.beginPath()
+            this.ctx.arc(node.x + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
+            this.ctx.fill();
+            this.ctx.moveTo(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY);
+            this.ctx.arc(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
+            this.ctx.fill();
+            this.ctx.closePath();
         }
     }
 
