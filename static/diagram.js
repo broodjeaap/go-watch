@@ -1,6 +1,8 @@
 var DiagramNode = /** @class */ (function () {
     function DiagramNode(x, y, width, height, label) {
         this.hover = false;
+        this.inputHover = false;
+        this.outputHover = false;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -21,6 +23,34 @@ var DiagramNode = /** @class */ (function () {
             return false;
         }
         return true;
+    };
+    DiagramNode.prototype.pointNearNode = function (x, y) {
+        // including the input/output circles
+        if (x < this.x - this.height / 3) {
+            return false;
+        }
+        if (y < this.y) {
+            return false;
+        }
+        if (x > this.x + this.width + this.height / 3) {
+            return false;
+        }
+        if (y > this.y + this.height) {
+            return false;
+        }
+        return true;
+    };
+    DiagramNode.prototype.pointInInputCircle = function (x, y) {
+        var circleX = this.x;
+        var circleY = this.y + this.height / 3;
+        var radiusSqrd = Math.pow(this.height / 3, 2);
+        return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
+    };
+    DiagramNode.prototype.pointInOutputCircle = function (x, y) {
+        var circleX = this.x + this.width;
+        var circleY = this.y + this.height / 2;
+        var radiusSqrd = Math.pow(this.height / 3, 2);
+        return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
     };
     return DiagramNode;
 }());
@@ -66,26 +96,43 @@ var Diagrams = /** @class */ (function () {
         var canvasRect = this.canvas.getBoundingClientRect();
         var mouseX = ev.x - canvasRect.left;
         var mouseY = ev.y - canvasRect.top;
+        var worldX = mouseX - this.cameraX;
+        var worldY = mouseY - this.cameraY;
+        if (this.nodeHover != null) {
+            this.nodeHover.hover = false;
+            this.nodeHover.inputHover = false;
+            this.nodeHover.outputHover = false;
+            this.nodeHover = null;
+        }
         if (this.panning) {
             this.cameraX += ev.movementX;
             this.cameraY += ev.movementY;
         }
         else if (this.nodeDragging != null) {
-            this.nodeDragging.x = mouseX - this.cameraX - this.nodeDragging.width / 2;
-            this.nodeDragging.y = mouseY - this.cameraY - this.nodeDragging.height / 2;
-        }
-        else if (this.nodeHover != null) {
-            if (!this.nodeHover.pointInNode(mouseX - this.cameraX, mouseY - this.cameraY)) {
-                this.nodeHover.hover = false;
-                this.nodeHover = null;
-            }
+            // this.nodeDragging.x = worldX - this.nodeDragging.width / 2;
+            // this.nodeDragging.y = worldY - this.nodeDragging.height / 2;
+            this.nodeDragging.x += ev.movementX;
+            this.nodeDragging.y += ev.movementY;
         }
         else {
             for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
                 var node = _a[_i];
-                if (node.pointInNode(mouseX - this.cameraX, mouseY - this.cameraY)) {
-                    node.hover = true;
-                    this.nodeHover = node;
+                if (node.pointNearNode(worldX, worldY)) {
+                    if (node.pointInInputCircle(worldX, worldY)) {
+                        node.inputHover = true;
+                        this.nodeHover = node;
+                        break;
+                    }
+                    else if (node.pointInOutputCircle(worldX, worldY)) {
+                        node.outputHover = true;
+                        this.nodeHover = node;
+                        break;
+                    }
+                    else if (node.pointInNode(worldX, worldY)) {
+                        node.hover = true;
+                        this.nodeHover = node;
+                        break;
+                    }
                 }
             }
         }
@@ -98,9 +145,17 @@ var Diagrams = /** @class */ (function () {
         var canvasRect = this.canvas.getBoundingClientRect();
         var mouseX = ev.x - canvasRect.left;
         var mouseY = ev.y - canvasRect.top;
+        var worldX = mouseX - this.cameraX;
+        var worldY = mouseY - this.cameraY;
         for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
             var node = _a[_i];
-            if (node.pointInNode(mouseX - this.cameraX, mouseY - this.cameraY)) {
+            if (node.pointNearNode(worldX, worldY)) {
+                if (node.pointInInputCircle(worldX, worldY)) {
+                }
+                else if (node.pointInOutputCircle(worldX, worldY)) {
+                }
+            }
+            if (node.pointInNode(worldX, worldY)) {
                 this.nodeDragging = node;
                 return;
             }
@@ -129,11 +184,13 @@ var Diagrams = /** @class */ (function () {
             this.ctx.fillStyle = "#D3D3D3";
             this.ctx.font = "30px Helvetica";
             this.ctx.fillText(node.label, node.x + this.cameraX + node.height / 2, node.y + this.cameraY + node.height / 1.5);
-            this.ctx.strokeStyle = "red";
-            this.ctx.fillStyle = "red";
+            this.ctx.fillStyle = node.inputHover ? "red" : "green";
             this.ctx.beginPath();
             this.ctx.arc(node.x + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
             this.ctx.fill();
+            this.ctx.closePath();
+            this.ctx.beginPath();
+            this.ctx.fillStyle = node.outputHover ? "red" : "green";
             this.ctx.moveTo(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY);
             this.ctx.arc(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
             this.ctx.fill();
