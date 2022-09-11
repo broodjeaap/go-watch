@@ -167,7 +167,7 @@ class Diagrams {
                         node.inputHover = true;
                         this.nodeHover = node;
                         break;
-                    } else if (node.pointInOutputCircle(this.worldX, this.worldY)){
+                    } else if (this.makingConnectionNode == null && node.pointInOutputCircle(this.worldX, this.worldY)){
                         node.outputHover = true;
                         this.nodeHover = node;
                         break;
