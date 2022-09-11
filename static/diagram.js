@@ -185,7 +185,7 @@ var Diagrams = /** @class */ (function () {
                     continue;
                 }
                 if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                    console.log("Making connection");
+                    this.addConnection(this.makingConnectionNode, node);
                 }
             }
             this.makingConnectionNode = null;
@@ -217,8 +217,28 @@ var Diagrams = /** @class */ (function () {
             this.ctx.stroke();
             this.ctx.closePath();
         }
-        for (var _i = 0, _b = this.nodes; _i < _b.length; _i++) {
-            var node = _b[_i];
+        for (var _i = 0, _b = this.connections; _i < _b.length; _i++) {
+            var _c = _b[_i], output = _c[0], input = _c[1];
+            var _d = output.getOutputCircleXY(), outputX = _d[0], outputY = _d[1];
+            outputX += this.cameraX;
+            outputY += this.cameraY;
+            var _e = input.getInputCircleXY(), inputX = _e[0], inputY = _e[1];
+            inputX += this.cameraX;
+            inputY += this.cameraY;
+            var dX = Math.abs(outputX - inputX);
+            this.ctx.beginPath();
+            this.ctx.moveTo(outputX, outputY);
+            this.ctx.strokeStyle = "black";
+            var cp1x = (outputX + dX / 2);
+            var cp1y = outputY;
+            var cp2x = (inputX - dX / 2);
+            var cp2y = inputY;
+            this.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, inputX, inputY);
+            this.ctx.stroke();
+            this.ctx.closePath();
+        }
+        for (var _f = 0, _g = this.nodes; _f < _g.length; _f++) {
+            var node = _g[_f];
             this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
             this.ctx.fillRect(node.x + this.cameraX, node.y + this.cameraY, node.width, node.height);
             this.ctx.fillStyle = "#D3D3D3";
