@@ -14,7 +14,7 @@ class DiagramNode {
     children: Array<DiagramNode>;
 
     constructor(
-        id: number;
+        id: number,
         x: number, 
         y: number, 
         width: number,
