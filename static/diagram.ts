@@ -96,6 +96,9 @@ function diagramOnMouseUp(ev: MouseEvent){
 function diagramOnMouseMove(ev: MouseEvent){
     _diagram.onmousemove(ev);
 }
+function diagramOnWheel(ev: WheelEvent){
+    //_diagram.onwheel(ev);
+}
 
 class Diagrams {
     canvas: HTMLCanvasElement;
@@ -119,6 +122,8 @@ class Diagrams {
 
     makingConnectionNode: DiagramNode | null = null;
 
+    scale: number = 1.0;
+
     constructor(canvasId: string){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
@@ -130,11 +135,13 @@ class Diagrams {
         }
         _diagram = this;
         this.ctx = ctx;
-        this.ctx.font = "30px Helvetica";
+        this.ctx.font = "20px Helvetica";
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
+        this.canvas.onwheel = diagramOnWheel;
         window.onresize = diargramOnResize;
+
     }
 
     onmousemove(ev: MouseEvent){
@@ -186,6 +193,7 @@ class Diagrams {
         if (ev.button != 0){
             return;
         }
+
         let canvasRect = this.canvas.getBoundingClientRect();
         this.mouseX = ev.x - canvasRect.left;
         this.mouseY = ev.y - canvasRect.top;
@@ -227,6 +235,14 @@ class Diagrams {
         this.draw();
     }
 
+    onwheel(ev: WheelEvent){
+        if(ev.deltaY > 0){
+            return;
+        }
+        this.scale = Math.min(Math.max(this.scale - 0.1, 0.1), 1.0);
+        this.ctx.scale(this.scale, this.scale);
+    }
+
     drawBackground(){
         this.ctx.fillStyle = "#D8D8D8";
         this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
@@ -236,7 +252,8 @@ class Diagrams {
     }
 
     draw(){
-        this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+        let scale = 1 / this.scale;
+        this.ctx.clearRect(0,0, this.canvas.width * scale, this.canvas.height * scale);
         this.drawBackground();
         let fullCircleRadians = Math.PI + (Math.PI * 3);
         if (this.makingConnectionNode != null){
@@ -286,18 +303,9 @@ class Diagrams {
             this.ctx.stroke();
             this.ctx.closePath();
             let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
-            /*
-            let hwWidth = 20;
-            let hwhWidth = hwWidth / 2;
-            let mouseOnHalfwayX = this.worldX - hwhWidth >= halfway.x && this.worldX + hwhWidth <= halfway.x;
-            let mouseOnHalfwayY = this.worldY - hwhWidth >= halfway.y && this.worldY + hwhWidth <= halfway.y;
-            console.log(mouseOnHalfwayX, mouseOnHalfwayY);
-            let mouseOnHalfway = mouseOnHalfwayX && mouseOnHalfwayY;
-            */
             let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 20*20
             this.ctx.beginPath();
             this.ctx.strokeStyle = mouseOnHalfway ? "red" : "rgba(200, 200, 200, 0.8)";
-            // this.ctx.arc(halfway.x, halfway.y, 20, 0, fullCircleRadians);
             this.ctx.moveTo(halfway.x - 10, halfway.y - 10);
             this.ctx.lineTo(halfway.x + 10, halfway.y + 10);
             this.ctx.moveTo(halfway.x + 10, halfway.y - 10);
@@ -309,7 +317,7 @@ class Diagrams {
             this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
             this.ctx.fillRect(node.x + this.cameraX, node.y + this.cameraY, node.width, node.height);
             this.ctx.fillStyle = "#D3D3D3";
-            this.ctx.font = "30px Helvetica";
+            this.ctx.font = "20px Helvetica";
             this.ctx.fillText(
                 node.label, 
                 node.x + this.cameraX + node.height / 2, 
