@@ -223,6 +223,7 @@ class Diagrams {
             }
             this.makingConnectionNode = null;
         }
+        
         this.draw();
     }
 
@@ -284,6 +285,25 @@ class Diagrams {
             );
             this.ctx.stroke();
             this.ctx.closePath();
+            let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
+            /*
+            let hwWidth = 20;
+            let hwhWidth = hwWidth / 2;
+            let mouseOnHalfwayX = this.worldX - hwhWidth >= halfway.x && this.worldX + hwhWidth <= halfway.x;
+            let mouseOnHalfwayY = this.worldY - hwhWidth >= halfway.y && this.worldY + hwhWidth <= halfway.y;
+            console.log(mouseOnHalfwayX, mouseOnHalfwayY);
+            let mouseOnHalfway = mouseOnHalfwayX && mouseOnHalfwayY;
+            */
+            let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 20*20
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = mouseOnHalfway ? "red" : "rgba(200, 200, 200, 0.8)";
+            // this.ctx.arc(halfway.x, halfway.y, 20, 0, fullCircleRadians);
+            this.ctx.moveTo(halfway.x - 10, halfway.y - 10);
+            this.ctx.lineTo(halfway.x + 10, halfway.y + 10);
+            this.ctx.moveTo(halfway.x + 10, halfway.y - 10);
+            this.ctx.lineTo(halfway.x - 10, halfway.y + 10);
+            this.ctx.stroke();
+            this.ctx.closePath();
         }
         for (let node of this.nodes){
             this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
@@ -323,3 +343,13 @@ class Diagrams {
         this.draw();
     }
 }
+
+// http://www.independent-software.com/determining-coordinates-on-a-html-canvas-bezier-curve.html
+function getBezierXY(t, sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey) {
+    return {
+      x: Math.pow(1-t,3) * sx + 3 * t * Math.pow(1 - t, 2) * cp1x 
+        + 3 * t * t * (1 - t) * cp2x + t * t * t * ex,
+      y: Math.pow(1-t,3) * sy + 3 * t * Math.pow(1 - t, 2) * cp1y 
+        + 3 * t * t * (1 - t) * cp2y + t * t * t * ey
+    };
+  }
