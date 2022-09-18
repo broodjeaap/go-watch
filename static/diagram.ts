@@ -99,6 +99,9 @@ function diagramOnMouseMove(ev: MouseEvent){
 function diagramOnWheel(ev: WheelEvent){
     //_diagram.onwheel(ev);
 }
+function diagramOnContext(ev: MouseEvent){
+    ev.preventDefault();
+}
 
 class Diagrams {
     canvas: HTMLCanvasElement;
@@ -140,6 +143,7 @@ class Diagrams {
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
         this.canvas.onwheel = diagramOnWheel;
+        this.canvas.oncontextmenu = diagramOnContext;
         window.onresize = diargramOnResize;
 
     }
@@ -218,6 +222,10 @@ class Diagrams {
     }
 
     onmouseup(ev: MouseEvent){
+        if (ev.button != 0){
+            return;
+        }
+
         this.panning = false;
         this.nodeDragging = null;
         if (this.makingConnectionNode !== null){
@@ -388,11 +396,7 @@ class Diagrams {
     removeConnection(A: DiagramNode, B: DiagramNode){
         this.connections.splice(this.connections.indexOf([A, B]), 1);
     }
-
-    drawDiagramNode(node: DiagramNode){
-        
-    }
-
+    
     fillParent(){
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;

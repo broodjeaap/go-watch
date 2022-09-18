@@ -75,6 +75,9 @@ function diagramOnMouseMove(ev) {
 function diagramOnWheel(ev) {
     //_diagram.onwheel(ev);
 }
+function diagramOnContext(ev) {
+    ev.preventDefault();
+}
 var Diagrams = /** @class */ (function () {
     function Diagrams(canvasId) {
         this.nodes = new Array();
@@ -105,6 +108,7 @@ var Diagrams = /** @class */ (function () {
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
         this.canvas.onwheel = diagramOnWheel;
+        this.canvas.oncontextmenu = diagramOnContext;
         window.onresize = diargramOnResize;
     }
     Diagrams.prototype.onmousemove = function (ev) {
@@ -181,6 +185,9 @@ var Diagrams = /** @class */ (function () {
         this.panning = true;
     };
     Diagrams.prototype.onmouseup = function (ev) {
+        if (ev.button != 0) {
+            return;
+        }
         this.panning = false;
         this.nodeDragging = null;
         if (this.makingConnectionNode !== null) {
@@ -323,8 +330,6 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.removeConnection = function (A, B) {
         this.connections.splice(this.connections.indexOf([A, B]), 1);
-    };
-    Diagrams.prototype.drawDiagramNode = function (node) {
     };
     Diagrams.prototype.fillParent = function () {
         this.canvas.width = this.canvas.clientWidth;
