@@ -13,6 +13,8 @@ class DiagramNode {
     parents: Array<DiagramNode>;
     children: Array<DiagramNode>;
 
+    meta: Object = {};
+
     constructor(
         id: number,
         x: number, 
@@ -20,6 +22,7 @@ class DiagramNode {
         width: number,
         height: number,
         label: string,
+        meta: Object = {}
     ){
         this.id = id;
         this.x = x;
@@ -27,6 +30,7 @@ class DiagramNode {
         this.width = width;
         this.height = height;
         this.label = label;
+        this.meta = meta;
     }
 
     pointInNode(x: number, y: number){
@@ -384,10 +388,10 @@ class Diagrams {
         }
     }
 
-    addNode(id: number, x: number, y: number, label: string){
+    addNode(id: number, x: number, y: number, label: string, meta: Object = {}){
         let textSize = this.ctx.measureText(label);
         let textHeight = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label));
+        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label, meta));
     }
 
     addConnection(A: DiagramNode, B: DiagramNode){

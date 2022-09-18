@@ -1,14 +1,17 @@
 var DiagramNode = /** @class */ (function () {
-    function DiagramNode(id, x, y, width, height, label) {
+    function DiagramNode(id, x, y, width, height, label, meta) {
+        if (meta === void 0) { meta = {}; }
         this.hover = false;
         this.inputHover = false;
         this.outputHover = false;
+        this.meta = {};
         this.id = id;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.label = label;
+        this.meta = meta;
     }
     DiagramNode.prototype.pointInNode = function (x, y) {
         if (x < this.x) {
@@ -320,10 +323,11 @@ var Diagrams = /** @class */ (function () {
             this.ctx.fill();
         }
     };
-    Diagrams.prototype.addNode = function (id, x, y, label) {
+    Diagrams.prototype.addNode = function (id, x, y, label, meta) {
+        if (meta === void 0) { meta = {}; }
         var textSize = this.ctx.measureText(label);
         var textHeight = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label));
+        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label, meta));
     };
     Diagrams.prototype.addConnection = function (A, B) {
         this.connections.push([A, B]);
