@@ -333,7 +333,14 @@ var Diagrams = /** @class */ (function () {
         this.connections.push([A, B]);
     };
     Diagrams.prototype.removeConnection = function (A, B) {
-        this.connections.splice(this.connections.indexOf([A, B]), 1);
+        var index = 0;
+        for (var _i = 0, _a = this.connections; _i < _a.length; _i++) {
+            var _b = _a[_i], output = _b[0], input = _b[1];
+            if (output.id == A.id && input.id == B.id) {
+                this.connections.splice(index, 1);
+            }
+            index++;
+        }
     };
     Diagrams.prototype.onresize = function () {
         this.fillParent();

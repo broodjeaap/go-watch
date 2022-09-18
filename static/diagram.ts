@@ -398,7 +398,13 @@ class Diagrams {
         this.connections.push([A, B]);
     }
     removeConnection(A: DiagramNode, B: DiagramNode){
-        this.connections.splice(this.connections.indexOf([A, B]), 1);
+        let index = 0;
+        for (let [output, input] of this.connections){
+            if (output.id == A.id && input.id == B.id) {
+                this.connections.splice(index, 1);
+            }
+            index++;
+        }
     }
 
     onresize(){
