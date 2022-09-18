@@ -96,7 +96,6 @@ function onSubmitNewFilter(){
 }
 
 function editNode(node: DiagramNode){
-    console.log(node);
     let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
     addFilterButton.click();
 

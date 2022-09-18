@@ -82,7 +82,6 @@ function onSubmitNewFilter() {
     });
 }
 function editNode(node) {
-    console.log(node);
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
