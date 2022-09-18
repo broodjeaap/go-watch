@@ -226,7 +226,15 @@ class Diagrams {
                     continue;
                 }
                 if(node.pointInInputCircle(this.worldX, this.worldY)){
-                    this.addConnection(this.makingConnectionNode, node);
+                    let connectionExists = false;
+                    for (let [output, input] of this.connections) {
+                        if (this.makingConnectionNode.id == output.id && node.id == input.id){
+                            connectionExists = true;
+                        }
+                    }
+                    if (!connectionExists){
+                        this.addConnection(this.makingConnectionNode, node);
+                    }
                 }
             }
             this.makingConnectionNode = null;
@@ -260,7 +268,8 @@ class Diagrams {
             let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
             let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
             if (mouseOnHalfway){
-                this.connections.splice(this.connections.indexOf([output, input]), 1)
+                this.removeConnection(output, input);
+                break;
             }
         }
         
@@ -375,6 +384,9 @@ class Diagrams {
 
     addConnection(A: DiagramNode, B: DiagramNode){
         this.connections.push([A, B]);
+    }
+    removeConnection(A: DiagramNode, B: DiagramNode){
+        this.connections.splice(this.connections.indexOf([A, B]), 1);
     }
 
     drawDiagramNode(node: DiagramNode){

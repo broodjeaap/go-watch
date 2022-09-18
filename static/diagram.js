@@ -190,17 +190,26 @@ var Diagrams = /** @class */ (function () {
                     continue;
                 }
                 if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                    this.addConnection(this.makingConnectionNode, node);
+                    var connectionExists = false;
+                    for (var _b = 0, _c = this.connections; _b < _c.length; _b++) {
+                        var _d = _c[_b], output = _d[0], input = _d[1];
+                        if (this.makingConnectionNode.id == output.id && node.id == input.id) {
+                            connectionExists = true;
+                        }
+                    }
+                    if (!connectionExists) {
+                        this.addConnection(this.makingConnectionNode, node);
+                    }
                 }
             }
             this.makingConnectionNode = null;
         }
-        for (var _b = 0, _c = this.connections; _b < _c.length; _b++) {
-            var _d = _c[_b], output = _d[0], input = _d[1];
-            var _e = output.getOutputCircleXY(), outputX = _e[0], outputY = _e[1];
+        for (var _e = 0, _f = this.connections; _e < _f.length; _e++) {
+            var _g = _f[_e], output = _g[0], input = _g[1];
+            var _h = output.getOutputCircleXY(), outputX = _h[0], outputY = _h[1];
             outputX += this.cameraX;
             outputY += this.cameraY;
-            var _f = input.getInputCircleXY(), inputX = _f[0], inputY = _f[1];
+            var _j = input.getInputCircleXY(), inputX = _j[0], inputY = _j[1];
             inputX += this.cameraX;
             inputY += this.cameraY;
             var dX = Math.abs(outputX - inputX);
@@ -217,7 +226,8 @@ var Diagrams = /** @class */ (function () {
             var halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY);
             var mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10 * 10;
             if (mouseOnHalfway) {
-                this.connections.splice(this.connections.indexOf([output, input]), 1);
+                this.removeConnection(output, input);
+                break;
             }
         }
         this.draw();
@@ -310,6 +320,9 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.addConnection = function (A, B) {
         this.connections.push([A, B]);
+    };
+    Diagrams.prototype.removeConnection = function (A, B) {
+        this.connections.splice(this.connections.indexOf([A, B]), 1);
     };
     Diagrams.prototype.drawDiagramNode = function (node) {
     };
