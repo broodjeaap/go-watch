@@ -74,7 +74,7 @@ function onSubmitNewFilter() {
     var var1Input = document.getElementById("var1Input");
     var var2Input = document.getElementById("var2Input");
     var var3Input = document.getElementById("var3Input");
-    _diagram.addNode(Math.max.apply(Math, _diagram.nodes.map(function (n) { return n.id; })) + 1, _diagram.canvas.width / 2, _diagram.canvas.height / 2, name, {
+    _diagram.addNode(Math.max.apply(Math, _diagram.nodes.map(function (n) { return n.id; })) + 1, _diagram.canvas.width / 2 - _diagram.cameraX, _diagram.canvas.height / 2 - _diagram.cameraY, name, {
         type: type,
         var1: var1Input.value,
         var2: var2Input.value,
@@ -84,7 +84,7 @@ function onSubmitNewFilter() {
 function newFilterInit() {
     var select = document.getElementById("typeInput");
     select.onchange = onTypeChange;
-    var button = document.getElementById("submitFilterButton");
-    button.onclick = onSubmitNewFilter;
+    var submitButton = document.getElementById("submitFilterButton");
+    submitButton.onclick = onSubmitNewFilter;
 }
 document.addEventListener('DOMContentLoaded', newFilterInit, false);

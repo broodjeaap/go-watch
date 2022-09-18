@@ -85,8 +85,8 @@ function onSubmitNewFilter(){
 
     _diagram.addNode(
         Math.max(..._diagram.nodes.map(n => n.id)) + 1,
-        _diagram.canvas.width / 2, 
-        _diagram.canvas.height / 2, 
+        _diagram.canvas.width / 2 - _diagram.cameraX, 
+        _diagram.canvas.height / 2 - _diagram.cameraY, 
         name, {
             type: type,
             var1: var1Input.value,
@@ -99,7 +99,7 @@ function newFilterInit(){
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     select.onchange = onTypeChange;
 
-    let button = document.getElementById("submitFilterButton") as HTMLButtonElement;
-    button.onclick = onSubmitNewFilter
+    let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
+    submitButton.onclick = onSubmitNewFilter
 }
 document.addEventListener('DOMContentLoaded', newFilterInit, false);
