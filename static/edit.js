@@ -84,7 +84,7 @@ function onSubmitNewFilter() {
 function newFilterInit() {
     var select = document.getElementById("typeInput");
     select.onchange = onTypeChange;
-    var button = document.getElementById("newFilterButton");
+    var button = document.getElementById("submitFilterButton");
     button.onclick = onSubmitNewFilter;
 }
 document.addEventListener('DOMContentLoaded', newFilterInit, false);

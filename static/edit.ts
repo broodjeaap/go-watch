@@ -99,7 +99,7 @@ function newFilterInit(){
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     select.onchange = onTypeChange;
 
-    let button = document.getElementById("newFilterButton") as HTMLButtonElement;
+    let button = document.getElementById("submitFilterButton") as HTMLButtonElement;
     button.onclick = onSubmitNewFilter
 }
 document.addEventListener('DOMContentLoaded', newFilterInit, false);

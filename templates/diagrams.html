@@ -12,16 +12,16 @@
 
 {{ define "left" }}
 <div>
-    <button type="button" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#newFilterModal">
+    <button type="button" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
         Add Filter
     </button>
 </div>
 
-<div class="modal fade" id="newFilterModal" tabindex="-1" aria-labelledby="newFilterModalLabel" aria-hidden="true">
+<div class="modal fade" id="FilterModal" tabindex="-1" aria-labelledby="FilterModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="newFilterModalLabel">Add Filter</h5>
+                <h5 class="modal-title" id="FilterModalLabel">Add Filter</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                     </form>
-                    <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="newFilterButton">Add Filter</button>
+                    <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
                 </div>
             </div>
         </div>
