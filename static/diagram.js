@@ -61,7 +61,7 @@ var DiagramNode = /** @class */ (function () {
 }());
 var _diagram;
 function diargramOnResize() {
-    _diagram.fillParent();
+    _diagram.onresize();
 }
 function diagramOnMouseDown(ev) {
     _diagram.onmousedown(ev);
@@ -330,6 +330,9 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.removeConnection = function (A, B) {
         this.connections.splice(this.connections.indexOf([A, B]), 1);
+    };
+    Diagrams.prototype.onresize = function () {
+        this.fillParent();
     };
     Diagrams.prototype.fillParent = function () {
         this.canvas.width = this.canvas.clientWidth;

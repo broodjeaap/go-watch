@@ -85,7 +85,7 @@ class DiagramNode {
 
 let _diagram: Diagrams;
 function diargramOnResize(){
-    _diagram.fillParent();
+    _diagram.onresize();
 }
 function diagramOnMouseDown(ev: MouseEvent){
     _diagram.onmousedown(ev);
@@ -396,7 +396,11 @@ class Diagrams {
     removeConnection(A: DiagramNode, B: DiagramNode){
         this.connections.splice(this.connections.indexOf([A, B]), 1);
     }
-    
+
+    onresize(){
+        this.fillParent();
+    }
+
     fillParent(){
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
