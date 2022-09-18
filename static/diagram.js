@@ -1,5 +1,5 @@
 var DiagramNode = /** @class */ (function () {
-    function DiagramNode(id, x, y, width, height, label, meta) {
+    function DiagramNode(id, x, y, label, meta) {
         if (meta === void 0) { meta = {}; }
         this.hover = false;
         this.inputHover = false;
@@ -8,11 +8,16 @@ var DiagramNode = /** @class */ (function () {
         this.id = id;
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
         this.label = label;
         this.meta = meta;
+        this.resize();
     }
+    DiagramNode.prototype.resize = function () {
+        var textSize = _diagram.ctx.measureText(this.label);
+        var height = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
+        this.width = textSize.width + height;
+        this.height = height;
+    };
     DiagramNode.prototype.pointInNode = function (x, y) {
         if (x < this.x) {
             return false;
@@ -82,7 +87,8 @@ function diagramOnContext(ev) {
     ev.preventDefault();
 }
 var Diagrams = /** @class */ (function () {
-    function Diagrams(canvasId) {
+    function Diagrams(canvasId, editNodeCallback) {
+        if (editNodeCallback === void 0) { editNodeCallback = function () { }; }
         this.nodes = new Array();
         this.connections = new Array();
         this.cameraX = 0; // camera position
@@ -96,6 +102,7 @@ var Diagrams = /** @class */ (function () {
         this.nodeHover = null;
         this.makingConnectionNode = null;
         this.scale = 1.0;
+        this.editNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
         if (this.canvas === null) {
             throw "Could not getElementById " + canvasId;
@@ -113,6 +120,7 @@ var Diagrams = /** @class */ (function () {
         this.canvas.onwheel = diagramOnWheel;
         this.canvas.oncontextmenu = diagramOnContext;
         window.onresize = diargramOnResize;
+        this.editNodeCallback = editNodeCallback;
     }
     Diagrams.prototype.onmousemove = function (ev) {
         var canvasRect = this.canvas.getBoundingClientRect();
@@ -188,21 +196,29 @@ var Diagrams = /** @class */ (function () {
         this.panning = true;
     };
     Diagrams.prototype.onmouseup = function (ev) {
+        if (ev.button == 2) {
+            for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
+                var node = _a[_i];
+                if (node.pointInNode(this.worldX, this.worldY)) {
+                    this.editNodeCallback(node);
+                }
+            }
+        }
         if (ev.button != 0) {
             return;
         }
         this.panning = false;
         this.nodeDragging = null;
         if (this.makingConnectionNode !== null) {
-            for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
-                var node = _a[_i];
+            for (var _b = 0, _c = this.nodes; _b < _c.length; _b++) {
+                var node = _c[_b];
                 if (node == this.makingConnectionNode) {
                     continue;
                 }
                 if (node.pointInInputCircle(this.worldX, this.worldY)) {
                     var connectionExists = false;
-                    for (var _b = 0, _c = this.connections; _b < _c.length; _b++) {
-                        var _d = _c[_b], output = _d[0], input = _d[1];
+                    for (var _d = 0, _e = this.connections; _d < _e.length; _d++) {
+                        var _f = _e[_d], output = _f[0], input = _f[1];
                         if (this.makingConnectionNode.id == output.id && node.id == input.id) {
                             connectionExists = true;
                         }
@@ -214,12 +230,12 @@ var Diagrams = /** @class */ (function () {
             }
             this.makingConnectionNode = null;
         }
-        for (var _e = 0, _f = this.connections; _e < _f.length; _e++) {
-            var _g = _f[_e], output = _g[0], input = _g[1];
-            var _h = output.getOutputCircleXY(), outputX = _h[0], outputY = _h[1];
+        for (var _g = 0, _h = this.connections; _g < _h.length; _g++) {
+            var _j = _h[_g], output = _j[0], input = _j[1];
+            var _k = output.getOutputCircleXY(), outputX = _k[0], outputY = _k[1];
             outputX += this.cameraX;
             outputY += this.cameraY;
-            var _j = input.getInputCircleXY(), inputX = _j[0], inputY = _j[1];
+            var _l = input.getInputCircleXY(), inputX = _l[0], inputY = _l[1];
             inputX += this.cameraX;
             inputY += this.cameraY;
             var dX = Math.abs(outputX - inputX);
@@ -325,9 +341,7 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.addNode = function (id, x, y, label, meta) {
         if (meta === void 0) { meta = {}; }
-        var textSize = this.ctx.measureText(label);
-        var textHeight = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label, meta));
+        this.nodes.push(new DiagramNode(id, x, y, label, meta));
     };
     Diagrams.prototype.addConnection = function (A, B) {
         this.connections.push([A, B]);

@@ -81,10 +81,66 @@ function onSubmitNewFilter() {
         var3: var3Input.value
     });
 }
+function editNode(node) {
+    console.log(node);
+    var addFilterButton = document.getElementById("filterButton");
+    addFilterButton.click();
+    var name = node.label;
+    // @ts-ignore
+    var type = node.meta.type;
+    // @ts-ignore
+    var var1 = node.meta.var1;
+    // @ts-ignore
+    var var2 = node.meta.var2;
+    if (var2 === undefined) {
+        var2 = "";
+    }
+    // @ts-ignore
+    var var3 = node.meta.var3;
+    if (var3 === undefined) {
+        var3 = "";
+    }
+    var nameInput = document.getElementById("nameInput");
+    nameInput.value = name;
+    var selectType = document.getElementById("typeInput");
+    selectType.value = type;
+    var var1Input = document.getElementById("var1Input");
+    var1Input.value = var1;
+    var var2Input = document.getElementById("var2Input");
+    var2Input.value = var2;
+    var var3Input = document.getElementById("var3Input");
+    var3Input.value = var3;
+    onTypeChange();
+    var submitButton = document.getElementById("submitFilterButton");
+    submitButton.innerHTML = "Save";
+    submitButton.onclick = function () { submitEditNode(node); };
+}
+function submitEditNode(node) {
+    var nameInput = document.getElementById("nameInput");
+    node.label = nameInput.value;
+    var selectType = document.getElementById("typeInput");
+    // @ts-ignore
+    node.meta.type = selectType.value;
+    var var1Input = document.getElementById("var1Input");
+    // @ts-ignore
+    node.meta.var1 = var1Input.value;
+    var var2Input = document.getElementById("var2Input");
+    // @ts-ignore
+    node.meta.var2 = var2Input.value;
+    var var3Input = document.getElementById("var3Input");
+    // @ts-ignore
+    node.meta.var3 = var3Input.value;
+    node.resize();
+}
+function addFilterButtonClicked() {
+    var submitButton = document.getElementById("submitFilterButton");
+    submitButton.onclick = onSubmitNewFilter;
+    submitButton.innerHTML = "Add Filter";
+}
 function newFilterInit() {
     var select = document.getElementById("typeInput");
     select.onchange = onTypeChange;
-    var submitButton = document.getElementById("submitFilterButton");
-    submitButton.onclick = onSubmitNewFilter;
+    var addFilterButton = document.getElementById("filterButton");
+    addFilterButton.onclick = addFilterButtonClicked;
 }
 document.addEventListener('DOMContentLoaded', newFilterInit, false);

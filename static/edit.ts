@@ -95,11 +95,82 @@ function onSubmitNewFilter(){
     })
 }
 
+function editNode(node: DiagramNode){
+    console.log(node);
+    let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
+    addFilterButton.click();
+
+    let name = node.label;
+    // @ts-ignore
+    let type = node.meta.type;
+    // @ts-ignore
+    let var1 = node.meta.var1;
+    // @ts-ignore
+    let var2 = node.meta.var2;
+    if (var2 === undefined){
+        var2 = "";
+    }
+    // @ts-ignore
+    let var3 = node.meta.var3;
+    if (var3 === undefined){
+        var3 = "";
+    }
+
+    let nameInput = document.getElementById("nameInput") as HTMLInputElement;
+    nameInput.value = name;
+
+    let selectType = document.getElementById("typeInput") as HTMLSelectElement;
+    selectType.value = type;
+    
+    let var1Input = document.getElementById("var1Input") as HTMLInputElement;
+    var1Input.value = var1;
+    
+    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
+    var2Input.value = var2;
+
+    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
+    var3Input.value = var3;
+
+    onTypeChange();
+    let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
+    submitButton.innerHTML = "Save";
+    submitButton.onclick = function() {submitEditNode(node);}
+}
+
+function submitEditNode(node: DiagramNode){
+    let nameInput = document.getElementById("nameInput") as HTMLInputElement;
+    node.label = nameInput.value;
+
+    let selectType = document.getElementById("typeInput") as HTMLSelectElement;
+    // @ts-ignore
+    node.meta.type = selectType.value
+    
+    let var1Input = document.getElementById("var1Input") as HTMLInputElement;
+    // @ts-ignore
+    node.meta.var1 = var1Input.value;
+    
+    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
+    // @ts-ignore
+    node.meta.var2 = var2Input.value;
+
+    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
+    // @ts-ignore
+    node.meta.var3 = var3Input.value;
+
+    node.resize();
+}
+
+function addFilterButtonClicked(){
+    let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
+    submitButton.onclick = onSubmitNewFilter
+    submitButton.innerHTML = "Add Filter"
+}
+
 function newFilterInit(){
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     select.onchange = onTypeChange;
 
-    let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
-    submitButton.onclick = onSubmitNewFilter
+    let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
+    addFilterButton.onclick = addFilterButtonClicked
 }
 document.addEventListener('DOMContentLoaded', newFilterInit, false);

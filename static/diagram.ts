@@ -19,18 +19,22 @@ class DiagramNode {
         id: number,
         x: number, 
         y: number, 
-        width: number,
-        height: number,
         label: string,
         meta: Object = {}
     ){
         this.id = id;
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
         this.label = label;
         this.meta = meta;
+        this.resize();
+    }
+
+    resize(){
+        let textSize = _diagram.ctx.measureText(this.label);
+        let height = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
+        this.width = textSize.width + height;
+        this.height = height;
     }
 
     pointInNode(x: number, y: number){
@@ -131,7 +135,9 @@ class Diagrams {
 
     scale: number = 1.0;
 
-    constructor(canvasId: string){
+    editNodeCallback: (node: DiagramNode) => void = function (){};
+
+    constructor(canvasId: string, editNodeCallback: (node: DiagramNode) => void = function (){}){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
             throw `Could not getElementById ${canvasId}`;
@@ -149,7 +155,7 @@ class Diagrams {
         this.canvas.onwheel = diagramOnWheel;
         this.canvas.oncontextmenu = diagramOnContext;
         window.onresize = diargramOnResize;
-
+        this.editNodeCallback = editNodeCallback;
     }
 
     onmousemove(ev: MouseEvent){
@@ -226,6 +232,13 @@ class Diagrams {
     }
 
     onmouseup(ev: MouseEvent){
+        if (ev.button == 2) {
+            for (let node of this.nodes){
+                if (node.pointInNode(this.worldX, this.worldY)){
+                    this.editNodeCallback(node);
+                }
+            }
+        }
         if (ev.button != 0){
             return;
         }
@@ -389,9 +402,7 @@ class Diagrams {
     }
 
     addNode(id: number, x: number, y: number, label: string, meta: Object = {}){
-        let textSize = this.ctx.measureText(label);
-        let textHeight = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.nodes.push(new DiagramNode(id, x, y, textSize.width + textHeight, textHeight, label, meta));
+        this.nodes.push(new DiagramNode(id, x, y, label, meta));
     }
 
     addConnection(A: DiagramNode, B: DiagramNode){

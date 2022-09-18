@@ -12,7 +12,7 @@
 
 {{ define "left" }}
 <div>
-    <button type="button" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
+    <button type="button" id="filterButton" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
         Add Filter
     </button>
 </div>
@@ -70,10 +70,10 @@
 <script>
 var diagrams;
 function canvasInit() {
-    diagrams = new Diagrams("canvas");
-    diagrams.addNode(1, 100, 100, "Test");
-    diagrams.addNode(2, 300, 300, "Test2");
-    diagrams.addNode(3, 500, 500, "A much longer name");
+    diagrams = new Diagrams("canvas", editNode);
+    diagrams.addNode(1, 100, 100, "Test", {type: "json"});
+    diagrams.addNode(2, 300, 300, "Test2", {type: "css"});
+    diagrams.addNode(3, 500, 500, "A much longer name", {type: "replace"});
     diagrams.fillParent();
 }
 document.addEventListener('DOMContentLoaded', canvasInit, false);
