@@ -42,10 +42,10 @@ var DiagramNode = /** @class */ (function () {
         return true;
     };
     DiagramNode.prototype.getInputCircleXY = function () {
-        return [this.x, this.y + this.height / 3];
+        return [this.x, this.y + this.height / 2];
     };
     DiagramNode.prototype.getOutputCircleXY = function () {
-        return [this.x + this.width, this.y + this.height / 3];
+        return [this.x + this.width, this.y + this.height / 2];
     };
     DiagramNode.prototype.pointInInputCircle = function (x, y) {
         var _a = this.getInputCircleXY(), circleX = _a[0], circleY = _a[1];

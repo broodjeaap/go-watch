@@ -63,11 +63,11 @@ class DiagramNode {
     }
 
     getInputCircleXY(){
-        return [this.x, this.y + this.height / 3]
+        return [this.x, this.y + this.height / 2]
     }
 
     getOutputCircleXY(){
-        return [this.x + this.width, this.y + this.height / 3]
+        return [this.x + this.width, this.y + this.height / 2]
     }
 
     pointInInputCircle(x: number, y: number){
