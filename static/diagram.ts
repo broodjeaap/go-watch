@@ -231,6 +231,38 @@ class Diagrams {
             }
             this.makingConnectionNode = null;
         }
+
+        for (let [output, input] of this.connections){
+            let [outputX, outputY] = output.getOutputCircleXY();
+            outputX += this.cameraX;
+            outputY += this.cameraY;
+            let [inputX, inputY] = input.getInputCircleXY();
+            inputX += this.cameraX;
+            inputY += this.cameraY;
+            let dX = Math.abs(outputX - inputX);
+            this.ctx.beginPath();
+            this.ctx.moveTo(outputX, outputY);
+            this.ctx.strokeStyle = "black";
+            let cp1x = (outputX + dX / 2);
+            let cp1y = outputY;
+            let cp2x = (inputX - dX / 2);
+            let cp2y = inputY;
+            this.ctx.bezierCurveTo(
+                cp1x, 
+                cp1y, 
+                cp2x, 
+                cp2y, 
+                inputX, 
+                inputY
+            );
+            this.ctx.stroke();
+            this.ctx.closePath();
+            let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
+            let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
+            if (mouseOnHalfway){
+                this.connections.splice(this.connections.indexOf([output, input]), 1)
+            }
+        }
         
         this.draw();
     }
@@ -303,7 +335,7 @@ class Diagrams {
             this.ctx.stroke();
             this.ctx.closePath();
             let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
-            let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 20*20
+            let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
             this.ctx.beginPath();
             this.ctx.strokeStyle = mouseOnHalfway ? "red" : "rgba(200, 200, 200, 0.8)";
             this.ctx.moveTo(halfway.x - 10, halfway.y - 10);
@@ -343,6 +375,10 @@ class Diagrams {
 
     addConnection(A: DiagramNode, B: DiagramNode){
         this.connections.push([A, B]);
+    }
+
+    drawDiagramNode(node: DiagramNode){
+        
     }
 
     fillParent(){

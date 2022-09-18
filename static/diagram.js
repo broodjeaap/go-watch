@@ -195,6 +195,31 @@ var Diagrams = /** @class */ (function () {
             }
             this.makingConnectionNode = null;
         }
+        for (var _b = 0, _c = this.connections; _b < _c.length; _b++) {
+            var _d = _c[_b], output = _d[0], input = _d[1];
+            var _e = output.getOutputCircleXY(), outputX = _e[0], outputY = _e[1];
+            outputX += this.cameraX;
+            outputY += this.cameraY;
+            var _f = input.getInputCircleXY(), inputX = _f[0], inputY = _f[1];
+            inputX += this.cameraX;
+            inputY += this.cameraY;
+            var dX = Math.abs(outputX - inputX);
+            this.ctx.beginPath();
+            this.ctx.moveTo(outputX, outputY);
+            this.ctx.strokeStyle = "black";
+            var cp1x = (outputX + dX / 2);
+            var cp1y = outputY;
+            var cp2x = (inputX - dX / 2);
+            var cp2y = inputY;
+            this.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, inputX, inputY);
+            this.ctx.stroke();
+            this.ctx.closePath();
+            var halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY);
+            var mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10 * 10;
+            if (mouseOnHalfway) {
+                this.connections.splice(this.connections.indexOf([output, input]), 1);
+            }
+        }
         this.draw();
     };
     Diagrams.prototype.onwheel = function (ev) {
@@ -250,7 +275,7 @@ var Diagrams = /** @class */ (function () {
             this.ctx.stroke();
             this.ctx.closePath();
             var halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY);
-            var mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 20 * 20;
+            var mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10 * 10;
             this.ctx.beginPath();
             this.ctx.strokeStyle = mouseOnHalfway ? "red" : "rgba(200, 200, 200, 0.8)";
             this.ctx.moveTo(halfway.x - 10, halfway.y - 10);
@@ -285,6 +310,8 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.addConnection = function (A, B) {
         this.connections.push([A, B]);
+    };
+    Diagrams.prototype.drawDiagramNode = function (node) {
     };
     Diagrams.prototype.fillParent = function () {
         this.canvas.width = this.canvas.clientWidth;
