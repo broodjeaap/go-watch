@@ -145,7 +145,6 @@ var ContextMenu = /** @class */ (function () {
         }
         for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
             var item = _a[_i];
-            console.log(item.hover);
             if (item.hover) {
                 item.callback(this.contextNode);
             }
@@ -184,8 +183,9 @@ function diagramOnContext(ev) {
     ev.preventDefault();
 }
 var Diagrams = /** @class */ (function () {
-    function Diagrams(canvasId, editNodeCallback) {
+    function Diagrams(canvasId, editNodeCallback, deleteNodeCallback) {
         if (editNodeCallback === void 0) { editNodeCallback = function () { }; }
+        if (deleteNodeCallback === void 0) { deleteNodeCallback = function () { }; }
         this.nodes = new Array();
         this.connections = new Array();
         this.cameraX = 0; // camera position
@@ -200,6 +200,7 @@ var Diagrams = /** @class */ (function () {
         this.makingConnectionNode = null;
         this.scale = 1.0;
         this.editNodeCallback = function () { };
+        this.deleteNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
         if (this.canvas === null) {
             throw "Could not getElementById " + canvasId;
@@ -212,7 +213,7 @@ var Diagrams = /** @class */ (function () {
         this.ctx = ctx;
         this.contextMenu = new ContextMenu(this.ctx);
         this.contextMenu.items.push(new ContextMenuItem("Edit", editNodeCallback));
-        this.contextMenu.items.push(new ContextMenuItem("Delete", editNodeCallback));
+        this.contextMenu.items.push(new ContextMenuItem("Delete", deleteNodeCallback));
         this.contextMenu.fitContextMenu();
         this.ctx.font = "20px Helvetica";
         this.canvas.onmousemove = diagramOnMouseMove;
@@ -222,6 +223,7 @@ var Diagrams = /** @class */ (function () {
         this.canvas.oncontextmenu = diagramOnContext;
         window.onresize = diargramOnResize;
         this.editNodeCallback = editNodeCallback;
+        this.deleteNodeCallback = deleteNodeCallback;
     }
     Diagrams.prototype.onmousemove = function (ev) {
         var canvasRect = this.canvas.getBoundingClientRect();

@@ -114,6 +114,23 @@ function editNode(node) {
     submitButton.innerHTML = "Save";
     submitButton.onclick = function () { submitEditNode(node); };
 }
+function deleteNode(node) {
+    var index = 0;
+    for (var _i = 0, _a = _diagram.nodes; _i < _a.length; _i++) {
+        var n = _a[_i];
+        if (node.id == n.id) {
+            _diagram.nodes.splice(index, 1);
+        }
+        index++;
+    }
+    for (var i = 0; i < _diagram.connections.length; i++) {
+        var _b = _diagram.connections[i], output = _b[0], input = _b[1];
+        if (node.id == output.id || node.id == input.id) {
+            _diagram.connections.splice(i, 1);
+            i--;
+        }
+    }
+}
 function submitEditNode(node) {
     var nameInput = document.getElementById("nameInput");
     node.label = nameInput.value;

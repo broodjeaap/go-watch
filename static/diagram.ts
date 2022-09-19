@@ -172,7 +172,6 @@ class ContextMenu {
             return
         }
         for (let item of this.items){
-            console.log(item.hover);
             if(item.hover){
                 item.callback(this.contextNode);
             }
@@ -236,10 +235,15 @@ class Diagrams {
     scale: number = 1.0;
 
     editNodeCallback: (node: DiagramNode) => void = function (){};
+    deleteNodeCallback: (node: DiagramNode) => void = function (){};
 
     contextMenu: ContextMenu;
 
-    constructor(canvasId: string, editNodeCallback: (node: DiagramNode) => void = function (){}){
+    constructor(
+            canvasId: string, 
+            editNodeCallback: (node: DiagramNode) => void = function (){},
+            deleteNodeCallback: (node: DiagramNode) => void = function (){}
+        ){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
             throw `Could not getElementById ${canvasId}`;
@@ -252,7 +256,7 @@ class Diagrams {
         this.ctx = ctx;
         this.contextMenu = new ContextMenu(this.ctx);
         this.contextMenu.items.push(new ContextMenuItem("Edit", editNodeCallback))
-        this.contextMenu.items.push(new ContextMenuItem("Delete", editNodeCallback))
+        this.contextMenu.items.push(new ContextMenuItem("Delete", deleteNodeCallback))
         this.contextMenu.fitContextMenu();
         this.ctx.font = "20px Helvetica";
         this.canvas.onmousemove = diagramOnMouseMove;
@@ -262,6 +266,7 @@ class Diagrams {
         this.canvas.oncontextmenu = diagramOnContext;
         window.onresize = diargramOnResize;
         this.editNodeCallback = editNodeCallback;
+        this.deleteNodeCallback = deleteNodeCallback;
     }
 
     onmousemove(ev: MouseEvent){

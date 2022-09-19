@@ -136,6 +136,23 @@ function editNode(node: DiagramNode){
     submitButton.onclick = function() {submitEditNode(node);}
 }
 
+function deleteNode(node: DiagramNode){
+    let index = 0;
+    for (let n of _diagram.nodes){
+        if (node.id == n.id){
+            _diagram.nodes.splice(index, 1);
+        }
+        index++;
+    }
+    for (let i = 0; i < _diagram.connections.length; i++){
+        let [output, input] = _diagram.connections[i];
+        if (node.id == output.id || node.id == input.id){
+            _diagram.connections.splice(i, 1)
+            i--;
+        }
+    }
+}
+
 function submitEditNode(node: DiagramNode){
     let nameInput = document.getElementById("nameInput") as HTMLInputElement;
     node.label = nameInput.value;
