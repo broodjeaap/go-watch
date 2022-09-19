@@ -91,6 +91,106 @@ class DiagramNode {
     }
 }
 
+class ContextMenuItem {
+    x: number = 0;
+    y: number = 0;
+    hover: boolean = false;
+    callback: (node: DiagramNode) => void = function(node){}
+    label: string;
+
+    constructor(label: string, callback: (node: DiagramNode) => void){
+        this.label = label;
+        this.callback = callback;
+    }
+}
+class ContextMenu {
+    x: number = 0;
+    y: number = 0;
+    active: boolean = false;
+    mouseOver: boolean = false;
+    textWidth: number = 0;
+    textHeight: number = 0;
+    textMargin: number = 0;
+    width: number = 0;
+    height: number = 0;
+    ctx: CanvasRenderingContext2D;
+    items: Array<ContextMenuItem> = new Array();
+
+    contextNode: DiagramNode | null = null;
+
+    constructor(ctx: CanvasRenderingContext2D){
+        this.ctx = ctx;
+        this.ctx.font = "20px Helvetica";
+        let textSize = this.ctx.measureText("SomeLongerText");
+        this.textWidth = textSize.width;
+        this.textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
+        this.textMargin = this.textWidth / 8;
+    }
+
+    fitContextMenu(){
+        this.width = this.textWidth + this.textMargin * 2;
+        this.height = this.textHeight + this.textMargin * (this.items.length + 2)
+        let index = 0;
+        for (let item of this.items){
+            item.x = this.textMargin;
+            item.y = this.textHeight * index + this.textMargin * (index + 2);
+            index++;
+        }
+    }
+
+    pointIn(x: number, y: number){
+        if (x < this.x){
+            this.mouseOver = false;
+            return false;
+        }
+        if (y < this.y){
+            this.mouseOver = false;
+            return false;
+        }
+        if (x > this.x + this.width) {
+            this.mouseOver = false;
+            return false;
+        }
+        if (y > this.y + this.height) {
+            this.mouseOver = false;
+            return false;
+        }
+        for (let item of this.items){
+            if (y >= this.y + item.y - this.textHeight && y <= this.y + item.y + this.textHeight){
+                item.hover = true;
+            } else {
+                item.hover = false;
+            }
+        }
+        this.mouseOver = true;
+        return true;
+    }
+
+    clickOn(){
+        if(this.contextNode == null){
+            console.warn("No contextNode");
+            return
+        }
+        for (let item of this.items){
+            console.log(item.hover);
+            if(item.hover){
+                item.callback(this.contextNode);
+            }
+        }
+    }
+
+    draw(){
+        let cameraX = _diagram.cameraX;
+        let cameraY = _diagram.cameraY;
+        this.ctx.fillStyle = "lightblue";
+        this.ctx.fillRect(this.x + cameraX, this.y + cameraY, this.width, this.height);
+        for (let item of this.items){
+            this.ctx.fillStyle = this.mouseOver && item.hover ? "red" : "black";
+            this.ctx.fillText(item.label, this.x + item.x + cameraX, this.y + item.y + cameraY);
+        }
+    }
+}
+
 let _diagram: Diagrams;
 function diargramOnResize(){
     _diagram.onresize();
@@ -137,6 +237,8 @@ class Diagrams {
 
     editNodeCallback: (node: DiagramNode) => void = function (){};
 
+    contextMenu: ContextMenu;
+
     constructor(canvasId: string, editNodeCallback: (node: DiagramNode) => void = function (){}){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
@@ -148,6 +250,10 @@ class Diagrams {
         }
         _diagram = this;
         this.ctx = ctx;
+        this.contextMenu = new ContextMenu(this.ctx);
+        this.contextMenu.items.push(new ContextMenuItem("Edit", editNodeCallback))
+        this.contextMenu.items.push(new ContextMenuItem("Delete", editNodeCallback))
+        this.contextMenu.fitContextMenu();
         this.ctx.font = "20px Helvetica";
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
@@ -165,7 +271,9 @@ class Diagrams {
         this.worldX = this.mouseX - this.cameraX;
         this.worldY = this.mouseY - this.cameraY;
 
-        if (this.nodeHover != null){
+        if (this.contextMenu.active){
+            this.contextMenu.pointIn(this.worldX, this.worldY);
+        } else if (this.nodeHover != null){
             this.nodeHover.hover = false;
             this.nodeHover.inputHover = false
             this.nodeHover.outputHover = false
@@ -207,6 +315,8 @@ class Diagrams {
         if (ev.button != 0){
             return;
         }
+        
+        //this.contextMenu.active = false;
 
         let canvasRect = this.canvas.getBoundingClientRect();
         this.mouseX = ev.x - canvasRect.left;
@@ -235,7 +345,11 @@ class Diagrams {
         if (ev.button == 2) {
             for (let node of this.nodes){
                 if (node.pointInNode(this.worldX, this.worldY)){
-                    this.editNodeCallback(node);
+                    this.contextMenu.x = this.worldX;
+                    this.contextMenu.y = this.worldY;
+                    this.contextMenu.active = true;
+                    this.contextMenu.contextNode = node;
+                    this.draw();
                 }
             }
         }
@@ -263,6 +377,13 @@ class Diagrams {
                 }
             }
             this.makingConnectionNode = null;
+        }
+        if (this.contextMenu.active){
+            if (this.contextMenu.pointIn(this.worldX, this.worldY)){
+                this.contextMenu.clickOn();
+                this.draw();
+            }
+            this.contextMenu.active = false;
         }
 
         for (let [output, input] of this.connections){
@@ -398,6 +519,9 @@ class Diagrams {
             this.ctx.moveTo(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY);
             this.ctx.arc(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
             this.ctx.fill();
+        }
+        if (this.contextMenu.active){
+            this.contextMenu.draw();
         }
     }
 
