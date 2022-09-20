@@ -84,7 +84,7 @@ function onSubmitNewFilter(){
     let var3Input = document.getElementById("var3Input") as HTMLInputElement;
 
     _diagram.addNode(
-        Math.max(..._diagram.nodes.map(n => n.id)) + 1,
+        Math.max(...Array.from(_diagram.nodes.values()).map(n => n.id)) + 1,
         _diagram.canvas.width / 2 - _diagram.cameraX, 
         _diagram.canvas.height / 2 - _diagram.cameraY, 
         name, {
@@ -137,13 +137,7 @@ function editNode(node: DiagramNode){
 }
 
 function deleteNode(node: DiagramNode){
-    let index = 0;
-    for (let n of _diagram.nodes){
-        if (node.id == n.id){
-            _diagram.nodes.splice(index, 1);
-        }
-        index++;
-    }
+    _diagram.nodes.delete(node.id)
     for (let i = 0; i < _diagram.connections.length; i++){
         let [output, input] = _diagram.connections[i];
         if (node.id == output.id || node.id == input.id){

@@ -63,20 +63,26 @@ func (web Web) deleteWatch(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
-type FilterDepth struct {
-	Filter   *Filter
-	Depth    []struct{}
-	RevDepth []struct{}
+func (web Web) watchView(c *gin.Context) {
+	id := c.Param("id")
+
+	var watch Watch
+	web.db.Model(&Watch{}).First(&watch, id)
+
+	var filters []Filter
+	web.db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
+
+	var connections []FilterConnection
+	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
+
+	c.HTML(http.StatusOK, "watch", gin.H{
+		"Watch":       watch,
+		"Filters":     filters,
+		"Connections": connections,
+	})
 }
 
-func FilterPrint(filter *Filter, depth int) {
-	for _, f := range filter.Filters {
-		log.Println("----")
-		log.Println(depth, f)
-		FilterPrint(&f, depth+1)
-	}
-}
-
+/*
 func (web Web) viewWatch(c *gin.Context) {
 	id := c.Param("id")
 
@@ -135,6 +141,7 @@ func (web Web) viewWatch(c *gin.Context) {
 		"ColumnWidth": 100 / numberOfColumns,
 	})
 }
+*/
 
 func (web Web) createFilter(c *gin.Context) {
 	var filter Filter
@@ -161,7 +168,7 @@ func (web Web) updateFilter(c *gin.Context) {
 	filter.Name = filterUpdate.Name
 	filter.Type = filterUpdate.Type
 	filter.Var1 = filterUpdate.From
-	filter.Var2 = &filterUpdate.To
+	//filter.Var2 = &filterUpdate.To
 	web.db.Save(&filter)
 	c.Redirect(http.StatusSeeOther, "/group/edit/")
 }
@@ -221,37 +228,40 @@ func main() {
 	}
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
-	db.AutoMigrate(&Watch{}, &Filter{})
+	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{})
 
-	/*
-		filters := []Filter{}
-		watch := Watch{
-			Name:     "LG C2 42",
-			Interval: 60,
-			Filters:  filters,
-		}
-		db.Create(&watch)
+	watch := Watch{
+		Name:     "LG C2 42",
+		Interval: 60,
+	}
+	db.Create(&watch)
 
-		urlFilter := Filter{
-			WatchID:  watch.ID,
-			ParentID: nil,
-			Parent:   nil,
-			Name:     "PriceWatch Fetch",
-			Type:     "url",
-			Var1:     "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
-		}
-		db.Create(&urlFilter)
+	urlFilter := Filter{
+		WatchID: watch.ID,
+		Name:    "PriceWatch Fetch",
+		X:       100,
+		Y:       100,
+		Type:    "url",
+		Var1:    "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
+	}
+	db.Create(&urlFilter)
 
-		xpathFilter := Filter{
-			WatchID:  watch.ID,
-			Watch:    watch,
-			ParentID: &urlFilter.ID,
-			Name:     "price select",
-			Type:     "xpath",
-			Var1:     "//td[@class='shop-price']",
-		}
-		db.Create(&xpathFilter)
-	*/
+	xpathFilter := Filter{
+		WatchID: watch.ID,
+		Name:    "price select",
+		X:       300,
+		Y:       300,
+		Type:    "xpath",
+		Var1:    "//td[@class='shop-price']",
+	}
+	db.Create(&xpathFilter)
+
+	connection := FilterConnection{
+		WatchID:  watch.ID,
+		OutputID: urlFilter.ID,
+		InputID:  xpathFilter.ID,
+	}
+	db.Create(&connection)
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
 	//bot.Debug = true
@@ -274,7 +284,7 @@ func main() {
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
 	templates.AddFromFiles("editGroup", "templates/base.html", "templates/editGroup.html")
 
-	templates.AddFromFiles("canvas", "templates/base.html", "templates/diagrams.html")
+	templates.AddFromFiles("watch", "templates/base.html", "templates/diagrams.html")
 
 	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
@@ -283,12 +293,12 @@ func main() {
 	router.GET("/watch/new", web.newWatch)
 	router.POST("/watch/create", web.createWatch)
 	router.POST("/watch/delete", web.deleteWatch)
-	router.GET("/watch/view/:id/", web.viewWatch)
+	//router.GET("/watch/view/:id/", web.viewWatch)
 	router.POST("/filter/create/", web.createFilter)
 	router.POST("/filter/update/", web.updateFilter)
 	router.POST("/filter/delete/", web.deleteFilter)
 
-	router.GET("/canvas/", web.canvas)
+	router.GET("/watch/:id", web.watchView)
 
 	router.Run("0.0.0.0:8080")
 }

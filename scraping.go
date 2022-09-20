@@ -1,18 +1,6 @@
 package main
 
-import (
-	"bytes"
-	"log"
-	"regexp"
-	"strconv"
-	"strings"
-
-	"github.com/andybalholm/cascadia"
-	"github.com/antchfx/htmlquery"
-	"github.com/tidwall/gjson"
-	"golang.org/x/net/html"
-)
-
+/*
 func getFilterResults(filter *Filter) {
 	getFilterResult(filter)
 	for _, filter := range filter.Filters {
@@ -208,3 +196,4 @@ func getFilterResultSubstring(filter *Filter) {
 		filter.Results = append(filter.Results, sb.String())
 	}
 }
+*/

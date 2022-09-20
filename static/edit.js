@@ -1,3 +1,23 @@
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 function onTypeChange() {
     var select = document.getElementById("typeInput");
     var type = select.value;
@@ -74,7 +94,7 @@ function onSubmitNewFilter() {
     var var1Input = document.getElementById("var1Input");
     var var2Input = document.getElementById("var2Input");
     var var3Input = document.getElementById("var3Input");
-    _diagram.addNode(Math.max.apply(Math, _diagram.nodes.map(function (n) { return n.id; })) + 1, _diagram.canvas.width / 2 - _diagram.cameraX, _diagram.canvas.height / 2 - _diagram.cameraY, name, {
+    _diagram.addNode(Math.max.apply(Math, __spread(Array.from(_diagram.nodes.values()).map(function (n) { return n.id; }))) + 1, _diagram.canvas.width / 2 - _diagram.cameraX, _diagram.canvas.height / 2 - _diagram.cameraY, name, {
         type: type,
         var1: var1Input.value,
         var2: var2Input.value,
@@ -115,16 +135,9 @@ function editNode(node) {
     submitButton.onclick = function () { submitEditNode(node); };
 }
 function deleteNode(node) {
-    var index = 0;
-    for (var _i = 0, _a = _diagram.nodes; _i < _a.length; _i++) {
-        var n = _a[_i];
-        if (node.id == n.id) {
-            _diagram.nodes.splice(index, 1);
-        }
-        index++;
-    }
+    _diagram.nodes["delete"](node.id);
     for (var i = 0; i < _diagram.connections.length; i++) {
-        var _b = _diagram.connections[i], output = _b[0], input = _b[1];
+        var _a = __read(_diagram.connections[i], 2), output = _a[0], input = _a[1];
         if (node.id == output.id || node.id == input.id) {
             _diagram.connections.splice(i, 1);
             i--;

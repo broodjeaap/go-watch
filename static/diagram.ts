@@ -214,7 +214,7 @@ class Diagrams {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
-    nodes: Array<DiagramNode> = new Array();
+    nodes: Map<number, DiagramNode> = new Map();
 
     connections: Array<[DiagramNode, DiagramNode]> = new Array();
 
@@ -295,7 +295,7 @@ class Diagrams {
             this.nodeDragging.x += ev.movementX;
             this.nodeDragging.y += ev.movementY;
         } else {
-            for (let node of this.nodes){
+            for (let [_, node] of this.nodes){
                 if (node.pointNearNode(this.worldX, this.worldY)){
                     if (node.pointInInputCircle(this.worldX, this.worldY)) {
                         node.inputHover = true;
@@ -328,7 +328,7 @@ class Diagrams {
         this.mouseY = ev.y - canvasRect.top;
         this.worldX = this.mouseX - this.cameraX;
         this.worldY = this.mouseY - this.cameraY;
-        for (let node of this.nodes){
+        for (let [_, node] of this.nodes){
             if (node.pointNearNode(this.worldX, this.worldY)){
                 if (node.pointInInputCircle(this.worldX, this.worldY)) {
                     // no dragging from inputs ?
@@ -348,7 +348,7 @@ class Diagrams {
 
     onmouseup(ev: MouseEvent){
         if (ev.button == 2) {
-            for (let node of this.nodes){
+            for (let [_, node] of this.nodes){
                 if (node.pointInNode(this.worldX, this.worldY)){
                     this.contextMenu.x = this.worldX;
                     this.contextMenu.y = this.worldY;
@@ -365,7 +365,7 @@ class Diagrams {
         this.panning = false;
         this.nodeDragging = null;
         if (this.makingConnectionNode !== null){
-            for (let node of this.nodes){
+            for (let [_, node] of this.nodes){
                 if (node == this.makingConnectionNode){
                     continue;
                 }
@@ -505,7 +505,7 @@ class Diagrams {
             this.ctx.stroke();
             this.ctx.closePath();
         }
-        for (let node of this.nodes){
+        for (let [_, node] of this.nodes){
             this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
             this.ctx.fillRect(node.x + this.cameraX, node.y + this.cameraY, node.width, node.height);
             this.ctx.fillStyle = "#D3D3D3";
@@ -531,11 +531,24 @@ class Diagrams {
     }
 
     addNode(id: number, x: number, y: number, label: string, meta: Object = {}){
-        this.nodes.push(new DiagramNode(id, x, y, label, meta));
+        this.nodes.set(id, new DiagramNode(id, x, y, label, meta));
     }
 
     addConnection(A: DiagramNode, B: DiagramNode){
         this.connections.push([A, B]);
+    }
+    addConnectionById(a: number, b: number){
+        let A = this.nodes.get(a);
+        if (A === undefined){
+            console.error(`No node with ID: ${a}`);
+            return;
+        }
+        let B = this.nodes.get(b);
+        if (B === undefined){
+            console.error(`No node with ID: ${b}`);
+            return;
+        }
+        this.connections.push([A, B])
     }
     removeConnection(A: DiagramNode, B: DiagramNode){
         let index = 0;

@@ -8,6 +8,7 @@
 
     </canvas>
 </div>
+
 {{ end }}
 
 {{ define "left" }}
@@ -64,6 +65,58 @@
         </div>
     </div>
 </div>
+
+
+<div>
+    <button type="button" id="filterButton" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#WatchModal">
+        Edit Watch
+    </button>
+</div>
+
+<div class="modal fade" id="WatchModal" tabindex="-1" aria-labelledby="WatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="WatchModalLabel">Watch - {{ .Watch.Name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <form action="/watch/save" method="post">
+                        <div class="mb-3 m-3 row">
+                            <label for="watchNameInput" class="col-sm-2 col-form-label">Name:</label>
+                            <div class="col-sm-10 p-2">
+                                <input type="text" class="form-control" id="watchNameInput" name="watch_name" value="{{ .Watch.Name }}" placeholder="Name">
+                            </div>
+
+                            <label for="scheduleInput" class="col-sm-2 col-form-label">Schedule:</label>
+                            <div class="col-sm-10 p-2">
+                                <select id="scheduleInput" class="form-control" name="schedule">
+                                    <option value=".ID">.Name</option>
+                                </select>
+                            </div>
+                            <label for="proxyInput" class="col-sm-2 col-form-label">Proxy Pool:</label>
+                            <div class="col-sm-10 p-2">
+                                <select id="proxyInput" class="form-control" name="proxy_pool">
+                                    <option value=".ID">.Name</option>
+                                </select>
+                            </div>
+                            <label for="intervalInput" class="col-sm-2 col-form-label">Interval</label>
+                            <div class="col-sm-10 p-2">
+                                <input type="number" class="form-control" name="interval" id="intervalInput" placeholder="">
+                            </div>
+                            <input type="hidden" name="filters" value="">
+                            <input type="hidden" name="connections" value="">
+                        </div>
+                    </form>
+                    <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {{ end }}
 
 {{define "scripts"}}
@@ -71,9 +124,23 @@
 var diagrams;
 function canvasInit() {
     diagrams = new Diagrams("canvas", editNode, deleteNode);
-    diagrams.addNode(1, 100, 100, "Test", {type: "json"});
-    diagrams.addNode(2, 300, 300, "Test2", {type: "css"});
-    diagrams.addNode(3, 500, 500, "A much longer name", {type: "replace"});
+    {{ range .Filters }}
+        diagrams.addNode(
+            {{ .ID }}, 
+            {{ .X }}, 
+            {{ .Y }}, 
+            {{ .Name }}, 
+            {
+                type: "{{ .Type }}",
+                var1: "{{ .Var1 }}",
+                var2: "{{ .Var2 }}",
+                var3: "{{ .Var3 }}",
+            }
+        );
+    {{ end }}
+    {{ range .Connections }}
+        diagrams.addConnectionById({{ .OutputID }}, {{ .InputID }});
+    {{ end }}
     diagrams.fillParent();
 }
 document.addEventListener('DOMContentLoaded', canvasInit, false);
