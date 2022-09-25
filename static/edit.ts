@@ -170,17 +170,60 @@ function submitEditNode(node: DiagramNode){
     node.resize();
 }
 
+function saveWatch(){
+    let watchIdInput = document.getElementById("watch_id") as HTMLInputElement;
+    let watchId = Number(watchIdInput.value);
+    let filters = new Array<Object>();
+    for (let filter of _diagram.nodes.values()){
+        filters.push({
+            WatchID: watchId,
+            id: filter.id,
+            filter_name: filter.label,
+            x: filter.x,
+            y: filter.y,
+            // @ts-ignore
+            filter_type: filter.meta.type,
+            // @ts-ignore
+            var1: filter.meta.var1,
+            // @ts-ignore
+            var2: filter.meta.var2,
+            // @ts-ignore
+            var3: filter.meta.var3,
+        })
+    }
+    let filtersInput = document.getElementById("filtersInput") as HTMLInputElement;
+    filtersInput.value = JSON.stringify(filters);
+
+    let connections = new Array<Object>();
+    for (let [output, input] of _diagram.connections){
+        connections.push({
+            WatchID: watchId,
+            filter_output_id: output.id,
+            filter_input_id: input.id,
+        })
+    }
+    let connectionsInput = document.getElementById("connectionsInput") as HTMLInputElement;
+    connectionsInput.value = JSON.stringify(connections);
+
+    let saveWatchForm = document.getElementById("saveWatchForm") as HTMLFormElement;
+    saveWatchForm.submit();
+}
+
 function addFilterButtonClicked(){
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.onclick = onSubmitNewFilter
     submitButton.innerHTML = "Add Filter"
 }
 
-function newFilterInit(){
+function pageInit(){
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     select.onchange = onTypeChange;
 
     let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
     addFilterButton.onclick = addFilterButtonClicked
+
+    let saveButton = document.getElementById("saveButton") as HTMLButtonElement;
+    saveButton.onclick = saveWatch;
 }
-document.addEventListener('DOMContentLoaded', newFilterInit, false);
+
+document.addEventListener('DOMContentLoaded', pageInit, false);

@@ -82,8 +82,9 @@
             </div>
             <div class="modal-body">
                 <div>
-                    <form action="/watch/save" method="post">
+                    <form action="/watch/save" id="saveWatchForm" method="post">
                         <div class="mb-3 m-3 row">
+                            <input type="hidden" id="watch_id" name="watch_id" value="{{ .Watch.ID }}">
                             <label for="watchNameInput" class="col-sm-2 col-form-label">Name:</label>
                             <div class="col-sm-10 p-2">
                                 <input type="text" class="form-control" id="watchNameInput" name="watch_name" value="{{ .Watch.Name }}" placeholder="Name">
@@ -105,16 +106,17 @@
                             <div class="col-sm-10 p-2">
                                 <input type="number" class="form-control" name="interval" id="intervalInput" placeholder="">
                             </div>
-                            <input type="hidden" name="filters" value="">
-                            <input type="hidden" name="connections" value="">
+                            <input type="hidden" id="filtersInput" name="filters" value="">
+                            <input type="hidden" id="connectionsInput" name="connections" value="">
                         </div>
                     </form>
-                    <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Save</button>
+                    <button class="btn btn-primary mt-4" id="saveButton" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 
 
 {{ end }}

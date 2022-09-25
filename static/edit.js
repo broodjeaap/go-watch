@@ -18,6 +18,17 @@ var __spread = (this && this.__spread) || function () {
     for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
     return ar;
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 function onTypeChange() {
     var select = document.getElementById("typeInput");
     var type = select.value;
@@ -161,15 +172,74 @@ function submitEditNode(node) {
     node.meta.var3 = var3Input.value;
     node.resize();
 }
+function saveWatch() {
+    var e_1, _a, e_2, _b;
+    var watchIdInput = document.getElementById("watch_id");
+    var watchId = Number(watchIdInput.value);
+    var filters = new Array();
+    try {
+        for (var _c = __values(_diagram.nodes.values()), _d = _c.next(); !_d.done; _d = _c.next()) {
+            var filter = _d.value;
+            filters.push({
+                WatchID: watchId,
+                id: filter.id,
+                filter_name: filter.label,
+                x: filter.x,
+                y: filter.y,
+                // @ts-ignore
+                filter_type: filter.meta.type,
+                // @ts-ignore
+                var1: filter.meta.var1,
+                // @ts-ignore
+                var2: filter.meta.var2,
+                // @ts-ignore
+                var3: filter.meta.var3
+            });
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    var filtersInput = document.getElementById("filtersInput");
+    filtersInput.value = JSON.stringify(filters);
+    var connections = new Array();
+    try {
+        for (var _e = __values(_diagram.connections), _f = _e.next(); !_f.done; _f = _e.next()) {
+            var _g = __read(_f.value, 2), output = _g[0], input = _g[1];
+            connections.push({
+                WatchID: watchId,
+                filter_output_id: output.id,
+                filter_input_id: input.id
+            });
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
+    var connectionsInput = document.getElementById("connectionsInput");
+    connectionsInput.value = JSON.stringify(connections);
+    var saveWatchForm = document.getElementById("saveWatchForm");
+    saveWatchForm.submit();
+}
 function addFilterButtonClicked() {
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.onclick = onSubmitNewFilter;
     submitButton.innerHTML = "Add Filter";
 }
-function newFilterInit() {
+function pageInit() {
     var select = document.getElementById("typeInput");
     select.onchange = onTypeChange;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.onclick = addFilterButtonClicked;
+    var saveButton = document.getElementById("saveButton");
+    saveButton.onclick = saveWatch;
 }
-document.addEventListener('DOMContentLoaded', newFilterInit, false);
+document.addEventListener('DOMContentLoaded', pageInit, false);

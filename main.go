@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -80,6 +81,29 @@ func (web Web) watchView(c *gin.Context) {
 		"Filters":     filters,
 		"Connections": connections,
 	})
+}
+
+func (web Web) watchSave(c *gin.Context) {
+	var watchId = c.PostForm("watch_id")
+
+	var watch Watch
+	web.db.Model(&Watch{}).First(&watch, watchId)
+
+	var filters []Filter
+	var filtersJson = c.PostForm("filters")
+	if err := json.Unmarshal([]byte(filtersJson), &filters); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	var connections []FilterConnection
+	var connectionsJson = c.PostForm("connections")
+	if err := json.Unmarshal([]byte(connectionsJson), &connections); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch.ID))
 }
 
 /*
@@ -299,6 +323,7 @@ func main() {
 	router.POST("/filter/delete/", web.deleteFilter)
 
 	router.GET("/watch/:id", web.watchView)
+	router.POST("/watch/save", web.watchSave)
 
 	router.Run("0.0.0.0:8080")
 }
