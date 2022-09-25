@@ -114,7 +114,6 @@ func (web Web) watchUpdate(c *gin.Context) {
 	}
 
 	web.db.Delete(&FilterConnection{}, "watch_id = ?", watch.ID)
-	log.Println(len(filterMap))
 	for i := range newConnections {
 		connection := &newConnections[i]
 		connection.OutputID = filterMap[connection.OutputID].ID
