@@ -245,7 +245,7 @@ func TestFilterSubstring(t *testing.T) {
 			getFilterResultSubstring(
 				&filter,
 			)
-			if filter.Results[0] != test.Want {
+			if len(filter.Results) > 0 && filter.Results[0] != test.Want {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
