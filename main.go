@@ -43,7 +43,6 @@ func (web Web) watchCreate(c *gin.Context) {
 }
 
 func (web Web) watchCreatePost(c *gin.Context) {
-	log.Println("TEST")
 	var watch Watch
 	errMap, err := bindAndValidateWatch(&watch, c)
 	if err != nil {
@@ -77,14 +76,14 @@ func (web Web) watchView(c *gin.Context) {
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
-	c.HTML(http.StatusOK, "watch", gin.H{
+	c.HTML(http.StatusOK, "watchView", gin.H{
 		"Watch":       watch,
 		"Filters":     filters,
 		"Connections": connections,
 	})
 }
 
-func (web Web) watchSave(c *gin.Context) {
+func (web Web) watchUpdate(c *gin.Context) {
 	var watch Watch
 	bindAndValidateWatch(&watch, c)
 
@@ -289,22 +288,19 @@ func main() {
 
 	templates := multitemplate.NewRenderer()
 	templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
-	templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watchCreate.html")
-	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
-	templates.AddFromFiles("editGroup", "templates/base.html", "templates/editGroup.html")
-
-	templates.AddFromFiles("watch", "templates/base.html", "templates/diagrams.html")
+	templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watch/create.html")
+	templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
 
 	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
 
 	router.GET("/", web.index)
-	router.GET("/watch/new", web.watchCreate)
-	router.POST("/watch/create", web.watchCreatePost)
 	router.POST("/watch/delete", web.deleteWatch)
 
 	router.GET("/watch/:id", web.watchView)
-	router.POST("/watch/save", web.watchSave)
+	router.GET("/watch/new", web.watchCreate)
+	router.POST("/watch/create", web.watchCreatePost)
+	router.POST("/watch/update", web.watchUpdate)
 
 	router.Run("0.0.0.0:8080")
 }

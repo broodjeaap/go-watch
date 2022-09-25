@@ -73,7 +73,7 @@
     </button>
 </div>
 <div>
-    <button type="button" id="filterButton" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#WatchModal">
+    <button type="button" id="saveButtonMain" class="btn btn-primary btn-block btn-sm">
         Save
     </button>
 </div>
@@ -87,7 +87,7 @@
             </div>
             <div class="modal-body">
                 <div>
-                    <form action="/watch/save" id="saveWatchForm" method="post">
+                    <form action="/watch/update" id="saveWatchForm" method="post">
                         <div class="mb-3 m-3 row">
                             <input type="hidden" id="watch_id" name="watch_id" value="{{ .Watch.ID }}">
                             <label for="watchNameInput" class="col-sm-2 col-form-label">Name:</label>
@@ -111,7 +111,7 @@
                             <input type="hidden" id="connectionsInput" name="connections" value="">
                         </div>
                     </form>
-                    <button class="btn btn-primary mt-4" id="saveButton" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
+                    <button class="btn btn-primary mt-4" id="saveButtonModal" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
                 </div>
             </div>
         </div>

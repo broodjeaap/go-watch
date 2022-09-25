@@ -239,7 +239,9 @@ function pageInit() {
     select.onchange = onTypeChange;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.onclick = addFilterButtonClicked;
-    var saveButton = document.getElementById("saveButton");
-    saveButton.onclick = saveWatch;
+    var saveButtonModal = document.getElementById("saveButtonModal");
+    saveButtonModal.onclick = saveWatch;
+    var saveButtonMain = document.getElementById("saveButtonMain");
+    saveButtonMain.onclick = saveWatch;
 }
 document.addEventListener('DOMContentLoaded', pageInit, false);

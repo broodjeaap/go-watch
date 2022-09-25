@@ -222,8 +222,11 @@ function pageInit(){
     let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
     addFilterButton.onclick = addFilterButtonClicked
 
-    let saveButton = document.getElementById("saveButton") as HTMLButtonElement;
-    saveButton.onclick = saveWatch;
+    let saveButtonModal = document.getElementById("saveButtonModal") as HTMLButtonElement;
+    saveButtonModal.onclick = saveWatch;
+    
+    let saveButtonMain = document.getElementById("saveButtonMain") as HTMLButtonElement;
+    saveButtonMain.onclick = saveWatch;
 }
 
 document.addEventListener('DOMContentLoaded', pageInit, false);
