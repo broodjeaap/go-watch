@@ -38,11 +38,12 @@ func (web Web) canvas(c *gin.Context) {
 	c.HTML(http.StatusOK, "canvas", gin.H{})
 }
 
-func (web Web) newWatch(c *gin.Context) {
-	c.HTML(http.StatusOK, "newWatch", gin.H{})
+func (web Web) watchCreate(c *gin.Context) {
+	c.HTML(http.StatusOK, "watchCreate", gin.H{})
 }
 
-func (web Web) createWatch(c *gin.Context) {
+func (web Web) watchCreatePost(c *gin.Context) {
+	log.Println("TEST")
 	var watch Watch
 	errMap, err := bindAndValidateWatch(&watch, c)
 	if err != nil {
@@ -50,7 +51,7 @@ func (web Web) createWatch(c *gin.Context) {
 		return
 	}
 	web.db.Create(&watch)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch.ID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
 }
 
 func (web Web) deleteWatch(c *gin.Context) {
@@ -84,26 +85,51 @@ func (web Web) watchView(c *gin.Context) {
 }
 
 func (web Web) watchSave(c *gin.Context) {
-	var watchId = c.PostForm("watch_id")
-
 	var watch Watch
-	web.db.Model(&Watch{}).First(&watch, watchId)
+	bindAndValidateWatch(&watch, c)
 
-	var filters []Filter
+	web.db.Save(&watch)
+
+	var newFilters []Filter
 	var filtersJson = c.PostForm("filters")
-	if err := json.Unmarshal([]byte(filtersJson), &filters); err != nil {
+	if err := json.Unmarshal([]byte(filtersJson), &newFilters); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	var connections []FilterConnection
+	var newConnections []FilterConnection
 	var connectionsJson = c.PostForm("connections")
-	if err := json.Unmarshal([]byte(connectionsJson), &connections); err != nil {
+	if err := json.Unmarshal([]byte(connectionsJson), &newConnections); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/view/%d", watch.ID))
+	var oldFilters []Filter
+	web.db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&oldFilters)
+	filterMap := make(map[uint]*Filter)
+	for i := range newFilters {
+		filter := &newFilters[i]
+		filterMap[filter.ID] = filter
+		filter.ID = 0
+	}
+	web.db.Delete(&Filter{}, "watch_id = ?", watch.ID)
+
+	if len(newFilters) > 0 {
+		web.db.Create(&newFilters)
+	}
+
+	web.db.Delete(&FilterConnection{}, "watch_id = ?", watch.ID)
+	log.Println(len(filterMap))
+	for i := range newConnections {
+		connection := &newConnections[i]
+		connection.OutputID = filterMap[connection.OutputID].ID
+		connection.InputID = filterMap[connection.InputID].ID
+	}
+	if len(newConnections) > 0 {
+		web.db.Create(&newConnections)
+	}
+
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
 }
 
 /*
@@ -167,48 +193,6 @@ func (web Web) viewWatch(c *gin.Context) {
 }
 */
 
-func (web Web) createFilter(c *gin.Context) {
-	var filter Filter
-	errMap, err := bindAndValidateFilter(&filter, c)
-	if err != nil {
-		log.Print(err)
-		c.HTML(http.StatusBadRequest, "500", errMap)
-		return
-	}
-	web.db.Create(&filter)
-	c.Redirect(http.StatusSeeOther, "/group/edit")
-}
-
-func (web Web) updateFilter(c *gin.Context) {
-	var filterUpdate FilterUpdate
-	errMap, err := bindAndValidateFilterUpdate(&filterUpdate, c)
-	if err != nil {
-		log.Print(err)
-		c.HTML(http.StatusBadRequest, "500", errMap)
-		return
-	}
-	var filter Filter
-	web.db.First(&filter, filterUpdate.ID)
-	filter.Name = filterUpdate.Name
-	filter.Type = filterUpdate.Type
-	filter.Var1 = filterUpdate.From
-	//filter.Var2 = &filterUpdate.To
-	web.db.Save(&filter)
-	c.Redirect(http.StatusSeeOther, "/group/edit/")
-}
-
-func (web Web) deleteFilter(c *gin.Context) {
-	id, err := strconv.Atoi(c.PostForm("filter_id"))
-	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
-		return
-	}
-
-	group_id := c.PostForm("group_id")
-	web.db.Delete(&Filter{}, id)
-	c.Redirect(http.StatusSeeOther, "/group/edit/"+group_id)
-}
-
 func passiveBot(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -253,39 +237,40 @@ func main() {
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
 	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{})
+	/*
+		watch := Watch{
+			Name:     "LG C2 42",
+			Interval: 60,
+		}
+		db.Create(&watch)
 
-	watch := Watch{
-		Name:     "LG C2 42",
-		Interval: 60,
-	}
-	db.Create(&watch)
+		urlFilter := Filter{
+			WatchID: watch.ID,
+			Name:    "PriceWatch Fetch",
+			X:       100,
+			Y:       100,
+			Type:    "url",
+			Var1:    "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
+		}
+		db.Create(&urlFilter)
 
-	urlFilter := Filter{
-		WatchID: watch.ID,
-		Name:    "PriceWatch Fetch",
-		X:       100,
-		Y:       100,
-		Type:    "url",
-		Var1:    "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
-	}
-	db.Create(&urlFilter)
+		xpathFilter := Filter{
+			WatchID: watch.ID,
+			Name:    "price select",
+			X:       300,
+			Y:       300,
+			Type:    "xpath",
+			Var1:    "//td[@class='shop-price']",
+		}
+		db.Create(&xpathFilter)
 
-	xpathFilter := Filter{
-		WatchID: watch.ID,
-		Name:    "price select",
-		X:       300,
-		Y:       300,
-		Type:    "xpath",
-		Var1:    "//td[@class='shop-price']",
-	}
-	db.Create(&xpathFilter)
-
-	connection := FilterConnection{
-		WatchID:  watch.ID,
-		OutputID: urlFilter.ID,
-		InputID:  xpathFilter.ID,
-	}
-	db.Create(&connection)
+		connection := FilterConnection{
+			WatchID:  watch.ID,
+			OutputID: urlFilter.ID,
+			InputID:  xpathFilter.ID,
+		}
+		db.Create(&connection)
+	*/
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
 	//bot.Debug = true
@@ -304,7 +289,7 @@ func main() {
 
 	templates := multitemplate.NewRenderer()
 	templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
-	templates.AddFromFiles("newWatch", "templates/base.html", "templates/newWatch.html")
+	templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watchCreate.html")
 	templates.AddFromFiles("viewWatch", "templates/base.html", "templates/viewWatch.html")
 	templates.AddFromFiles("editGroup", "templates/base.html", "templates/editGroup.html")
 
@@ -314,13 +299,9 @@ func main() {
 	router.HTMLRender = templates
 
 	router.GET("/", web.index)
-	router.GET("/watch/new", web.newWatch)
-	router.POST("/watch/create", web.createWatch)
+	router.GET("/watch/new", web.watchCreate)
+	router.POST("/watch/create", web.watchCreatePost)
 	router.POST("/watch/delete", web.deleteWatch)
-	//router.GET("/watch/view/:id/", web.viewWatch)
-	router.POST("/filter/create/", web.createFilter)
-	router.POST("/filter/update/", web.updateFilter)
-	router.POST("/filter/delete/", web.deleteFilter)
 
 	router.GET("/watch/:id", web.watchView)
 	router.POST("/watch/save", web.watchSave)

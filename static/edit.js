@@ -181,11 +181,11 @@ function saveWatch() {
         for (var _c = __values(_diagram.nodes.values()), _d = _c.next(); !_d.done; _d = _c.next()) {
             var filter = _d.value;
             filters.push({
-                WatchID: watchId,
-                id: filter.id,
+                filter_watch_id: watchId,
+                filter_id: filter.id,
                 filter_name: filter.label,
-                x: filter.x,
-                y: filter.y,
+                x: Math.round(filter.x),
+                y: Math.round(filter.y),
                 // @ts-ignore
                 filter_type: filter.meta.type,
                 // @ts-ignore
@@ -211,7 +211,7 @@ function saveWatch() {
         for (var _e = __values(_diagram.connections), _f = _e.next(); !_f.done; _f = _e.next()) {
             var _g = __read(_f.value, 2), output = _g[0], input = _g[1];
             connections.push({
-                WatchID: watchId,
+                connection_watch_id: watchId,
                 filter_output_id: output.id,
                 filter_input_id: input.id
             });

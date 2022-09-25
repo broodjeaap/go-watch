@@ -176,11 +176,11 @@ function saveWatch(){
     let filters = new Array<Object>();
     for (let filter of _diagram.nodes.values()){
         filters.push({
-            WatchID: watchId,
-            id: filter.id,
+            filter_watch_id: watchId,
+            filter_id: filter.id,
             filter_name: filter.label,
-            x: filter.x,
-            y: filter.y,
+            x: Math.round(filter.x),
+            y: Math.round(filter.y),
             // @ts-ignore
             filter_type: filter.meta.type,
             // @ts-ignore
@@ -197,7 +197,7 @@ function saveWatch(){
     let connections = new Array<Object>();
     for (let [output, input] of _diagram.connections){
         connections.push({
-            WatchID: watchId,
+            connection_watch_id: watchId,
             filter_output_id: output.id,
             filter_input_id: input.id,
         })

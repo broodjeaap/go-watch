@@ -9,7 +9,7 @@
     </thead>
     <tbody>
         {{ range . }}
-        <tr class="pointer" onclick="window.location='/watch/view/{{ .ID }}'">
+        <tr class="pointer" onclick="window.location='/watch/{{ .ID }}'">
             <td class="h3">{{ .Name }}</td>
             <td class="h3">{{ .Interval }}</td>
             <td>
