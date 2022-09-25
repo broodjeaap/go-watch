@@ -56,8 +56,8 @@ func TestFilterXPath(t *testing.T) {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
-				Parent: &Filter{
-					Results: []string{HTML_STRING},
+				Parents: []*Filter{
+					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
 			}
@@ -86,8 +86,8 @@ func TestFilterJSON(t *testing.T) {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
-				Parent: &Filter{
-					Results: []string{JSON_STRING},
+				Parents: []*Filter{
+					{Results: []string{JSON_STRING}},
 				},
 				Var1: test.Query,
 			}
@@ -117,8 +117,8 @@ func TestFilterCSS(t *testing.T) {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
-				Parent: &Filter{
-					Results: []string{HTML_STRING},
+				Parents: []*Filter{
+					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
 			}
@@ -154,8 +154,8 @@ func TestFilterReplace(t *testing.T) {
 		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
-				Parent: &Filter{
-					Results: []string{test.Input},
+				Parents: []*Filter{
+					{Results: []string{test.Input}},
 				},
 				Var1: test.Query,
 			}
@@ -186,8 +186,8 @@ func TestFilterMatch(t *testing.T) {
 		testname := fmt.Sprintf("%s", test.Query)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
-				Parent: &Filter{
-					Results: []string{test.Input},
+				Parents: []*Filter{
+					{Results: []string{test.Input}},
 				},
 				Var1: test.Query,
 			}
@@ -237,8 +237,8 @@ func TestFilterSubstring(t *testing.T) {
 		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
-				Parent: &Filter{
-					Results: []string{test.Input},
+				Parents: []*Filter{
+					{Results: []string{test.Input}},
 				},
 				Var1: test.Query,
 			}
