@@ -13,8 +13,8 @@
             <td class="h3">{{ .Name }}</td>
             <td class="h3">{{ .Interval }}</td>
             <td>
-                <form action="/query/delete" method="post">
-                    <input type="hidden" name="id" value="{{ .ID }}">
+                <form action="/watch/delete" method="post">
+                    <input type="hidden" name="watch_id" value="{{ .ID }}">
                     <input type="submit" class="btn btn-danger" value="Delete">
                 </form>
             </td>

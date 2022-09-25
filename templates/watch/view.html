@@ -59,7 +59,9 @@
                             </div>
                         </div>
                     </form>
-                    <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
+                    <div>
+                        <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -111,7 +113,11 @@
                             <input type="hidden" id="connectionsInput" name="connections" value="">
                         </div>
                     </form>
-                    <button class="btn btn-primary mt-4" id="saveButtonModal" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
+                    <button class="btn btn-primary mt-4 float-start" id="saveButtonModal" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
+                    <form action="/watch/delete" method="post">
+                        <input type="hidden" name="watch_id" value="{{ .Watch.ID }}">
+                        <button class="btn btn-danger mt-4 float-end"  data-bs-dismiss="modal" id="deleteFilterButton">Delete Filter</button>
+                    </form>
                 </div>
             </div>
         </div>

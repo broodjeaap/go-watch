@@ -49,9 +49,10 @@ func (web Web) watchCreatePost(c *gin.Context) {
 }
 
 func (web Web) deleteWatch(c *gin.Context) {
-	id, err := strconv.Atoi(c.PostForm("id"))
+	id, err := strconv.Atoi(c.PostForm("watch_id"))
 	if err != nil {
-		c.Redirect(http.StatusSeeOther, "/watch/new")
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/")
 		return
 	}
 
@@ -243,12 +244,12 @@ func main() {
 	router.HTMLRender = templates
 
 	router.GET("/", web.index)
-	router.POST("/watch/delete", web.deleteWatch)
 
 	router.GET("/watch/:id", web.watchView)
 	router.GET("/watch/new", web.watchCreate)
 	router.POST("/watch/create", web.watchCreatePost)
 	router.POST("/watch/update", web.watchUpdate)
+	router.POST("/watch/delete", web.deleteWatch)
 
 	router.Run("0.0.0.0:8080")
 }
