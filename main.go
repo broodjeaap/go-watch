@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"text/template"
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
@@ -32,10 +31,6 @@ func (web Web) index(c *gin.Context) {
 	watches := []Watch{}
 	web.db.Find(&watches)
 	c.HTML(http.StatusOK, "index", watches)
-}
-
-func (web Web) canvas(c *gin.Context) {
-	c.HTML(http.StatusOK, "canvas", gin.H{})
 }
 
 func (web Web) watchCreate(c *gin.Context) {
@@ -209,20 +204,6 @@ func passiveBot(bot *tgbotapi.BotAPI) {
 	}
 }
 
-func render(w http.ResponseWriter, filename string, data interface{}) {
-	tmpl, err := template.ParseFiles(filename, baseHTML)
-	if err != nil {
-		log.Print(err)
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
-		return
-	}
-
-	if err := tmpl.Execute(w, data); err != nil {
-		log.Print(err)
-		http.Error(w, "Something went wrong", http.StatusInternalServerError)
-	}
-}
-
 func main() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -236,40 +217,7 @@ func main() {
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
 	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{})
-	/*
-		watch := Watch{
-			Name:     "LG C2 42",
-			Interval: 60,
-		}
-		db.Create(&watch)
 
-		urlFilter := Filter{
-			WatchID: watch.ID,
-			Name:    "PriceWatch Fetch",
-			X:       100,
-			Y:       100,
-			Type:    "url",
-			Var1:    "https://tweakers.net/pricewatch/1799060/lg-c2-42-inch-donkerzilveren-voet-zwart.html",
-		}
-		db.Create(&urlFilter)
-
-		xpathFilter := Filter{
-			WatchID: watch.ID,
-			Name:    "price select",
-			X:       300,
-			Y:       300,
-			Type:    "xpath",
-			Var1:    "//td[@class='shop-price']",
-		}
-		db.Create(&xpathFilter)
-
-		connection := FilterConnection{
-			WatchID:  watch.ID,
-			OutputID: urlFilter.ID,
-			InputID:  xpathFilter.ID,
-		}
-		db.Create(&connection)
-	*/
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
 	//bot.Debug = true
