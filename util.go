@@ -48,3 +48,34 @@ func validate(err error) map[string]string {
 	}
 	return out
 }
+
+func buildFilterTree(filters []Filter, connections []FilterConnection) {
+	filterMap := make(map[uint]*Filter, len(filters))
+	for i := range filters {
+		filter := &filters[i]
+		filterMap[filter.ID] = filter
+	}
+	for i := range connections {
+		connection := &connections[i]
+		outputFilter := filterMap[connection.OutputID]
+		inputFilter := filterMap[connection.InputID]
+
+		outputFilter.Children = append(outputFilter.Children, inputFilter)
+		//log.Println("Adding", inputFilter.Name, "as child to", outputFilter.Name)
+		inputFilter.Parents = append(inputFilter.Parents, outputFilter)
+		//log.Println("Adding", outputFilter.Name, "as parent to", inputFilter.Name)
+	}
+	/*
+		for _, filter := range filters {
+			log.Println("Children of", filter.Name)
+			for _, child := range filter.Children {
+				log.Println("   ", child.Name)
+			}
+
+			log.Println("Parents of", filter.Name)
+			for _, parent := range filter.Parents {
+				log.Println("   ", parent.Name)
+			}
+		}
+	*/
+}
