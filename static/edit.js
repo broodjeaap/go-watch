@@ -32,14 +32,47 @@ var __values = (this && this.__values) || function(o) {
 function onTypeChange() {
     var select = document.getElementById("typeInput");
     var type = select.value;
+    var var1Div = document.getElementById("var1Div");
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
+    var var2Div = document.getElementById("var2Div");
     var var2Input = document.getElementById("var2Input");
     var var2Label = document.getElementById("var2Label");
+    var var3Div = document.getElementById("var3Div");
     var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
     switch (type) {
+        case "gurl": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
+            var1Label.innerHTML = "URL";
+            var1Input.placeholder = "https://shopping.website.com";
+            var2Input.disabled = true;
+            var2Input.placeholder = "";
+            var2Label.innerHTML = "-";
+            var3Input.disabled = true;
+            var3Input.placeholder = "";
+            var3Label.innerHTML = "-";
+            break;
+        }
+        case "gurls": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
+            var1Label.innerHTML = "-";
+            var1Input.placeholder = "From parents";
+            var1Input.value = "-";
+            var1Input.disabled = true;
+            var2Input.disabled = true;
+            var2Input.placeholder = "";
+            var2Label.innerHTML = "-";
+            var3Input.disabled = true;
+            var3Input.placeholder = "";
+            var3Label.innerHTML = "-";
+            break;
+        }
         case "xpath": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
             var1Label.innerHTML = "XPath";
             var1Input.placeholder = "//a[@class='price";
             var2Input.disabled = true;
@@ -51,6 +84,8 @@ function onTypeChange() {
             break;
         }
         case "json": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
             var1Label.innerHTML = "JSON";
             var1Input.placeholder = "products.#.price";
             var2Input.disabled = true;
@@ -60,6 +95,8 @@ function onTypeChange() {
             break;
         }
         case "css": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
             var1Label.innerHTML = "Selector";
             var1Input.placeholder = ".price";
             var2Input.disabled = true;
@@ -69,6 +106,8 @@ function onTypeChange() {
             break;
         }
         case "replace": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
             var1Label.innerHTML = "Regex";
             var1Input.placeholder = "So[mM]e(thing|where)";
             var2Input.disabled = false;
@@ -78,6 +117,8 @@ function onTypeChange() {
             break;
         }
         case "match": {
+            var1Div.innerHTML = "";
+            var1Div.appendChild(var1Input);
             var1Label.innerHTML = "Regex";
             var1Input.placeholder = "So[mM]e(thing|where)";
             var2Input.disabled = true;
@@ -92,6 +133,36 @@ function onTypeChange() {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            break;
+        }
+        case "math": {
+            var mathSelect = document.createElement("select");
+            mathSelect.classList.add("form-control");
+            var mathOptionMin = document.createElement("option");
+            mathOptionMin.value = "min";
+            mathOptionMin.innerHTML = "Min";
+            mathSelect.appendChild(mathOptionMin);
+            var mathOptionMax = document.createElement("option");
+            mathOptionMax.value = "max";
+            mathOptionMax.innerHTML = "Max";
+            mathSelect.appendChild(mathOptionMax);
+            var mathOptionAvg = document.createElement("option");
+            mathOptionAvg.value = "average";
+            mathOptionAvg.innerHTML = "Average";
+            mathSelect.appendChild(mathOptionAvg);
+            var mathOptionCount = document.createElement("option");
+            mathOptionCount.value = "count";
+            mathOptionCount.innerHTML = "Count";
+            mathSelect.appendChild(mathOptionCount);
+            var1Input.remove();
+            var1Div.appendChild(mathSelect);
+            var1Label.innerHTML = "Function";
+            var2Input.disabled = true;
+            var2Input.placeholder = "";
+            var2Label.innerHTML = "-";
+            var3Input.disabled = true;
+            var3Input.placeholder = "";
             var3Label.innerHTML = "-";
             break;
         }

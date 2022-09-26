@@ -2,7 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"math"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,8 +17,37 @@ import (
 	"golang.org/x/net/html"
 )
 
+func fillFilterResults(filters []Filter) {
+	processedMap := make(map[uint]bool, len(filters))
+	for len(filters) > 0 {
+		filter := &filters[0]
+		filters = filters[1:]
+		var allParentsProcessed = true
+		for _, parent := range filter.Parents {
+			if _, contains := processedMap[parent.ID]; !contains {
+				allParentsProcessed = false
+				break
+			}
+		}
+		if !allParentsProcessed {
+			filters = append(filters, *filter)
+			continue
+		}
+		getFilterResult(filter)
+		processedMap[filter.ID] = true
+	}
+}
+
 func getFilterResult(filter *Filter) {
 	switch {
+	case filter.Type == "gurl":
+		{
+			getFilterResultURL(filter)
+		}
+	case filter.Type == "gurls":
+		{
+			getFilterResultURL(filter)
+		}
 	case filter.Type == "xpath":
 		{
 			getFilterResultXPath(filter)
@@ -39,9 +72,40 @@ func getFilterResult(filter *Filter) {
 		{
 			getFilterResultSubstring(filter)
 		}
+	case filter.Type == "min":
+		{
+			getFilterResultMin(filter)
+		}
+	case filter.Type == "max":
+		{
+			getFilterResultMax(filter)
+		}
+	case filter.Type == "average":
+		{
+			getFilterResultAverage(filter)
+		}
+	case filter.Type == "count":
+		{
+			getFilterResultCount(filter)
+		}
 	default:
-
+		log.Println("getFilterResult called with filter.Type == ", filter.Type)
 	}
+}
+
+func getFilterResultURL(filter *Filter) {
+	url := filter.Var1
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println("Could not fetch url", url)
+		log.Println("Reason:", err)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Could not fetch url", url)
+		log.Println("Reason:", err)
+	}
+	filter.Results = append(filter.Results, string(body))
 }
 
 func getFilterResultXPath(filter *Filter) {
@@ -100,7 +164,6 @@ func getFilterResultCSS(filter *Filter) {
 			for _, node := range cascadia.QueryAll(doc, sel) {
 				var b bytes.Buffer
 				html.Render(&b, node)
-				log.Println(b.String())
 				filter.Results = append(filter.Results, html.UnescapeString(b.String()))
 			}
 		}
@@ -140,9 +203,7 @@ func getFilterResultMatch(filter *Filter) {
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			log.Println(">", result)
 			for _, str := range r.FindAllString(result, -1) {
-				log.Println(">>", str)
 				filter.Results = append(filter.Results, str)
 			}
 		}
@@ -208,4 +269,65 @@ func getFilterResultSubstring(filter *Filter) {
 			filter.Results = append(filter.Results, sb.String())
 		}
 	}
+}
+
+func getFilterResultMin(filter *Filter) {
+	var min = math.MaxFloat64
+	var setMin = false
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			if number, err := strconv.ParseFloat(result, 64); err == nil {
+				if number < min {
+					min = number
+					setMin = true
+				}
+			}
+		}
+	}
+
+	if setMin {
+		filter.Results = append(filter.Results, fmt.Sprintf("%f", min))
+	}
+}
+
+func getFilterResultMax(filter *Filter) {
+	var max = -math.MaxFloat64
+	var setMax = false
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			if number, err := strconv.ParseFloat(result, 64); err == nil {
+				if number > max {
+					max = number
+					setMax = true
+				}
+			}
+		}
+	}
+
+	if setMax {
+		filter.Results = append(filter.Results, fmt.Sprintf("%f", max))
+	}
+}
+
+func getFilterResultAverage(filter *Filter) {
+	var sum float64 = 0.0
+	var count float64 = 0.0
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			if number, err := strconv.ParseFloat(result, 64); err == nil {
+				sum += number
+				count++
+			}
+		}
+	}
+	filter.Results = append(filter.Results, fmt.Sprintf("%f", sum/count))
+}
+
+func getFilterResultCount(filter *Filter) {
+	var count = 0
+	for _, parent := range filter.Parents {
+		count += len(parent.Children)
+	}
+	log.Println(fmt.Sprintf("%d", count))
+	filter.Results = append(filter.Results, fmt.Sprintf("%d", count))
 }

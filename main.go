@@ -72,6 +72,9 @@ func (web Web) watchView(c *gin.Context) {
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
+	buildFilterTree(filters, connections)
+	fillFilterResults(filters)
+
 	c.HTML(http.StatusOK, "watchView", gin.H{
 		"Watch":       watch,
 		"Filters":     filters,
