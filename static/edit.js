@@ -359,7 +359,6 @@ function editNode(node) {
     nameInput.value = name;
     var selectType = document.getElementById("typeInput");
     selectType.value = type;
-    console.log(type);
     onTypeChange(node);
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.innerHTML = "Save";

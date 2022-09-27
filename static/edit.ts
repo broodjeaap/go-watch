@@ -363,7 +363,6 @@ function editNode(node: DiagramNode){
 
     let selectType = document.getElementById("typeInput") as HTMLSelectElement;
     selectType.value = type;
-    console.log(type);
 
     onTypeChange(node);
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
