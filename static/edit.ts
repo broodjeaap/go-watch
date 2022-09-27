@@ -1,116 +1,274 @@
-function onTypeChange(){
+function onTypeChange(node: DiagramNode | null = null){
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     let type = select.value;
     
     let var1Div = document.getElementById("var1Div") as HTMLDivElement;
-    let var1Input = document.getElementById("var1Input") as HTMLInputElement;
+    var1Div.innerHTML = "";
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
     
     let var2Div = document.getElementById("var2Div") as HTMLDivElement;
-    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
+    var2Div.innerHTML = "";
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
     
     let var3Div = document.getElementById("var3Div") as HTMLDivElement;
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
+    var3Div.innerHTML = "";
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
+
+    let var1Value = "";
+    let var2Value = "";
+    let var3Value = "";
+    if (node != null){
+        // @ts-ignore
+        var1Value = node.meta.var1;
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    }
     
     switch(type){
         case "gurl": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control");
             var1Label.innerHTML = "URL";
             var1Input.placeholder = "https://shopping.website.com";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
             var2Input.disabled = true;
             var2Input.placeholder = ""
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Input.placeholder = ""
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "gurls": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "-";
             var1Input.placeholder = "From parents";
-            var1Input.value = "-";
             var1Input.disabled = true;
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
             var2Input.placeholder = ""
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Input.placeholder = ""
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "xpath": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "XPath";
             var1Input.placeholder = "//a[@class='price";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
-            var2Input.placeholder = ""
+            var2Input.placeholder = "";
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Input.placeholder = ""
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "json": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "JSON";
             var1Input.placeholder = "products.#.price";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "css": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "Selector";
             var1Input.placeholder = ".price";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "replace": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "Regex";
             var1Input.placeholder = "So[mM]e(thing|where)";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = false;
             var2Label.innerHTML = "With";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "match": {
-            var1Div.innerHTML = "";
-            var1Div.appendChild(var1Input);
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "Regex";
             var1Input.placeholder = "So[mM]e(thing|where)";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "substring": {
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
             var1Label.innerHTML = "Substring";
             var1Input.placeholder = ":20,25-40,45,47,49,-20:";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
         case "math": {
             let mathSelect = document.createElement("select");
+            mathSelect.id = "var1Input";
             mathSelect.classList.add("form-control");
             let mathOptionMin = document.createElement("option");
             mathOptionMin.value = "min"
@@ -128,17 +286,29 @@ function onTypeChange(){
             mathOptionCount.value = "count";
             mathOptionCount.innerHTML = "Count";
             mathSelect.appendChild(mathOptionCount);
-
-            var1Input.remove();
-            var1Div.appendChild(mathSelect);
-            
             var1Label.innerHTML = "Function";
+            var1Div.appendChild(mathSelect);
+            mathSelect.value = var1Value;
+            
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Input.disabled = true;
             var2Input.placeholder = ""
             var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
             var3Input.disabled = true;
             var3Input.placeholder = ""
             var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
             break;
         }
     }
@@ -193,17 +363,9 @@ function editNode(node: DiagramNode){
 
     let selectType = document.getElementById("typeInput") as HTMLSelectElement;
     selectType.value = type;
-    
-    let var1Input = document.getElementById("var1Input") as HTMLInputElement;
-    var1Input.value = var1;
-    
-    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
-    var2Input.value = var2;
+    console.log(type);
 
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
-    var3Input.value = var3;
-
-    onTypeChange();
+    onTypeChange(node);
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.innerHTML = "Save";
     submitButton.onclick = function() {submitEditNode(node);}
@@ -290,7 +452,7 @@ function addFilterButtonClicked(){
 
 function pageInit(){
     let select = document.getElementById("typeInput") as HTMLSelectElement;
-    select.onchange = onTypeChange;
+    select.onchange = function () {onTypeChange()};
 
     let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
     addFilterButton.onclick = addFilterButtonClicked
