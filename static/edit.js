@@ -282,6 +282,10 @@ function onTypeChange(node) {
             mathSelect.name = "var1";
             mathSelect.id = "var1Input";
             mathSelect.classList.add("form-control");
+            var mathOptionSum = document.createElement("option");
+            mathOptionSum.value = "sum";
+            mathOptionSum.innerHTML = "Sum";
+            mathSelect.appendChild(mathOptionSum);
             var mathOptionMin = document.createElement("option");
             mathOptionMin.value = "min";
             mathOptionMin.innerHTML = "Min";
@@ -298,17 +302,33 @@ function onTypeChange(node) {
             mathOptionCount.value = "count";
             mathOptionCount.innerHTML = "Count";
             mathSelect.appendChild(mathOptionCount);
+            var mathOptionRound = document.createElement("option");
+            mathOptionRound.value = "round";
+            mathOptionRound.innerHTML = "Round";
+            mathSelect.appendChild(mathOptionRound);
             var1Label.innerHTML = "Function";
             var1Div.appendChild(mathSelect);
-            mathSelect.value = var1Value;
+            if (var1Value == "") {
+                mathSelect.value = "min";
+            }
+            else {
+                mathSelect.value = var1Value;
+            }
+            mathSelect.onchange = function () { onMathChange(node); };
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
             var2Input.value = var2Value;
             var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Input.placeholder = "";
-            var2Label.innerHTML = "-";
+            if (mathSelect.value == "round") {
+                var2Input.disabled = false;
+                var2Label.innerHTML = "Decimals";
+            }
+            else {
+                var2Input.placeholder = "";
+                var2Input.disabled = true;
+                var2Label.innerHTML = "-";
+            }
             var2Div.appendChild(var2Input);
             var var3Input = document.createElement("input");
             var3Input.name = "var3";
@@ -323,7 +343,37 @@ function onTypeChange(node) {
         }
     }
 }
+function onMathChange(node) {
+    if (node === void 0) { node = null; }
+    var var1Input = document.getElementById("var1Input");
+    var var1Label = document.getElementById("var1Label");
+    var var2Input = document.getElementById("var2Input");
+    var var2Label = document.getElementById("var2Label");
+    var var3Input = document.getElementById("var3Input");
+    var var3Label = document.getElementById("var3Label");
+    var var2Value = "";
+    var var3Value = "";
+    if (node != null) {
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    }
+    if (var1Input.value == "round") {
+        var2Input.disabled = false;
+        var2Input.type = "number";
+        var2Input.value = var2Value;
+        var2Label.innerHTML = "Decimals";
+    }
+    else {
+        var2Input.disabled = true;
+        var2Input.type = "text";
+        var2Input.value = "";
+        var2Label.innerHTML = "-";
+    }
+}
 function onSubmitNewFilter() {
+    console.log("TEST");
     var nameInput = document.getElementById("nameInput");
     var name = nameInput.value;
     var selectType = document.getElementById("typeInput");

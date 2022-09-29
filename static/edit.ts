@@ -271,6 +271,10 @@ function onTypeChange(node: DiagramNode | null = null){
             mathSelect.name = "var1";
             mathSelect.id = "var1Input";
             mathSelect.classList.add("form-control");
+            let mathOptionSum = document.createElement("option");
+            mathOptionSum.value = "sum"
+            mathOptionSum.innerHTML = "Sum";
+            mathSelect.appendChild(mathOptionSum);
             let mathOptionMin = document.createElement("option");
             mathOptionMin.value = "min"
             mathOptionMin.innerHTML = "Min";
@@ -287,18 +291,32 @@ function onTypeChange(node: DiagramNode | null = null){
             mathOptionCount.value = "count";
             mathOptionCount.innerHTML = "Count";
             mathSelect.appendChild(mathOptionCount);
+            let mathOptionRound = document.createElement("option")
+            mathOptionRound.value = "round";
+            mathOptionRound.innerHTML = "Round";
+            mathSelect.appendChild(mathOptionRound);
             var1Label.innerHTML = "Function";
             var1Div.appendChild(mathSelect);
-            mathSelect.value = var1Value;
+            if (var1Value == ""){
+                mathSelect.value = "min";
+            } else {
+                mathSelect.value = var1Value;
+            }
+            mathSelect.onchange = function() {onMathChange(node)}
             
             let var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
             var2Input.value = var2Value;
             var2Input.classList.add("form-control")
-            var2Input.disabled = true;
-            var2Input.placeholder = ""
-            var2Label.innerHTML = "-";
+            if (mathSelect.value == "round"){
+                var2Input.disabled = false;
+                var2Label.innerHTML = "Decimals";
+            } else {
+                var2Input.placeholder = ""
+                var2Input.disabled = true;
+                var2Label.innerHTML = "-";
+            }
             var2Div.appendChild(var2Input);
 
             let var3Input = document.createElement("input");
@@ -315,7 +333,39 @@ function onTypeChange(node: DiagramNode | null = null){
     }
 }
 
+function onMathChange(node: DiagramNode | null = null){
+    let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
+    let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
+    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
+    let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
+    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
+    let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
+
+    let var2Value = "";
+    let var3Value = "";
+    if (node != null){
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    }
+
+    if (var1Input.value == "round"){
+        var2Input.disabled = false;
+        var2Input.type = "number";
+        var2Input.value = var2Value;
+        var2Label.innerHTML = "Decimals";
+    } else {
+        var2Input.disabled = true;
+        var2Input.type = "text";
+        var2Input.value = "";
+        var2Label.innerHTML = "-";
+
+    }
+}
+
 function onSubmitNewFilter(){
+    console.log("TEST")
     let nameInput = document.getElementById("nameInput") as HTMLInputElement;
     let name = nameInput.value;
     let selectType = document.getElementById("typeInput") as HTMLSelectElement;

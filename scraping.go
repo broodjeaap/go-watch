@@ -75,6 +75,10 @@ func getFilterResult(filter *Filter) {
 	case filter.Type == "math":
 		{
 			switch {
+			case filter.Var1 == "sum":
+				{
+					getFilterResultSum(filter)
+				}
 			case filter.Var1 == "min":
 				{
 					getFilterResultMin(filter)
@@ -90,6 +94,10 @@ func getFilterResult(filter *Filter) {
 			case filter.Var1 == "count":
 				{
 					getFilterResultCount(filter)
+				}
+			case filter.Var1 == "round":
+				{
+					getFilterResultRound(filter)
 				}
 			}
 		}
@@ -277,6 +285,18 @@ func getFilterResultSubstring(filter *Filter) {
 	}
 }
 
+func getFilterResultSum(filter *Filter) {
+	var sum float64 = 0.0
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			if number, err := strconv.ParseFloat(result, 64); err == nil {
+				sum += number
+			}
+		}
+	}
+	filter.Results = append(filter.Results, fmt.Sprintf("%f", sum))
+}
+
 func getFilterResultMin(filter *Filter) {
 	var min = math.MaxFloat64
 	var setMin = false
@@ -334,6 +354,35 @@ func getFilterResultCount(filter *Filter) {
 	for _, parent := range filter.Parents {
 		count += len(parent.Children)
 	}
-	log.Println(fmt.Sprintf("%d", count))
 	filter.Results = append(filter.Results, fmt.Sprintf("%d", count))
+}
+
+// https://gosamples.dev/round-float/
+func roundFloat(val float64, precision uint) float64 {
+	if precision == 0 {
+		math.Round(val)
+	}
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
+}
+
+func getFilterResultRound(filter *Filter) {
+	var decimals int64 = 0
+	if filter.Var2 != nil {
+		d, err := strconv.ParseInt(*filter.Var2, 10, 32)
+		if err != nil {
+			decimals = 0
+		} else {
+			decimals = d
+		}
+	}
+
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			if number, err := strconv.ParseFloat(result, 64); err == nil {
+				rounded := roundFloat(number, uint(decimals))
+				filter.Results = append(filter.Results, fmt.Sprintf("%.f", rounded))
+			}
+		}
+	}
 }
