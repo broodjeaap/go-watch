@@ -72,22 +72,28 @@ func getFilterResult(filter *Filter) {
 		{
 			getFilterResultSubstring(filter)
 		}
-	case filter.Type == "min":
+	case filter.Type == "math":
 		{
-			getFilterResultMin(filter)
+			switch {
+			case filter.Var1 == "min":
+				{
+					getFilterResultMin(filter)
+				}
+			case filter.Var1 == "max":
+				{
+					getFilterResultMax(filter)
+				}
+			case filter.Var1 == "average":
+				{
+					getFilterResultAverage(filter)
+				}
+			case filter.Var1 == "count":
+				{
+					getFilterResultCount(filter)
+				}
+			}
 		}
-	case filter.Type == "max":
-		{
-			getFilterResultMax(filter)
-		}
-	case filter.Type == "average":
-		{
-			getFilterResultAverage(filter)
-		}
-	case filter.Type == "count":
-		{
-			getFilterResultCount(filter)
-		}
+
 	default:
 		log.Println("getFilterResult called with filter.Type == ", filter.Type)
 	}

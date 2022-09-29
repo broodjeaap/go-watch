@@ -279,6 +279,7 @@ function onTypeChange(node) {
         }
         case "math": {
             var mathSelect = document.createElement("select");
+            mathSelect.name = "var1";
             mathSelect.id = "var1Input";
             mathSelect.classList.add("form-control");
             var mathOptionMin = document.createElement("option");
