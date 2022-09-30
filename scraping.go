@@ -384,13 +384,15 @@ func getFilterResultAverage(filter *Filter) {
 			}
 		}
 	}
-	filter.Results = append(filter.Results, fmt.Sprintf("%f", sum/count))
+	if count > 0 {
+		filter.Results = append(filter.Results, fmt.Sprintf("%f", sum/count))
+	}
 }
 
 func getFilterResultCount(filter *Filter) {
 	var count = 0
 	for _, parent := range filter.Parents {
-		count += len(parent.Children)
+		count += len(parent.Results)
 	}
 	filter.Results = append(filter.Results, fmt.Sprintf("%d", count))
 }
@@ -401,7 +403,9 @@ func roundFloat(val float64, precision uint) float64 {
 		math.Round(val)
 	}
 	ratio := math.Pow(10, float64(precision))
-	return math.Round(val*ratio) / ratio
+	rounded := math.Round(val*ratio) / ratio
+	log.Println(val, precision, ratio, rounded)
+	return rounded
 }
 
 func getFilterResultRound(filter *Filter) {
@@ -419,7 +423,7 @@ func getFilterResultRound(filter *Filter) {
 		for _, result := range parent.Results {
 			if number, err := strconv.ParseFloat(result, 64); err == nil {
 				rounded := roundFloat(number, uint(decimals))
-				filter.Results = append(filter.Results, fmt.Sprintf("%.f", rounded))
+				filter.Results = append(filter.Results, fmt.Sprintf("%f", rounded))
 			}
 		}
 	}

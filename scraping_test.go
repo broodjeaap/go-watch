@@ -251,3 +251,202 @@ func TestFilterSubstring(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterSum(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Want  []string
+	}{
+		{[]string{"1"}, []string{"1.000000"}},
+		{[]string{"1"}, []string{"1.000000"}},
+		{[]string{"1", "1", "A"}, []string{"2.000000"}},
+		{[]string{"1", "A", "B", "1"}, []string{"2.000000"}},
+		{[]string{}, []string{"0.000000"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultSum(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterMin(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Want  []string
+	}{
+		{[]string{"1"}, []string{"1.000000"}},
+		{[]string{"10000"}, []string{"10000.000000"}},
+		{[]string{"1", "2", "3", "4"}, []string{"1.000000"}},
+		{[]string{"2000000", "100000", "A"}, []string{"100000.000000"}},
+		{[]string{"1", "A", "B", "2"}, []string{"1.000000"}},
+		{[]string{"1.1", "0.1", "10"}, []string{"0.100000"}},
+		{[]string{}, []string{}},
+		{[]string{"A"}, []string{}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultMin(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterMax(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Want  []string
+	}{
+		{[]string{"1"}, []string{"1.000000"}},
+		{[]string{"10000"}, []string{"10000.000000"}},
+		{[]string{"1", "2", "3", "4"}, []string{"4.000000"}},
+		{[]string{"200000", "100000", "A"}, []string{"200000.000000"}},
+		{[]string{"1", "A", "B", "2"}, []string{"2.000000"}},
+		{[]string{"1.1", "0.1", "10"}, []string{"10.000000"}},
+		{[]string{}, []string{}},
+		{[]string{"A"}, []string{}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultMax(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterAverage(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Want  []string
+	}{
+		{[]string{"1"}, []string{"1.000000"}},
+		{[]string{"10000"}, []string{"10000.000000"}},
+		{[]string{"1", "2", "3", "4"}, []string{"2.500000"}},
+		{[]string{"200000", "100000", "A"}, []string{"150000.000000"}},
+		{[]string{"1", "A", "B", "2"}, []string{"1.500000"}},
+		{[]string{"3.5", "5.5", "1.75", "1.25"}, []string{"3.000000"}},
+		{[]string{}, []string{}},
+		{[]string{"A"}, []string{}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultAverage(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterCount(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Want  []string
+	}{
+		{[]string{"1"}, []string{"1"}},
+		{[]string{"10000"}, []string{"1"}},
+		{[]string{"1", "2", "3", "4"}, []string{"4"}},
+		{[]string{"200000", "100000", "A"}, []string{"3"}},
+		{[]string{"1", "A", "B", "2"}, []string{"4"}},
+		{[]string{"3.5", "5.5", "1.75", "1.25"}, []string{"4"}},
+		{[]string{}, []string{"0"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultCount(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterRound(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Query string
+		Want  []string
+	}{
+		{[]string{"1.123456789"}, "0", []string{"1.000000"}},
+		{[]string{"1.123456789"}, "1", []string{"1.100000"}},
+		{[]string{"1.123456789"}, "2", []string{"1.120000"}},
+		{[]string{"1.123456789"}, "3", []string{"1.123000"}},
+		{[]string{"1.123456789"}, "4", []string{"1.123500"}},
+		{[]string{"1.123456789"}, "5", []string{"1.123460"}},
+		{[]string{"1.123456789"}, "6", []string{"1.123457"}},
+		{[]string{"1.123456789"}, "7", []string{"1.123457"}},
+		{[]string{"1.123456789"}, "8", []string{"1.123457"}},
+		{[]string{"1.123456789"}, "9", []string{"1.123457"}},
+		{[]string{"A"}, "9", []string{}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+				Var2: &test.Query,
+			}
+			getFilterResultRound(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
