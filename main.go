@@ -72,13 +72,17 @@ func (web Web) watchView(c *gin.Context) {
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
+	var values []FilterOutput
+	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
+
 	buildFilterTree(filters, connections)
-	fillFilterResults(filters)
+	processFilters(filters, web.db)
 
 	c.HTML(http.StatusOK, "watchView", gin.H{
 		"Watch":       watch,
 		"Filters":     filters,
 		"Connections": connections,
+		"Values":      values,
 	})
 }
 
@@ -219,7 +223,7 @@ func main() {
 	}
 
 	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
-	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{})
+	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
 
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 

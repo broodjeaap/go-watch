@@ -45,6 +45,7 @@
                                     <option value="match">Match</option>
                                     <option value="substring">Substring</option>
                                     <option value="math">Math</option>
+                                    <option value="store">Store</option>
                                 </select>
                             </div>
 
@@ -141,7 +142,7 @@ function canvasInit() {
             {{ .ID }}, 
             {{ .X }}, 
             {{ .Y }}, 
-            {{ .Name }}, 
+            "{{ .Name }}", 
             {
                 type: "{{ .Type }}",
                 var1: "{{ .Var1 }}",
@@ -154,8 +155,15 @@ function canvasInit() {
         diagrams.addConnectionById({{ .OutputID }}, {{ .InputID }});
     {{ end }}
     diagrams.fillParent();
+
+
+    {{ range .Values }}
+        console.log("{{ .Name }}", "{{ .Value }}", "{{ .Time }}")
+    {{ end }}
 }
 document.addEventListener('DOMContentLoaded', canvasInit, false);
+
+
 
 </script>
 {{ end }}

@@ -10,14 +10,16 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/andybalholm/cascadia"
 	"github.com/antchfx/htmlquery"
 	"github.com/tidwall/gjson"
 	"golang.org/x/net/html"
+	"gorm.io/gorm"
 )
 
-func fillFilterResults(filters []Filter) {
+func processFilters(filters []Filter, db *gorm.DB) {
 	processedMap := make(map[uint]bool, len(filters))
 	for len(filters) > 0 {
 		filter := &filters[0]
@@ -33,12 +35,12 @@ func fillFilterResults(filters []Filter) {
 			filters = append(filters, *filter)
 			continue
 		}
-		getFilterResult(filter)
+		getFilterResult(filter, db)
 		processedMap[filter.ID] = true
 	}
 }
 
-func getFilterResult(filter *Filter) {
+func getFilterResult(filter *Filter, db *gorm.DB) {
 	switch {
 	case filter.Type == "gurl":
 		{
@@ -101,7 +103,10 @@ func getFilterResult(filter *Filter) {
 				}
 			}
 		}
-
+	case filter.Type == "store":
+		{
+			storeFilterResult(filter, db)
+		}
 	default:
 		log.Println("getFilterResult called with filter.Type == ", filter.Type)
 	}
@@ -382,6 +387,27 @@ func getFilterResultRound(filter *Filter) {
 			if number, err := strconv.ParseFloat(result, 64); err == nil {
 				rounded := roundFloat(number, uint(decimals))
 				filter.Results = append(filter.Results, fmt.Sprintf("%.f", rounded))
+			}
+		}
+	}
+}
+
+func storeFilterResult(filter *Filter, db *gorm.DB) {
+	var previousOutput FilterOutput
+	db.Model(&FilterOutput{}).Order("time desc").Limit(1).Find(&previousOutput, "watch_id = ? AND name = ?", filter.WatchID, filter.Name)
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			if previousOutput.WatchID == 0 {
+				previousOutput.Name = filter.Name
+				previousOutput.Time = time.Now()
+				previousOutput.Value = result
+				previousOutput.WatchID = filter.WatchID
+				db.Create(&previousOutput)
+			} else {
+				previousOutput.Time = time.Now()
+				previousOutput.ID = 0
+				previousOutput.Value = result
+				db.Create(&previousOutput)
 			}
 		}
 	}
