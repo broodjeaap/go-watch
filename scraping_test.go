@@ -2,8 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"reflect"
 	"testing"
+
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 const HTML_STRING = `<html>
@@ -448,5 +453,70 @@ func TestFilterRound(t *testing.T) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
+	}
+}
+
+func getTestDB() *gorm.DB {
+	db, _ := gorm.Open(sqlite.Open("./test.db"))
+	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
+	return db
+}
+
+func TestConditionDiff(t *testing.T) {
+	db := getTestDB()
+	var tests = []struct {
+		dbInput []FilterOutput
+		WatchID uint
+		Input   []string
+		Want    []string
+	}{
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "Last",
+				},
+			},
+			1,
+			[]string{"New"},
+			[]string{"New"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "Same",
+				},
+			},
+			2,
+			[]string{"Same"},
+			[]string{},
+		},
+	}
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			db.Create(&test.dbInput)
+			filter := Filter{
+				WatchID: test.WatchID,
+				Name:    "Test",
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultConditionDiff(
+				&filter,
+				db,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
 	}
 }

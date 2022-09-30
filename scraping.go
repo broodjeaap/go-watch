@@ -124,7 +124,7 @@ func getFilterResult(filter *Filter, db *gorm.DB) {
 				}
 			case "lowert":
 				{
-					getFilterResultConditionLowerThan(filter, db)
+					getFilterResultConditionLowerThan(filter)
 				}
 			case "higherl":
 				{
@@ -136,7 +136,7 @@ func getFilterResult(filter *Filter, db *gorm.DB) {
 				}
 			case "highert":
 				{
-					getFilterResultConditionHigherThan(filter, db)
+					getFilterResultConditionHigherThan(filter)
 				}
 			}
 		}
@@ -456,6 +456,7 @@ func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
+
 			if previousOutput.WatchID == 0 {
 				filter.Results = append(filter.Results, result)
 			} else if previousOutput.Value != result {
@@ -523,7 +524,7 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 	}
 }
 
-func getFilterResultConditionLowerThan(filter *Filter, db *gorm.DB) {
+func getFilterResultConditionLowerThan(filter *Filter) {
 	if filter.Var2 == nil {
 		log.Println("No threshold given for Lower Than Filter")
 		return
@@ -605,7 +606,7 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 	}
 }
 
-func getFilterResultConditionHigherThan(filter *Filter, db *gorm.DB) {
+func getFilterResultConditionHigherThan(filter *Filter) {
 	if filter.Var2 == nil {
 		log.Println("No threshold given for Higher Than Filter")
 		return
