@@ -358,6 +358,91 @@ function onTypeChange(node: DiagramNode | null = null){
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
             var3Div.appendChild(var3Input);
+            break;
+        }
+        case "condition":{
+            let conditionSelect = document.createElement("select");
+            conditionSelect.name = "var1";
+            conditionSelect.id = "var1Input";
+            conditionSelect.classList.add("form-control");
+            let differentThenLast = document.createElement("option");
+            differentThenLast.value = "diff"
+            differentThenLast.innerHTML = "Different Then Last";
+            conditionSelect.appendChild(differentThenLast);
+            let lowerThenLast = document.createElement("option");
+            lowerThenLast.value = "lowerl"
+            lowerThenLast.innerHTML = "Lower Then Last";
+            conditionSelect.appendChild(lowerThenLast);
+            let lowestEver = document.createElement("option");
+            lowestEver.value = "lowest"
+            lowestEver.innerHTML = "Lowest Ever";
+            conditionSelect.appendChild(lowestEver);
+            let lowerThan = document.createElement("option");
+            lowerThan.value = "lowert"
+            lowerThan.innerHTML = "Lower Than";
+            conditionSelect.appendChild(lowerThan);
+            let higherThenLast = document.createElement("option");
+            higherThenLast.value = "higherl"
+            higherThenLast.innerHTML = "Higher Then Last";
+            conditionSelect.appendChild(higherThenLast);
+            let highestEver = document.createElement("option");
+            highestEver.value = "highest"
+            highestEver.innerHTML = "Highest Ever";
+            conditionSelect.appendChild(highestEver);
+            let higherThan = document.createElement("option");
+            higherThan.value = "highert"
+            higherThan.innerHTML = "Higher Than";
+            conditionSelect.appendChild(higherThan);
+            conditionSelect.onchange = function() {onConditionChange(node)}
+            var1Div.appendChild(conditionSelect);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
+        }
+        case "notify":{
+            let var1Input = document.createElement("textarea");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
+            var1Label.innerHTML = "Template";
+            var1Input.placeholder = "{{ .Watch.Name }} new lowest price: {{ Price }}!";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
         }
     }
 }
@@ -393,8 +478,49 @@ function onMathChange(node: DiagramNode | null = null){
     }
 }
 
+function onConditionChange(node: DiagramNode | null = null){
+    let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
+    let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
+    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
+    let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
+    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
+    let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
+
+    let var2Value = "";
+    let var3Value = "";
+    if (node != null){
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    }
+
+    switch(var1Input.value) {
+        case "lowert": {
+            var2Input.disabled = false;
+            var2Input.type = "number";
+            var2Input.value = var2Value;
+            var2Label.innerHTML = "Threshold";
+            break;
+        }
+        case "highert": {
+            var2Input.disabled = false;
+            var2Input.type = "number";
+            var2Input.value = var2Value;
+            var2Label.innerHTML = "Threshold";
+            break;
+        }
+        default: {
+            var2Input.disabled = true;
+            var2Input.type = "text";
+            var2Input.value = var2Value;
+            var2Label.innerHTML = "-";
+            break;
+        }
+    }
+}
+
 function onSubmitNewFilter(){
-    console.log("TEST")
     let nameInput = document.getElementById("nameInput") as HTMLInputElement;
     let name = nameInput.value;
     let selectType = document.getElementById("typeInput") as HTMLSelectElement;

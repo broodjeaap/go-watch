@@ -367,6 +367,87 @@ function onTypeChange(node) {
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
             var3Div.appendChild(var3Input);
+            break;
+        }
+        case "condition": {
+            var conditionSelect = document.createElement("select");
+            conditionSelect.name = "var1";
+            conditionSelect.id = "var1Input";
+            conditionSelect.classList.add("form-control");
+            var differentThenLast = document.createElement("option");
+            differentThenLast.value = "diff";
+            differentThenLast.innerHTML = "Different Then Last";
+            conditionSelect.appendChild(differentThenLast);
+            var lowerThenLast = document.createElement("option");
+            lowerThenLast.value = "lowerl";
+            lowerThenLast.innerHTML = "Lower Then Last";
+            conditionSelect.appendChild(lowerThenLast);
+            var lowestEver = document.createElement("option");
+            lowestEver.value = "lowest";
+            lowestEver.innerHTML = "Lowest Ever";
+            conditionSelect.appendChild(lowestEver);
+            var lowerThan = document.createElement("option");
+            lowerThan.value = "lowert";
+            lowerThan.innerHTML = "Lower Than";
+            conditionSelect.appendChild(lowerThan);
+            var higherThenLast = document.createElement("option");
+            higherThenLast.value = "higherl";
+            higherThenLast.innerHTML = "Higher Then Last";
+            conditionSelect.appendChild(higherThenLast);
+            var highestEver = document.createElement("option");
+            highestEver.value = "highest";
+            highestEver.innerHTML = "Highest Ever";
+            conditionSelect.appendChild(highestEver);
+            var higherThan = document.createElement("option");
+            higherThan.value = "highert";
+            higherThan.innerHTML = "Higher Than";
+            conditionSelect.appendChild(higherThan);
+            conditionSelect.onchange = function () { onConditionChange(node); };
+            var1Div.appendChild(conditionSelect);
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            var var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
+        }
+        case "notify": {
+            var var1Input = document.createElement("textarea");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control");
+            var1Label.innerHTML = "Template";
+            var1Input.placeholder = "{{ .Watch.Name }} new lowest price: {{ Price }}!";
+            var1Div.appendChild(var1Input);
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            var var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
         }
     }
 }
@@ -399,8 +480,47 @@ function onMathChange(node) {
         var2Label.innerHTML = "-";
     }
 }
+function onConditionChange(node) {
+    if (node === void 0) { node = null; }
+    var var1Input = document.getElementById("var1Input");
+    var var1Label = document.getElementById("var1Label");
+    var var2Input = document.getElementById("var2Input");
+    var var2Label = document.getElementById("var2Label");
+    var var3Input = document.getElementById("var3Input");
+    var var3Label = document.getElementById("var3Label");
+    var var2Value = "";
+    var var3Value = "";
+    if (node != null) {
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    }
+    switch (var1Input.value) {
+        case "lowert": {
+            var2Input.disabled = false;
+            var2Input.type = "number";
+            var2Input.value = var2Value;
+            var2Label.innerHTML = "Threshold";
+            break;
+        }
+        case "highert": {
+            var2Input.disabled = false;
+            var2Input.type = "number";
+            var2Input.value = var2Value;
+            var2Label.innerHTML = "Threshold";
+            break;
+        }
+        default: {
+            var2Input.disabled = true;
+            var2Input.type = "text";
+            var2Input.value = var2Value;
+            var2Label.innerHTML = "-";
+            break;
+        }
+    }
+}
 function onSubmitNewFilter() {
-    console.log("TEST");
     var nameInput = document.getElementById("nameInput");
     var name = nameInput.value;
     var selectType = document.getElementById("typeInput");
