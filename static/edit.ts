@@ -534,8 +534,8 @@ function onSubmitNewFilter(){
 
     _diagram.addNode(
         Math.max(...Array.from(_diagram.nodes.values()).map(n => n.id)) + 1,
-        _diagram.canvas.width / 2 - _diagram.cameraX, 
-        _diagram.canvas.height / 2 - _diagram.cameraY, 
+        _diagram.canvas.width / 2 - _diagram.mouseState.offset.x, 
+        _diagram.canvas.height / 2 - _diagram.mouseState.offset.y, 
         name, {
             type: type,
             var1: var1Input.value,
@@ -607,7 +607,7 @@ function submitEditNode(node: DiagramNode){
     // @ts-ignore
     node.meta.var3 = var3Input.value;
 
-    node.resize();
+    //node.resize();
 }
 
 function saveWatch(){

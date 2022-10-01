@@ -528,7 +528,7 @@ function onSubmitNewFilter() {
     var var1Input = document.getElementById("var1Input");
     var var2Input = document.getElementById("var2Input");
     var var3Input = document.getElementById("var3Input");
-    _diagram.addNode(Math.max.apply(Math, __spread(Array.from(_diagram.nodes.values()).map(function (n) { return n.id; }))) + 1, _diagram.canvas.width / 2 - _diagram.cameraX, _diagram.canvas.height / 2 - _diagram.cameraY, name, {
+    _diagram.addNode(Math.max.apply(Math, __spread(Array.from(_diagram.nodes.values()).map(function (n) { return n.id; }))) + 1, _diagram.canvas.width / 2 - _diagram.mouseState.offset.x, _diagram.canvas.height / 2 - _diagram.mouseState.offset.y, name, {
         type: type,
         var1: var1Input.value,
         var2: var2Input.value,
@@ -587,7 +587,7 @@ function submitEditNode(node) {
     var var3Input = document.getElementById("var3Input");
     // @ts-ignore
     node.meta.var3 = var3Input.value;
-    node.resize();
+    //node.resize();
 }
 function saveWatch() {
     var e_1, _a, e_2, _b;

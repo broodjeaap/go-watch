@@ -1,14 +1,179 @@
-class DiagramNode {
-    id: number;
+abstract class CanvasObject {
     x: number;
     y: number;
-    label: string;
     width: number;
     height: number;
 
-    hover: boolean = false;
-    inputHover: boolean = false;
-    outputHover: boolean = false;
+    hover: boolean
+
+    constructor(x: number, y: number, width: number, height: number){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.hover = false;
+    }
+
+    abstract update(ms: MouseState): void;
+    abstract draw(ctx: CanvasRenderingContext2D, ms: MouseState): void;
+
+    pointInObject(p: Point): boolean{
+        if (p.x < this.x){
+            return false;
+        }
+        if (p.y < this.y){
+            return false;
+        }
+        if (p.x > this.x + this.width) {
+            return false;
+        }
+        if (p.y > this.y + this.height) {
+            return false;
+        }
+        return true;
+    }
+}
+
+class Button extends CanvasObject {
+    label: string;
+    labelWidth: number;
+    labelHeight: number;
+
+    constructor(x: number, y: number, label: string, ctx: CanvasRenderingContext2D){
+        super(x, y, 0, 0);
+        this.label = label;
+        this.resize(ctx);
+    }
+
+    update(ms: MouseState){
+        this.hover = this.pointInObject(new Point(ms.world.x + ms.offset.x, ms.world.y + ms.offset.y));
+    }
+
+    draw(ctx: CanvasRenderingContext2D, ms: MouseState){
+        ctx.fillStyle = this.hover ? "black" : "#6B6B6B";
+        ctx.font = "15px Helvetica";
+        ctx.fillText(this.label, this.x + 3, this.y + this.labelHeight + 3);
+    }
+
+    resize(ctx: CanvasRenderingContext2D){
+        ctx.font = "15px Helvetica";
+        let labelSize = ctx.measureText(this.label);
+        this.labelWidth = labelSize.width;
+        this.width = this.labelWidth + 6;
+        this.labelHeight = labelSize.actualBoundingBoxAscent + labelSize.actualBoundingBoxDescent;
+        this.height = this.labelHeight + 6;
+    }
+}
+
+const circleTopRadians = Math.PI / 2;
+const circleRightRadians = (Math.PI * 3) / 2;
+const circleBottomRadians = Math.PI + (Math.PI * 3);
+const circleLeftRadians = Math.PI;
+class NodeIO extends CanvasObject {
+    node: DiagramNode;
+    input: boolean = false;
+    radius: number = 15;
+
+    constructor(node: DiagramNode, input: boolean){
+        super(0,0,0,0);
+        this.input = input
+        this.node = node;
+        this.reposition();
+    }
+    update(ms: MouseState): void {
+        
+    }
+
+    draw(ctx: CanvasRenderingContext2D, ms: MouseState): void {
+        ctx.fillStyle = this.input ? "red" : "blue";
+        ctx.beginPath();
+        ctx.arc(ms.offset.x + this.x, ms.offset.y + this.y, this.radius, circleRightRadians, circleTopRadians, this.input);
+        ctx.fill();
+    }
+
+    reposition(){
+        if (this.input){
+            this.x = this.node.x;
+            this.y = this.node.y + this.node.height / 2;
+        } else {
+            this.x = this.node.x + this.node.width;
+            this.y = this.node.y + this.node.height / 2;
+        }
+    }
+}
+
+class NodeConnection extends CanvasObject {
+    output: DiagramNode;
+    input: DiagramNode;
+
+    constructor(output: DiagramNode, input: DiagramNode){
+        super(0, 0, 0, 0);
+        this.output = output;
+        this.input = input;
+    }
+
+    update(ms: MouseState): void {
+        
+    }
+    draw(ctx: CanvasRenderingContext2D, ms: MouseState): void {
+        let outputX = ms.offset.x + this.output.output.x;
+        let outputY = ms.offset.y + this.output.output.y;
+        let inputX = ms.offset.x + this.input.input.x;
+        let inputY = ms.offset.y + this.input.input.y;
+        let dX = Math.abs(outputX - inputX);
+        ctx.beginPath();
+        ctx.moveTo(outputX, outputY);
+        ctx.strokeStyle = "#757575";
+        ctx.lineWidth = 5;
+        let cp1x = (outputX + dX);
+        let cp1y = outputY;
+        let cp2x = (inputX - dX);
+        let cp2y = inputY;
+        ctx.bezierCurveTo(
+            cp1x, 
+            cp1y, 
+            cp2x, 
+            cp2y, 
+            inputX, 
+            inputY
+        );
+        ctx.stroke();
+        ctx.closePath();
+        /*
+        let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
+        let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
+        if (mouseOnHalfway){
+            this.removeConnection(output, input);
+            break;
+        }
+        */
+    }
+
+    reposition(){
+        
+    }
+}
+
+class DiagramNode extends CanvasObject {
+    id: number;
+    label: string;
+    type: string;
+    
+    labelWidth: number;
+    labelHeight: number;
+
+    typeWidth: number;
+    typeHeight: number;
+
+    deleteButton: Button;
+    editButton: Button;
+    logButton: Button;
+
+    dragging: boolean = false;
+    dragOrigin: Point = new Point();
+
+    input: NodeIO;
+    output: NodeIO;
 
     parents: Array<DiagramNode>;
     children: Array<DiagramNode>;
@@ -20,21 +185,111 @@ class DiagramNode {
         x: number, 
         y: number, 
         label: string,
-        meta: Object = {}
+        meta: Object = {},
+        ctx: CanvasRenderingContext2D
     ){
+        super(x, y, 0, 0)
         this.id = id;
-        this.x = x;
-        this.y = y;
         this.label = label;
         this.meta = meta;
-        this.resize();
+        // @ts-ignore
+        this.type = this.meta.type
+        if (["math", "condition"].indexOf(this.type) >= 0 ){
+            // @ts-ignore
+            this.type = this.meta.var1
+        }
+        this.resize(ctx);
+
+        this.deleteButton = new Button(0, 0, "Del", ctx);
+        this.editButton = new Button(0, 0, "Edit", ctx);
+        this.logButton = new Button(0, 0, "Log", ctx);
+
+        this.input = new NodeIO(this, true);
+        this.output = new NodeIO(this, false);
+
     }
 
-    resize(){
-        let textSize = _diagram.ctx.measureText(this.label);
-        let height = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.width = textSize.width + height;
-        this.height = height;
+    update(ms: MouseState) {
+        this.hover = (!ms.draggingNode || this.dragging) && this.pointInObject(ms.world);
+        if (this.hover){
+            this.deleteButton.update(ms);
+            this.editButton.update(ms);
+            this.logButton.update(ms)
+            let onButtons = this.deleteButton.hover || this.editButton.hover || this.logButton.hover;
+            if (!this.dragging && ms.leftDown && !ms.draggingNode && !ms.draggingConnection && !onButtons){
+                this.dragging = true;
+                ms.draggingNode = true;
+                this.dragOrigin.x = this.x - ms.world.x;
+                this.dragOrigin.y = this.y - ms.world.y;
+            }
+        } else {
+            this.deleteButton.hover = false;
+            this.editButton.hover = false;
+            this.logButton.hover = false;
+        }
+
+        if (!ms.leftDown){
+            this.dragging = false;
+            ms.draggingNode = false;
+        }
+        if (this.dragging){
+            this.x = ms.world.x + this.dragOrigin.x;
+            this.y = ms.world.y + this.dragOrigin.y;
+            this.input.reposition();
+            this.output.reposition();
+        }
+        this.input.update(ms);
+        this.output.update(ms);
+    }
+
+    draw(ctx: CanvasRenderingContext2D, ms: MouseState){
+        ctx.fillStyle = this.hover ? "#DDDDDD" : "#BFBFBF";
+        ctx.fillRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
+        
+        ctx.font = "20px Helvetica";
+        ctx.fillStyle = "black";
+        let labelX = ms.offset.x + this.x + this.width / 2 - this.labelWidth / 2;
+        let labelY = ms.offset.y +this.y + 3 * 2 + this.labelHeight;
+        ctx.fillText(this.label, labelX, labelY);
+        
+        ctx.font = "15px Helvetica";
+        let typeX = ms.offset.x + this.x + this.width / 2 - this.typeWidth / 2;
+        let typeY = ms.offset.y + this.y + 3 * 3 + this.typeHeight + this.labelHeight;
+        ctx.fillText(this.type, typeX, typeY);
+        
+        this.deleteButton.x = ms.offset.x + this.x;
+        this.deleteButton.y = ms.offset.y + this.y + this.height - this.deleteButton.height;
+        this.deleteButton.draw(ctx, ms);
+
+        this.editButton.x = ms.offset.x + this.x + this.width - this.editButton.width;
+        this.editButton.y = ms.offset.y + this.y + this.height - this.editButton.height;
+        this.editButton.draw(ctx, ms);
+
+        this.logButton.x = ms.offset.x + this.x + this.width / 2 - this.logButton.width / 2;
+        this.logButton.y = ms.offset.y + this.y + this.height - this.logButton.height;
+        this.logButton.draw(ctx, ms);
+        
+        this.input.draw(ctx, ms);
+        this.output.draw(ctx, ms);
+        
+        ctx.strokeStyle = "#8E8E8E";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
+    }
+
+    resize(ctx: CanvasRenderingContext2D){
+        ctx.font = "20px Helvetica";
+        let labelSize = ctx.measureText(this.label);
+        this.labelWidth = labelSize.width;
+        this.labelHeight = labelSize.actualBoundingBoxAscent + labelSize.actualBoundingBoxDescent;
+        this.height = 70;
+
+        ctx.font = "15px Helvetica";
+        let typeSize = ctx.measureText(this.type);
+        this.typeWidth = typeSize.width;
+        this.typeHeight = typeSize.actualBoundingBoxAscent + typeSize.actualBoundingBoxDescent;
+        
+        this.width = Math.max(150, this.labelWidth, this.typeWidth);
     }
 
     pointInNode(x: number, y: number){
@@ -91,139 +346,60 @@ class DiagramNode {
     }
 }
 
-class ContextMenuItem {
-    x: number = 0;
-    y: number = 0;
-    hover: boolean = false;
-    callback: (node: DiagramNode) => void = function(node){}
-    label: string;
-
-    constructor(label: string, callback: (node: DiagramNode) => void){
-        this.label = label;
-        this.callback = callback;
-    }
-}
-class ContextMenu {
-    x: number = 0;
-    y: number = 0;
-    active: boolean = false;
-    mouseOver: boolean = false;
-    textWidth: number = 0;
-    textHeight: number = 0;
-    textMargin: number = 0;
-    width: number = 0;
-    height: number = 0;
-    ctx: CanvasRenderingContext2D;
-    items: Array<ContextMenuItem> = new Array();
-
-    contextNode: DiagramNode | null = null;
-
-    constructor(ctx: CanvasRenderingContext2D){
-        this.ctx = ctx;
-        this.ctx.font = "20px Helvetica";
-        let textSize = this.ctx.measureText("SomeLongerText");
-        this.textWidth = textSize.width;
-        this.textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-        this.textMargin = this.textWidth / 8;
-    }
-
-    fitContextMenu(){
-        this.width = this.textWidth + this.textMargin * 2;
-        this.height = this.textHeight + this.textMargin * (this.items.length + 2)
-        let index = 0;
-        for (let item of this.items){
-            item.x = this.textMargin;
-            item.y = this.textHeight * index + this.textMargin * (index + 2);
-            index++;
-        }
-    }
-
-    pointIn(x: number, y: number){
-        if (x < this.x){
-            this.mouseOver = false;
-            return false;
-        }
-        if (y < this.y){
-            this.mouseOver = false;
-            return false;
-        }
-        if (x > this.x + this.width) {
-            this.mouseOver = false;
-            return false;
-        }
-        if (y > this.y + this.height) {
-            this.mouseOver = false;
-            return false;
-        }
-        for (let item of this.items){
-            if (y >= this.y + item.y - this.textHeight && y <= this.y + item.y + this.textHeight){
-                item.hover = true;
-            } else {
-                item.hover = false;
-            }
-        }
-        this.mouseOver = true;
-        return true;
-    }
-
-    clickOn(){
-        if(this.contextNode == null){
-            console.warn("No contextNode");
-            return
-        }
-        for (let item of this.items){
-            if(item.hover){
-                item.callback(this.contextNode);
-            }
-        }
-    }
-
-    draw(){
-        let cameraX = _diagram.cameraX;
-        let cameraY = _diagram.cameraY;
-        this.ctx.fillStyle = "lightblue";
-        this.ctx.fillRect(this.x + cameraX, this.y + cameraY, this.width, this.height);
-        for (let item of this.items){
-            this.ctx.fillStyle = this.mouseOver && item.hover ? "red" : "black";
-            this.ctx.fillText(item.label, this.x + item.x + cameraX, this.y + item.y + cameraY);
-        }
-    }
-}
-
 let _diagram: Diagrams;
-function diargramOnResize(){
+function tick(){
+    _diagram.tick();
+    setTimeout(() => {
+        tick(), 1000/60;
+    });
+}
+function diagramOnResize(){
     _diagram.onresize();
 }
 function diagramOnMouseDown(ev: MouseEvent){
-    _diagram.onmousedown(ev);
+    _diagram.onmousedown(ev)
 }
 function diagramOnMouseUp(ev: MouseEvent){
     _diagram.onmouseup(ev);
 }
 function diagramOnMouseMove(ev: MouseEvent){
-    _diagram.onmousemove(ev);
-}
-function diagramOnWheel(ev: WheelEvent){
-    //_diagram.onwheel(ev);
+    _diagram.onmousemove(ev)
 }
 function diagramOnContext(ev: MouseEvent){
     ev.preventDefault();
 }
 
+class Point {
+    x: number = 0;
+    y: number = 0;
+    constructor(x: number = 0, y: number = 0){
+        this.x = x;
+        this.y = y;
+    }
+}
+class MouseState {
+    canvas: Point = new Point();
+    world: Point = new Point();
+    offset: Point = new Point();
+    delta: Point = new Point();
+    leftDown: boolean = false;
+    leftUp: boolean = false;
+    panning: boolean = false;
+    draggingNode: boolean = false;
+    draggingConnection: boolean = false;
+}
+
 class Diagrams {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
+    shouldTick: boolean = true;
 
     nodes: Map<number, DiagramNode> = new Map();
 
-    connections: Array<[DiagramNode, DiagramNode]> = new Array();
+    connections: Array<NodeConnection> = new Array();
 
-    cameraX: number = 0; // camera position
-    cameraY: number = 0;
-    mouseX: number = 0; // mouse position on the canvas
-    mouseY: number = 0;
-    worldX: number = 0; // relative mouse position
-    worldY: number = 0;
+    mouseState: MouseState = new MouseState();
+
 
     panning: boolean = false;
 
@@ -236,8 +412,6 @@ class Diagrams {
 
     editNodeCallback: (node: DiagramNode) => void = function (){};
     deleteNodeCallback: (node: DiagramNode) => void = function (){};
-
-    contextMenu: ContextMenu;
 
     constructor(
             canvasId: string, 
@@ -254,185 +428,70 @@ class Diagrams {
         }
         _diagram = this;
         this.ctx = ctx;
-        this.contextMenu = new ContextMenu(this.ctx);
-        this.contextMenu.items.push(new ContextMenuItem("Edit", editNodeCallback))
-        this.contextMenu.items.push(new ContextMenuItem("Delete", deleteNodeCallback))
-        this.contextMenu.fitContextMenu();
-        this.ctx.font = "20px Helvetica";
+        this.editNodeCallback = editNodeCallback;
+        this.deleteNodeCallback = deleteNodeCallback;
+
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
-        this.canvas.onwheel = diagramOnWheel;
-        this.canvas.oncontextmenu = diagramOnContext;
-        window.onresize = diargramOnResize;
-        this.editNodeCallback = editNodeCallback;
-        this.deleteNodeCallback = deleteNodeCallback;
+        window.onresize = diagramOnResize;
+
+        tick();
+    }
+
+    tick(){
+        this.drawBackground();
+        for (let node of this.nodes.values()){
+            node.update(this.mouseState);
+        }
+        for (let connection of this.connections){
+            connection.update(this.mouseState);
+        }
+        for (let connection of this.connections){
+            connection.draw(this.ctx, this.mouseState);
+        }
+        for (let node of this.nodes.values()){
+            node.draw(this.ctx, this.mouseState);
+        }
+        if (this.mouseState.leftUp){
+            console.log("Click");
+        }
+        this.mouseState.leftUp = false;
     }
 
     onmousemove(ev: MouseEvent){
         let canvasRect = this.canvas.getBoundingClientRect();
-        this.mouseX = ev.x - canvasRect.left;
-        this.mouseY = ev.y - canvasRect.top;
-        this.worldX = this.mouseX - this.cameraX;
-        this.worldY = this.mouseY - this.cameraY;
+        this.mouseState.canvas.x = ev.x - canvasRect.left;
+        this.mouseState.canvas.y = ev.y - canvasRect.top;
+        this.mouseState.delta.x = ev.movementX;
+        this.mouseState.delta.y = ev.movementY;
 
-        if (this.contextMenu.active){
-            this.contextMenu.pointIn(this.worldX, this.worldY);
-        } else if (this.nodeHover != null){
-            this.nodeHover.hover = false;
-            this.nodeHover.inputHover = false
-            this.nodeHover.outputHover = false
-            this.nodeHover = null;
+        if (this.mouseState.panning){
+            this.mouseState.offset.x += this.mouseState.delta.x;
+            this.mouseState.offset.y += this.mouseState.delta.y;
         }
 
-        if (this.panning){
-            this.cameraX += ev.movementX;
-            this.cameraY += ev.movementY;
-        }
-        else if (this.nodeDragging != null){
-            // this.nodeDragging.x = worldX - this.nodeDragging.width / 2;
-            // this.nodeDragging.y = worldY - this.nodeDragging.height / 2;
-            this.nodeDragging.x += ev.movementX;
-            this.nodeDragging.y += ev.movementY;
-        } else {
-            for (let [_, node] of this.nodes){
-                if (node.pointNearNode(this.worldX, this.worldY)){
-                    if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                        node.inputHover = true;
-                        this.nodeHover = node;
-                        break;
-                    } else if (this.makingConnectionNode == null && node.pointInOutputCircle(this.worldX, this.worldY)){
-                        node.outputHover = true;
-                        this.nodeHover = node;
-                        break;
-                    }else if (node.pointInNode(this.worldX, this.worldY)){
-                        node.hover = true;
-                        this.nodeHover = node;
-                        break;
-                    }
-                }
-            }
-        }
-        this.draw();
+        this.mouseState.world.x = this.mouseState.canvas.x - this.mouseState.offset.x;
+        this.mouseState.world.y = this.mouseState.canvas.y - this.mouseState.offset.y;
     }
 
     onmousedown(ev: MouseEvent){
         if (ev.button != 0){
             return;
         }
-        
-        //this.contextMenu.active = false;
-
-        let canvasRect = this.canvas.getBoundingClientRect();
-        this.mouseX = ev.x - canvasRect.left;
-        this.mouseY = ev.y - canvasRect.top;
-        this.worldX = this.mouseX - this.cameraX;
-        this.worldY = this.mouseY - this.cameraY;
-        for (let [_, node] of this.nodes){
-            if (node.pointNearNode(this.worldX, this.worldY)){
-                if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                    // no dragging from inputs ?
-                } else if (node.pointInOutputCircle(this.worldX, this.worldY)){
-                    this.makingConnectionNode = node;
-                    return;
-                }
-            }
-            if (node.pointInNode(this.worldX, this.worldY)) {
-                this.nodeDragging = node;
+        this.mouseState.leftDown = true;
+        for (let object of this.nodes.values()){
+            if (object.pointInObject(this.mouseState.world)) {
                 return;
             }
         }
-
-        this.panning = true;
+        this.mouseState.panning = true;
     }
 
     onmouseup(ev: MouseEvent){
-        if (ev.button == 2) {
-            for (let [_, node] of this.nodes){
-                if (node.pointInNode(this.worldX, this.worldY)){
-                    this.contextMenu.x = this.worldX;
-                    this.contextMenu.y = this.worldY;
-                    this.contextMenu.active = true;
-                    this.contextMenu.contextNode = node;
-                    this.draw();
-                }
-            }
-        }
-        if (ev.button != 0){
-            return;
-        }
-
-        this.panning = false;
-        this.nodeDragging = null;
-        if (this.makingConnectionNode !== null){
-            for (let [_, node] of this.nodes){
-                if (node == this.makingConnectionNode){
-                    continue;
-                }
-                if(node.pointInInputCircle(this.worldX, this.worldY)){
-                    let connectionExists = false;
-                    for (let [output, input] of this.connections) {
-                        if (this.makingConnectionNode.id == output.id && node.id == input.id){
-                            connectionExists = true;
-                        }
-                    }
-                    if (!connectionExists){
-                        this.addConnection(this.makingConnectionNode, node);
-                    }
-                }
-            }
-            this.makingConnectionNode = null;
-        }
-        if (this.contextMenu.active){
-            if (this.contextMenu.pointIn(this.worldX, this.worldY)){
-                this.contextMenu.clickOn();
-                this.draw();
-            }
-            this.contextMenu.active = false;
-        }
-
-        for (let [output, input] of this.connections){
-            let [outputX, outputY] = output.getOutputCircleXY();
-            outputX += this.cameraX;
-            outputY += this.cameraY;
-            let [inputX, inputY] = input.getInputCircleXY();
-            inputX += this.cameraX;
-            inputY += this.cameraY;
-            let dX = Math.abs(outputX - inputX);
-            this.ctx.beginPath();
-            this.ctx.moveTo(outputX, outputY);
-            this.ctx.strokeStyle = "black";
-            let cp1x = (outputX + dX / 2);
-            let cp1y = outputY;
-            let cp2x = (inputX - dX / 2);
-            let cp2y = inputY;
-            this.ctx.bezierCurveTo(
-                cp1x, 
-                cp1y, 
-                cp2x, 
-                cp2y, 
-                inputX, 
-                inputY
-            );
-            this.ctx.stroke();
-            this.ctx.closePath();
-            let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
-            let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
-            if (mouseOnHalfway){
-                this.removeConnection(output, input);
-                break;
-            }
-        }
-        
-        this.draw();
-    }
-
-    onwheel(ev: WheelEvent){
-        if(ev.deltaY > 0){
-            return;
-        }
-        this.scale = Math.min(Math.max(this.scale - 0.1, 0.1), 1.0);
-        this.ctx.scale(this.scale, this.scale);
+        this.mouseState.leftDown = false;
+        this.mouseState.panning = false;
+        this.mouseState.leftUp = true;
     }
 
     drawBackground(){
@@ -444,98 +503,16 @@ class Diagrams {
     }
 
     draw(){
-        let scale = 1 / this.scale;
-        this.ctx.clearRect(0,0, this.canvas.width * scale, this.canvas.height * scale);
-        this.drawBackground();
-        let fullCircleRadians = Math.PI + (Math.PI * 3);
-        if (this.makingConnectionNode != null){
-            let [circleX, circleY] = this.makingConnectionNode.getOutputCircleXY();
-            let dX = Math.abs((circleX + this.cameraX) - this.mouseX);
-            this.ctx.beginPath();
-            this.ctx.moveTo(circleX + this.cameraX, circleY + this.cameraY);
-            this.ctx.strokeStyle = "black";
-            let cp1x = (circleX + dX / 2) + this.cameraX;
-            let cp1y = circleY + this.cameraY;
-            let cp2x = (this.mouseX - dX / 2);
-            let cp2y = this.mouseY;
-            this.ctx.bezierCurveTo(
-                cp1x, 
-                cp1y, 
-                cp2x, 
-                cp2y, 
-                this.mouseX, 
-                this.mouseY
-            );
-            this.ctx.stroke();
-            this.ctx.closePath();
-        }
-        for (let [output, input] of this.connections){
-            let [outputX, outputY] = output.getOutputCircleXY();
-            outputX += this.cameraX;
-            outputY += this.cameraY;
-            let [inputX, inputY] = input.getInputCircleXY();
-            inputX += this.cameraX;
-            inputY += this.cameraY;
-            let dX = Math.abs(outputX - inputX);
-            this.ctx.beginPath();
-            this.ctx.moveTo(outputX, outputY);
-            this.ctx.strokeStyle = "black";
-            let cp1x = (outputX + dX / 2);
-            let cp1y = outputY;
-            let cp2x = (inputX - dX / 2);
-            let cp2y = inputY;
-            this.ctx.bezierCurveTo(
-                cp1x, 
-                cp1y, 
-                cp2x, 
-                cp2y, 
-                inputX, 
-                inputY
-            );
-            this.ctx.stroke();
-            this.ctx.closePath();
-            let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
-            let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = mouseOnHalfway ? "red" : "rgba(200, 200, 200, 0.8)";
-            this.ctx.moveTo(halfway.x - 10, halfway.y - 10);
-            this.ctx.lineTo(halfway.x + 10, halfway.y + 10);
-            this.ctx.moveTo(halfway.x + 10, halfway.y - 10);
-            this.ctx.lineTo(halfway.x - 10, halfway.y + 10);
-            this.ctx.stroke();
-            this.ctx.closePath();
-        }
-        for (let [_, node] of this.nodes){
-            this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
-            this.ctx.fillRect(node.x + this.cameraX, node.y + this.cameraY, node.width, node.height);
-            this.ctx.fillStyle = "#D3D3D3";
-            this.ctx.font = "20px Helvetica";
-            this.ctx.fillText(
-                node.label, 
-                node.x + this.cameraX + node.height / 2, 
-                node.y + this.cameraY + node.height / 1.5
-            );
-            this.ctx.fillStyle = node.inputHover ? "red" : "green";
-            this.ctx.beginPath()
-            this.ctx.arc(node.x + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
-            this.ctx.fill();
-            this.ctx.beginPath()
-            this.ctx.fillStyle = node.outputHover ? "red" : "green";
-            this.ctx.moveTo(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY);
-            this.ctx.arc(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
-            this.ctx.fill();
-        }
-        if (this.contextMenu.active){
-            this.contextMenu.draw();
-        }
+
     }
 
     addNode(id: number, x: number, y: number, label: string, meta: Object = {}){
-        this.nodes.set(id, new DiagramNode(id, x, y, label, meta));
+        let node = new DiagramNode(id, x, y, label, meta, this.ctx);
+        this.nodes.set(id, node);
     }
 
     addConnection(A: DiagramNode, B: DiagramNode){
-        this.connections.push([A, B]);
+        this.connections.push(new NodeConnection(A, B));
     }
     addConnectionById(a: number, b: number){
         let A = this.nodes.get(a);
@@ -548,11 +525,13 @@ class Diagrams {
             console.error(`No node with ID: ${b}`);
             return;
         }
-        this.connections.push([A, B])
+        this.connections.push(new NodeConnection(A, B))
     }
     removeConnection(A: DiagramNode, B: DiagramNode){
         let index = 0;
-        for (let [output, input] of this.connections){
+        for (let connection of this.connections){
+            let output = connection.output;
+            let input = connection.input;
             if (output.id == A.id && input.id == B.id) {
                 this.connections.splice(index, 1);
             }
@@ -567,7 +546,7 @@ class Diagrams {
     fillParent(){
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
-        this.draw();
+        //this.draw();
     }
 }
 

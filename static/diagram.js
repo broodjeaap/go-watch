@@ -1,3 +1,16 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -25,25 +38,227 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var DiagramNode = /** @class */ (function () {
-    function DiagramNode(id, x, y, label, meta) {
-        if (meta === void 0) { meta = {}; }
-        this.hover = false;
-        this.inputHover = false;
-        this.outputHover = false;
-        this.meta = {};
-        this.id = id;
+var CanvasObject = /** @class */ (function () {
+    function CanvasObject(x, y, width, height) {
         this.x = x;
         this.y = y;
-        this.label = label;
-        this.meta = meta;
-        this.resize();
-    }
-    DiagramNode.prototype.resize = function () {
-        var textSize = _diagram.ctx.measureText(this.label);
-        var height = 2 * (textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent);
-        this.width = textSize.width + height;
+        this.width = width;
         this.height = height;
+        this.hover = false;
+    }
+    CanvasObject.prototype.pointInObject = function (p) {
+        if (p.x < this.x) {
+            return false;
+        }
+        if (p.y < this.y) {
+            return false;
+        }
+        if (p.x > this.x + this.width) {
+            return false;
+        }
+        if (p.y > this.y + this.height) {
+            return false;
+        }
+        return true;
+    };
+    return CanvasObject;
+}());
+var Button = /** @class */ (function (_super) {
+    __extends(Button, _super);
+    function Button(x, y, label, ctx) {
+        var _this = _super.call(this, x, y, 0, 0) || this;
+        _this.label = label;
+        _this.resize(ctx);
+        return _this;
+    }
+    Button.prototype.update = function (ms) {
+        this.hover = this.pointInObject(new Point(ms.world.x + ms.offset.x, ms.world.y + ms.offset.y));
+    };
+    Button.prototype.draw = function (ctx, ms) {
+        ctx.fillStyle = this.hover ? "black" : "#6B6B6B";
+        ctx.font = "15px Helvetica";
+        ctx.fillText(this.label, this.x + 3, this.y + this.labelHeight + 3);
+    };
+    Button.prototype.resize = function (ctx) {
+        ctx.font = "15px Helvetica";
+        var labelSize = ctx.measureText(this.label);
+        this.labelWidth = labelSize.width;
+        this.width = this.labelWidth + 6;
+        this.labelHeight = labelSize.actualBoundingBoxAscent + labelSize.actualBoundingBoxDescent;
+        this.height = this.labelHeight + 6;
+    };
+    return Button;
+}(CanvasObject));
+var circleTopRadians = Math.PI / 2;
+var circleRightRadians = (Math.PI * 3) / 2;
+var circleBottomRadians = Math.PI + (Math.PI * 3);
+var circleLeftRadians = Math.PI;
+var NodeIO = /** @class */ (function (_super) {
+    __extends(NodeIO, _super);
+    function NodeIO(node, input) {
+        var _this = _super.call(this, 0, 0, 0, 0) || this;
+        _this.input = false;
+        _this.radius = 15;
+        _this.input = input;
+        _this.node = node;
+        _this.reposition();
+        return _this;
+    }
+    NodeIO.prototype.update = function (ms) {
+    };
+    NodeIO.prototype.draw = function (ctx, ms) {
+        ctx.fillStyle = this.input ? "red" : "blue";
+        ctx.beginPath();
+        ctx.arc(ms.offset.x + this.x, ms.offset.y + this.y, this.radius, circleRightRadians, circleTopRadians, this.input);
+        ctx.fill();
+    };
+    NodeIO.prototype.reposition = function () {
+        if (this.input) {
+            this.x = this.node.x;
+            this.y = this.node.y + this.node.height / 2;
+        }
+        else {
+            this.x = this.node.x + this.node.width;
+            this.y = this.node.y + this.node.height / 2;
+        }
+    };
+    return NodeIO;
+}(CanvasObject));
+var NodeConnection = /** @class */ (function (_super) {
+    __extends(NodeConnection, _super);
+    function NodeConnection(output, input) {
+        var _this = _super.call(this, 0, 0, 0, 0) || this;
+        _this.output = output;
+        _this.input = input;
+        return _this;
+    }
+    NodeConnection.prototype.update = function (ms) {
+    };
+    NodeConnection.prototype.draw = function (ctx, ms) {
+        var outputX = ms.offset.x + this.output.output.x;
+        var outputY = ms.offset.y + this.output.output.y;
+        var inputX = ms.offset.x + this.input.input.x;
+        var inputY = ms.offset.y + this.input.input.y;
+        var dX = Math.abs(outputX - inputX);
+        ctx.beginPath();
+        ctx.moveTo(outputX, outputY);
+        ctx.strokeStyle = "#757575";
+        ctx.lineWidth = 5;
+        var cp1x = (outputX + dX);
+        var cp1y = outputY;
+        var cp2x = (inputX - dX);
+        var cp2y = inputY;
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, inputX, inputY);
+        ctx.stroke();
+        ctx.closePath();
+        /*
+        let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
+        let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
+        if (mouseOnHalfway){
+            this.removeConnection(output, input);
+            break;
+        }
+        */
+    };
+    NodeConnection.prototype.reposition = function () {
+    };
+    return NodeConnection;
+}(CanvasObject));
+var DiagramNode = /** @class */ (function (_super) {
+    __extends(DiagramNode, _super);
+    function DiagramNode(id, x, y, label, meta, ctx) {
+        if (meta === void 0) { meta = {}; }
+        var _this = _super.call(this, x, y, 0, 0) || this;
+        _this.dragging = false;
+        _this.dragOrigin = new Point();
+        _this.meta = {};
+        _this.id = id;
+        _this.label = label;
+        _this.meta = meta;
+        // @ts-ignore
+        _this.type = _this.meta.type;
+        if (["math", "condition"].indexOf(_this.type) >= 0) {
+            // @ts-ignore
+            _this.type = _this.meta.var1;
+        }
+        _this.resize(ctx);
+        _this.deleteButton = new Button(0, 0, "Del", ctx);
+        _this.editButton = new Button(0, 0, "Edit", ctx);
+        _this.logButton = new Button(0, 0, "Log", ctx);
+        _this.input = new NodeIO(_this, true);
+        _this.output = new NodeIO(_this, false);
+        return _this;
+    }
+    DiagramNode.prototype.update = function (ms) {
+        this.hover = (!ms.draggingNode || this.dragging) && this.pointInObject(ms.world);
+        if (this.hover) {
+            this.deleteButton.update(ms);
+            this.editButton.update(ms);
+            this.logButton.update(ms);
+            var onButtons = this.deleteButton.hover || this.editButton.hover || this.logButton.hover;
+            if (!this.dragging && ms.leftDown && !ms.draggingNode && !ms.draggingConnection && !onButtons) {
+                this.dragging = true;
+                ms.draggingNode = true;
+                this.dragOrigin.x = this.x - ms.world.x;
+                this.dragOrigin.y = this.y - ms.world.y;
+            }
+        }
+        else {
+            this.deleteButton.hover = false;
+            this.editButton.hover = false;
+            this.logButton.hover = false;
+        }
+        if (!ms.leftDown) {
+            this.dragging = false;
+            ms.draggingNode = false;
+        }
+        if (this.dragging) {
+            this.x = ms.world.x + this.dragOrigin.x;
+            this.y = ms.world.y + this.dragOrigin.y;
+            this.input.reposition();
+            this.output.reposition();
+        }
+        this.input.update(ms);
+        this.output.update(ms);
+    };
+    DiagramNode.prototype.draw = function (ctx, ms) {
+        ctx.fillStyle = this.hover ? "#DDDDDD" : "#BFBFBF";
+        ctx.fillRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
+        ctx.font = "20px Helvetica";
+        ctx.fillStyle = "black";
+        var labelX = ms.offset.x + this.x + this.width / 2 - this.labelWidth / 2;
+        var labelY = ms.offset.y + this.y + 3 * 2 + this.labelHeight;
+        ctx.fillText(this.label, labelX, labelY);
+        ctx.font = "15px Helvetica";
+        var typeX = ms.offset.x + this.x + this.width / 2 - this.typeWidth / 2;
+        var typeY = ms.offset.y + this.y + 3 * 3 + this.typeHeight + this.labelHeight;
+        ctx.fillText(this.type, typeX, typeY);
+        this.deleteButton.x = ms.offset.x + this.x;
+        this.deleteButton.y = ms.offset.y + this.y + this.height - this.deleteButton.height;
+        this.deleteButton.draw(ctx, ms);
+        this.editButton.x = ms.offset.x + this.x + this.width - this.editButton.width;
+        this.editButton.y = ms.offset.y + this.y + this.height - this.editButton.height;
+        this.editButton.draw(ctx, ms);
+        this.logButton.x = ms.offset.x + this.x + this.width / 2 - this.logButton.width / 2;
+        this.logButton.y = ms.offset.y + this.y + this.height - this.logButton.height;
+        this.logButton.draw(ctx, ms);
+        this.input.draw(ctx, ms);
+        this.output.draw(ctx, ms);
+        ctx.strokeStyle = "#8E8E8E";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
+    };
+    DiagramNode.prototype.resize = function (ctx) {
+        ctx.font = "20px Helvetica";
+        var labelSize = ctx.measureText(this.label);
+        this.labelWidth = labelSize.width;
+        this.labelHeight = labelSize.actualBoundingBoxAscent + labelSize.actualBoundingBoxDescent;
+        this.height = 70;
+        ctx.font = "15px Helvetica";
+        var typeSize = ctx.measureText(this.type);
+        this.typeWidth = typeSize.width;
+        this.typeHeight = typeSize.actualBoundingBoxAscent + typeSize.actualBoundingBoxDescent;
+        this.width = Math.max(150, this.labelWidth, this.typeWidth);
     };
     DiagramNode.prototype.pointInNode = function (x, y) {
         if (x < this.x) {
@@ -93,145 +308,15 @@ var DiagramNode = /** @class */ (function () {
         return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
     };
     return DiagramNode;
-}());
-var ContextMenuItem = /** @class */ (function () {
-    function ContextMenuItem(label, callback) {
-        this.x = 0;
-        this.y = 0;
-        this.hover = false;
-        this.callback = function (node) { };
-        this.label = label;
-        this.callback = callback;
-    }
-    return ContextMenuItem;
-}());
-var ContextMenu = /** @class */ (function () {
-    function ContextMenu(ctx) {
-        this.x = 0;
-        this.y = 0;
-        this.active = false;
-        this.mouseOver = false;
-        this.textWidth = 0;
-        this.textHeight = 0;
-        this.textMargin = 0;
-        this.width = 0;
-        this.height = 0;
-        this.items = new Array();
-        this.contextNode = null;
-        this.ctx = ctx;
-        this.ctx.font = "20px Helvetica";
-        var textSize = this.ctx.measureText("SomeLongerText");
-        this.textWidth = textSize.width;
-        this.textHeight = textSize.actualBoundingBoxAscent + textSize.actualBoundingBoxDescent;
-        this.textMargin = this.textWidth / 8;
-    }
-    ContextMenu.prototype.fitContextMenu = function () {
-        var e_1, _a;
-        this.width = this.textWidth + this.textMargin * 2;
-        this.height = this.textHeight + this.textMargin * (this.items.length + 2);
-        var index = 0;
-        try {
-            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var item = _c.value;
-                item.x = this.textMargin;
-                item.y = this.textHeight * index + this.textMargin * (index + 2);
-                index++;
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-    };
-    ContextMenu.prototype.pointIn = function (x, y) {
-        var e_2, _a;
-        if (x < this.x) {
-            this.mouseOver = false;
-            return false;
-        }
-        if (y < this.y) {
-            this.mouseOver = false;
-            return false;
-        }
-        if (x > this.x + this.width) {
-            this.mouseOver = false;
-            return false;
-        }
-        if (y > this.y + this.height) {
-            this.mouseOver = false;
-            return false;
-        }
-        try {
-            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var item = _c.value;
-                if (y >= this.y + item.y - this.textHeight && y <= this.y + item.y + this.textHeight) {
-                    item.hover = true;
-                }
-                else {
-                    item.hover = false;
-                }
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
-        this.mouseOver = true;
-        return true;
-    };
-    ContextMenu.prototype.clickOn = function () {
-        var e_3, _a;
-        if (this.contextNode == null) {
-            console.warn("No contextNode");
-            return;
-        }
-        try {
-            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var item = _c.value;
-                if (item.hover) {
-                    item.callback(this.contextNode);
-                }
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-    };
-    ContextMenu.prototype.draw = function () {
-        var e_4, _a;
-        var cameraX = _diagram.cameraX;
-        var cameraY = _diagram.cameraY;
-        this.ctx.fillStyle = "lightblue";
-        this.ctx.fillRect(this.x + cameraX, this.y + cameraY, this.width, this.height);
-        try {
-            for (var _b = __values(this.items), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var item = _c.value;
-                this.ctx.fillStyle = this.mouseOver && item.hover ? "red" : "black";
-                this.ctx.fillText(item.label, this.x + item.x + cameraX, this.y + item.y + cameraY);
-            }
-        }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-            }
-            finally { if (e_4) throw e_4.error; }
-        }
-    };
-    return ContextMenu;
-}());
+}(CanvasObject));
 var _diagram;
-function diargramOnResize() {
+function tick() {
+    _diagram.tick();
+    setTimeout(function () {
+        tick(), 1000 / 60;
+    });
+}
+function diagramOnResize() {
     _diagram.onresize();
 }
 function diagramOnMouseDown(ev) {
@@ -243,24 +328,42 @@ function diagramOnMouseUp(ev) {
 function diagramOnMouseMove(ev) {
     _diagram.onmousemove(ev);
 }
-function diagramOnWheel(ev) {
-    //_diagram.onwheel(ev);
-}
 function diagramOnContext(ev) {
     ev.preventDefault();
 }
+var Point = /** @class */ (function () {
+    function Point(x, y) {
+        if (x === void 0) { x = 0; }
+        if (y === void 0) { y = 0; }
+        this.x = 0;
+        this.y = 0;
+        this.x = x;
+        this.y = y;
+    }
+    return Point;
+}());
+var MouseState = /** @class */ (function () {
+    function MouseState() {
+        this.canvas = new Point();
+        this.world = new Point();
+        this.offset = new Point();
+        this.delta = new Point();
+        this.leftDown = false;
+        this.leftUp = false;
+        this.panning = false;
+        this.draggingNode = false;
+        this.draggingConnection = false;
+    }
+    return MouseState;
+}());
 var Diagrams = /** @class */ (function () {
     function Diagrams(canvasId, editNodeCallback, deleteNodeCallback) {
         if (editNodeCallback === void 0) { editNodeCallback = function () { }; }
         if (deleteNodeCallback === void 0) { deleteNodeCallback = function () { }; }
+        this.shouldTick = true;
         this.nodes = new Map();
         this.connections = new Array();
-        this.cameraX = 0; // camera position
-        this.cameraY = 0;
-        this.mouseX = 0; // mouse position on the canvas
-        this.mouseY = 0;
-        this.worldX = 0; // relative mouse position
-        this.worldY = 0;
+        this.mouseState = new MouseState();
         this.panning = false;
         this.nodeDragging = null;
         this.nodeHover = null;
@@ -278,234 +381,114 @@ var Diagrams = /** @class */ (function () {
         }
         _diagram = this;
         this.ctx = ctx;
-        this.contextMenu = new ContextMenu(this.ctx);
-        this.contextMenu.items.push(new ContextMenuItem("Edit", editNodeCallback));
-        this.contextMenu.items.push(new ContextMenuItem("Delete", deleteNodeCallback));
-        this.contextMenu.fitContextMenu();
-        this.ctx.font = "20px Helvetica";
+        this.editNodeCallback = editNodeCallback;
+        this.deleteNodeCallback = deleteNodeCallback;
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
-        this.canvas.onwheel = diagramOnWheel;
-        this.canvas.oncontextmenu = diagramOnContext;
-        window.onresize = diargramOnResize;
-        this.editNodeCallback = editNodeCallback;
-        this.deleteNodeCallback = deleteNodeCallback;
+        window.onresize = diagramOnResize;
+        tick();
     }
-    Diagrams.prototype.onmousemove = function (ev) {
-        var e_5, _a;
-        var canvasRect = this.canvas.getBoundingClientRect();
-        this.mouseX = ev.x - canvasRect.left;
-        this.mouseY = ev.y - canvasRect.top;
-        this.worldX = this.mouseX - this.cameraX;
-        this.worldY = this.mouseY - this.cameraY;
-        if (this.contextMenu.active) {
-            this.contextMenu.pointIn(this.worldX, this.worldY);
+    Diagrams.prototype.tick = function () {
+        var e_1, _a, e_2, _b, e_3, _c, e_4, _d;
+        this.drawBackground();
+        try {
+            for (var _e = __values(this.nodes.values()), _f = _e.next(); !_f.done; _f = _e.next()) {
+                var node = _f.value;
+                node.update(this.mouseState);
+            }
         }
-        else if (this.nodeHover != null) {
-            this.nodeHover.hover = false;
-            this.nodeHover.inputHover = false;
-            this.nodeHover.outputHover = false;
-            this.nodeHover = null;
-        }
-        if (this.panning) {
-            this.cameraX += ev.movementX;
-            this.cameraY += ev.movementY;
-        }
-        else if (this.nodeDragging != null) {
-            // this.nodeDragging.x = worldX - this.nodeDragging.width / 2;
-            // this.nodeDragging.y = worldY - this.nodeDragging.height / 2;
-            this.nodeDragging.x += ev.movementX;
-            this.nodeDragging.y += ev.movementY;
-        }
-        else {
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
             try {
-                for (var _b = __values(this.nodes), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var _d = __read(_c.value, 2), _ = _d[0], node = _d[1];
-                    if (node.pointNearNode(this.worldX, this.worldY)) {
-                        if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                            node.inputHover = true;
-                            this.nodeHover = node;
-                            break;
-                        }
-                        else if (this.makingConnectionNode == null && node.pointInOutputCircle(this.worldX, this.worldY)) {
-                            node.outputHover = true;
-                            this.nodeHover = node;
-                            break;
-                        }
-                        else if (node.pointInNode(this.worldX, this.worldY)) {
-                            node.hover = true;
-                            this.nodeHover = node;
-                            break;
-                        }
-                    }
-                }
+                if (_f && !_f.done && (_a = _e["return"])) _a.call(_e);
             }
-            catch (e_5_1) { e_5 = { error: e_5_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-                }
-                finally { if (e_5) throw e_5.error; }
+            finally { if (e_1) throw e_1.error; }
+        }
+        try {
+            for (var _g = __values(this.connections), _h = _g.next(); !_h.done; _h = _g.next()) {
+                var connection = _h.value;
+                connection.update(this.mouseState);
             }
         }
-        this.draw();
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_h && !_h.done && (_b = _g["return"])) _b.call(_g);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        try {
+            for (var _j = __values(this.connections), _k = _j.next(); !_k.done; _k = _j.next()) {
+                var connection = _k.value;
+                connection.draw(this.ctx, this.mouseState);
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (_k && !_k.done && (_c = _j["return"])) _c.call(_j);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        try {
+            for (var _l = __values(this.nodes.values()), _m = _l.next(); !_m.done; _m = _l.next()) {
+                var node = _m.value;
+                node.draw(this.ctx, this.mouseState);
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (_m && !_m.done && (_d = _l["return"])) _d.call(_l);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
+        if (this.mouseState.leftUp) {
+            console.log("Click");
+        }
+        this.mouseState.leftUp = false;
+    };
+    Diagrams.prototype.onmousemove = function (ev) {
+        var canvasRect = this.canvas.getBoundingClientRect();
+        this.mouseState.canvas.x = ev.x - canvasRect.left;
+        this.mouseState.canvas.y = ev.y - canvasRect.top;
+        this.mouseState.delta.x = ev.movementX;
+        this.mouseState.delta.y = ev.movementY;
+        if (this.mouseState.panning) {
+            this.mouseState.offset.x += this.mouseState.delta.x;
+            this.mouseState.offset.y += this.mouseState.delta.y;
+        }
+        this.mouseState.world.x = this.mouseState.canvas.x - this.mouseState.offset.x;
+        this.mouseState.world.y = this.mouseState.canvas.y - this.mouseState.offset.y;
     };
     Diagrams.prototype.onmousedown = function (ev) {
-        var e_6, _a;
+        var e_5, _a;
         if (ev.button != 0) {
             return;
         }
-        //this.contextMenu.active = false;
-        var canvasRect = this.canvas.getBoundingClientRect();
-        this.mouseX = ev.x - canvasRect.left;
-        this.mouseY = ev.y - canvasRect.top;
-        this.worldX = this.mouseX - this.cameraX;
-        this.worldY = this.mouseY - this.cameraY;
+        this.mouseState.leftDown = true;
         try {
-            for (var _b = __values(this.nodes), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), _ = _d[0], node = _d[1];
-                if (node.pointNearNode(this.worldX, this.worldY)) {
-                    if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                        // no dragging from inputs ?
-                    }
-                    else if (node.pointInOutputCircle(this.worldX, this.worldY)) {
-                        this.makingConnectionNode = node;
-                        return;
-                    }
-                }
-                if (node.pointInNode(this.worldX, this.worldY)) {
-                    this.nodeDragging = node;
+            for (var _b = __values(this.nodes.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var object = _c.value;
+                if (object.pointInObject(this.mouseState.world)) {
                     return;
                 }
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_5) throw e_5.error; }
         }
-        this.panning = true;
+        this.mouseState.panning = true;
     };
     Diagrams.prototype.onmouseup = function (ev) {
-        var e_7, _a, e_8, _b, e_9, _c, e_10, _d;
-        if (ev.button == 2) {
-            try {
-                for (var _e = __values(this.nodes), _f = _e.next(); !_f.done; _f = _e.next()) {
-                    var _g = __read(_f.value, 2), _ = _g[0], node = _g[1];
-                    if (node.pointInNode(this.worldX, this.worldY)) {
-                        this.contextMenu.x = this.worldX;
-                        this.contextMenu.y = this.worldY;
-                        this.contextMenu.active = true;
-                        this.contextMenu.contextNode = node;
-                        this.draw();
-                    }
-                }
-            }
-            catch (e_7_1) { e_7 = { error: e_7_1 }; }
-            finally {
-                try {
-                    if (_f && !_f.done && (_a = _e["return"])) _a.call(_e);
-                }
-                finally { if (e_7) throw e_7.error; }
-            }
-        }
-        if (ev.button != 0) {
-            return;
-        }
-        this.panning = false;
-        this.nodeDragging = null;
-        if (this.makingConnectionNode !== null) {
-            try {
-                for (var _h = __values(this.nodes), _j = _h.next(); !_j.done; _j = _h.next()) {
-                    var _k = __read(_j.value, 2), _ = _k[0], node = _k[1];
-                    if (node == this.makingConnectionNode) {
-                        continue;
-                    }
-                    if (node.pointInInputCircle(this.worldX, this.worldY)) {
-                        var connectionExists = false;
-                        try {
-                            for (var _l = (e_9 = void 0, __values(this.connections)), _m = _l.next(); !_m.done; _m = _l.next()) {
-                                var _o = __read(_m.value, 2), output = _o[0], input = _o[1];
-                                if (this.makingConnectionNode.id == output.id && node.id == input.id) {
-                                    connectionExists = true;
-                                }
-                            }
-                        }
-                        catch (e_9_1) { e_9 = { error: e_9_1 }; }
-                        finally {
-                            try {
-                                if (_m && !_m.done && (_c = _l["return"])) _c.call(_l);
-                            }
-                            finally { if (e_9) throw e_9.error; }
-                        }
-                        if (!connectionExists) {
-                            this.addConnection(this.makingConnectionNode, node);
-                        }
-                    }
-                }
-            }
-            catch (e_8_1) { e_8 = { error: e_8_1 }; }
-            finally {
-                try {
-                    if (_j && !_j.done && (_b = _h["return"])) _b.call(_h);
-                }
-                finally { if (e_8) throw e_8.error; }
-            }
-            this.makingConnectionNode = null;
-        }
-        if (this.contextMenu.active) {
-            if (this.contextMenu.pointIn(this.worldX, this.worldY)) {
-                this.contextMenu.clickOn();
-                this.draw();
-            }
-            this.contextMenu.active = false;
-        }
-        try {
-            for (var _p = __values(this.connections), _q = _p.next(); !_q.done; _q = _p.next()) {
-                var _r = __read(_q.value, 2), output = _r[0], input = _r[1];
-                var _s = __read(output.getOutputCircleXY(), 2), outputX = _s[0], outputY = _s[1];
-                outputX += this.cameraX;
-                outputY += this.cameraY;
-                var _t = __read(input.getInputCircleXY(), 2), inputX = _t[0], inputY = _t[1];
-                inputX += this.cameraX;
-                inputY += this.cameraY;
-                var dX = Math.abs(outputX - inputX);
-                this.ctx.beginPath();
-                this.ctx.moveTo(outputX, outputY);
-                this.ctx.strokeStyle = "black";
-                var cp1x = (outputX + dX / 2);
-                var cp1y = outputY;
-                var cp2x = (inputX - dX / 2);
-                var cp2y = inputY;
-                this.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, inputX, inputY);
-                this.ctx.stroke();
-                this.ctx.closePath();
-                var halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY);
-                var mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10 * 10;
-                if (mouseOnHalfway) {
-                    this.removeConnection(output, input);
-                    break;
-                }
-            }
-        }
-        catch (e_10_1) { e_10 = { error: e_10_1 }; }
-        finally {
-            try {
-                if (_q && !_q.done && (_d = _p["return"])) _d.call(_p);
-            }
-            finally { if (e_10) throw e_10.error; }
-        }
-        this.draw();
-    };
-    Diagrams.prototype.onwheel = function (ev) {
-        if (ev.deltaY > 0) {
-            return;
-        }
-        this.scale = Math.min(Math.max(this.scale - 0.1, 0.1), 1.0);
-        this.ctx.scale(this.scale, this.scale);
+        this.mouseState.leftDown = false;
+        this.mouseState.panning = false;
+        this.mouseState.leftUp = true;
     };
     Diagrams.prototype.drawBackground = function () {
         this.ctx.fillStyle = "#D8D8D8";
@@ -515,100 +498,14 @@ var Diagrams = /** @class */ (function () {
         this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
     };
     Diagrams.prototype.draw = function () {
-        var e_11, _a, e_12, _b;
-        var scale = 1 / this.scale;
-        this.ctx.clearRect(0, 0, this.canvas.width * scale, this.canvas.height * scale);
-        this.drawBackground();
-        var fullCircleRadians = Math.PI + (Math.PI * 3);
-        if (this.makingConnectionNode != null) {
-            var _c = __read(this.makingConnectionNode.getOutputCircleXY(), 2), circleX = _c[0], circleY = _c[1];
-            var dX = Math.abs((circleX + this.cameraX) - this.mouseX);
-            this.ctx.beginPath();
-            this.ctx.moveTo(circleX + this.cameraX, circleY + this.cameraY);
-            this.ctx.strokeStyle = "black";
-            var cp1x = (circleX + dX / 2) + this.cameraX;
-            var cp1y = circleY + this.cameraY;
-            var cp2x = (this.mouseX - dX / 2);
-            var cp2y = this.mouseY;
-            this.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, this.mouseX, this.mouseY);
-            this.ctx.stroke();
-            this.ctx.closePath();
-        }
-        try {
-            for (var _d = __values(this.connections), _e = _d.next(); !_e.done; _e = _d.next()) {
-                var _f = __read(_e.value, 2), output = _f[0], input = _f[1];
-                var _g = __read(output.getOutputCircleXY(), 2), outputX = _g[0], outputY = _g[1];
-                outputX += this.cameraX;
-                outputY += this.cameraY;
-                var _h = __read(input.getInputCircleXY(), 2), inputX = _h[0], inputY = _h[1];
-                inputX += this.cameraX;
-                inputY += this.cameraY;
-                var dX = Math.abs(outputX - inputX);
-                this.ctx.beginPath();
-                this.ctx.moveTo(outputX, outputY);
-                this.ctx.strokeStyle = "black";
-                var cp1x = (outputX + dX / 2);
-                var cp1y = outputY;
-                var cp2x = (inputX - dX / 2);
-                var cp2y = inputY;
-                this.ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, inputX, inputY);
-                this.ctx.stroke();
-                this.ctx.closePath();
-                var halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY);
-                var mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10 * 10;
-                this.ctx.beginPath();
-                this.ctx.strokeStyle = mouseOnHalfway ? "red" : "rgba(200, 200, 200, 0.8)";
-                this.ctx.moveTo(halfway.x - 10, halfway.y - 10);
-                this.ctx.lineTo(halfway.x + 10, halfway.y + 10);
-                this.ctx.moveTo(halfway.x + 10, halfway.y - 10);
-                this.ctx.lineTo(halfway.x - 10, halfway.y + 10);
-                this.ctx.stroke();
-                this.ctx.closePath();
-            }
-        }
-        catch (e_11_1) { e_11 = { error: e_11_1 }; }
-        finally {
-            try {
-                if (_e && !_e.done && (_a = _d["return"])) _a.call(_d);
-            }
-            finally { if (e_11) throw e_11.error; }
-        }
-        try {
-            for (var _j = __values(this.nodes), _k = _j.next(); !_k.done; _k = _j.next()) {
-                var _l = __read(_k.value, 2), _ = _l[0], node = _l[1];
-                this.ctx.fillStyle = node.hover ? "#303030" : "#161616";
-                this.ctx.fillRect(node.x + this.cameraX, node.y + this.cameraY, node.width, node.height);
-                this.ctx.fillStyle = "#D3D3D3";
-                this.ctx.font = "20px Helvetica";
-                this.ctx.fillText(node.label, node.x + this.cameraX + node.height / 2, node.y + this.cameraY + node.height / 1.5);
-                this.ctx.fillStyle = node.inputHover ? "red" : "green";
-                this.ctx.beginPath();
-                this.ctx.arc(node.x + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
-                this.ctx.fill();
-                this.ctx.beginPath();
-                this.ctx.fillStyle = node.outputHover ? "red" : "green";
-                this.ctx.moveTo(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY);
-                this.ctx.arc(node.x + node.width + this.cameraX, node.y + node.height / 2 + this.cameraY, node.height / 3, 0, fullCircleRadians);
-                this.ctx.fill();
-            }
-        }
-        catch (e_12_1) { e_12 = { error: e_12_1 }; }
-        finally {
-            try {
-                if (_k && !_k.done && (_b = _j["return"])) _b.call(_j);
-            }
-            finally { if (e_12) throw e_12.error; }
-        }
-        if (this.contextMenu.active) {
-            this.contextMenu.draw();
-        }
     };
     Diagrams.prototype.addNode = function (id, x, y, label, meta) {
         if (meta === void 0) { meta = {}; }
-        this.nodes.set(id, new DiagramNode(id, x, y, label, meta));
+        var node = new DiagramNode(id, x, y, label, meta, this.ctx);
+        this.nodes.set(id, node);
     };
     Diagrams.prototype.addConnection = function (A, B) {
-        this.connections.push([A, B]);
+        this.connections.push(new NodeConnection(A, B));
     };
     Diagrams.prototype.addConnectionById = function (a, b) {
         var A = this.nodes.get(a);
@@ -621,26 +518,28 @@ var Diagrams = /** @class */ (function () {
             console.error("No node with ID: " + b);
             return;
         }
-        this.connections.push([A, B]);
+        this.connections.push(new NodeConnection(A, B));
     };
     Diagrams.prototype.removeConnection = function (A, B) {
-        var e_13, _a;
+        var e_6, _a;
         var index = 0;
         try {
             for (var _b = __values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), output = _d[0], input = _d[1];
+                var connection = _c.value;
+                var output = connection.output;
+                var input = connection.input;
                 if (output.id == A.id && input.id == B.id) {
                     this.connections.splice(index, 1);
                 }
                 index++;
             }
         }
-        catch (e_13_1) { e_13 = { error: e_13_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            finally { if (e_13) throw e_13.error; }
+            finally { if (e_6) throw e_6.error; }
         }
     };
     Diagrams.prototype.onresize = function () {
@@ -649,7 +548,7 @@ var Diagrams = /** @class */ (function () {
     Diagrams.prototype.fillParent = function () {
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
-        this.draw();
+        //this.draw();
     };
     return Diagrams;
 }());
