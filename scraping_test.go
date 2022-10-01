@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -464,6 +465,15 @@ func getTestDB() *gorm.DB {
 
 func TestConditionDiff(t *testing.T) {
 	db := getTestDB()
+	const timeLayout = "2006-01-02"
+	time1, err := time.Parse(timeLayout, "2000-01-01")
+	if err != nil {
+		t.Error("Can't parse time")
+	}
+	time2, err := time.Parse(timeLayout, "2001-01-01")
+	if err != nil {
+		t.Error("Can't parse time")
+	}
 	var tests = []struct {
 		dbInput []FilterOutput
 		WatchID uint
@@ -487,10 +497,48 @@ func TestConditionDiff(t *testing.T) {
 				{
 					WatchID: 2,
 					Name:    "Test",
-					Value:   "Same",
+					Value:   "Previous",
+					Time:    time1,
+				},
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "Last",
+					Time:    time2,
 				},
 			},
 			2,
+			[]string{"New"},
+			[]string{"New"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 3,
+					Name:    "Test",
+					Value:   "Same",
+				},
+			},
+			3,
+			[]string{"Same"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "Previous",
+					Time:    time1,
+				},
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "Same",
+					Time:    time2,
+				},
+			},
+			4,
 			[]string{"Same"},
 			[]string{},
 		},
@@ -515,8 +563,522 @@ func TestConditionDiff(t *testing.T) {
 			}
 		})
 	}
+	err = os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestConditionLowerLast(t *testing.T) {
+	db := getTestDB()
+	const timeLayout = "2006-01-02"
+	time1, err := time.Parse(timeLayout, "2000-01-01")
+	if err != nil {
+		t.Error("Can't parse time")
+	}
+	time2, err := time.Parse(timeLayout, "2001-01-01")
+	if err != nil {
+		t.Error("Can't parse time")
+	}
+	var tests = []struct {
+		dbInput []FilterOutput
+		WatchID uint
+		Input   []string
+		Want    []string
+	}{
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "2",
+				},
+			},
+			1,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "A",
+				},
+			},
+			1,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "3",
+					Time:    time1,
+				},
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "2",
+					Time:    time2,
+				},
+			},
+			2,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 3,
+					Name:    "Test",
+					Value:   "1",
+				},
+			},
+			3,
+			[]string{"2"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "3",
+					Time:    time1,
+				},
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "1",
+					Time:    time2,
+				},
+			},
+			4,
+			[]string{"2"},
+			[]string{},
+		},
+	}
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			db.Create(&test.dbInput)
+			filter := Filter{
+				WatchID: test.WatchID,
+				Name:    "Test",
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultConditionLowerLast(
+				&filter,
+				db,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+	err = os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestConditionLowest(t *testing.T) {
+	db := getTestDB()
+	var tests = []struct {
+		dbInput []FilterOutput
+		WatchID uint
+		Input   []string
+		Want    []string
+	}{
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "5",
+				},
+			},
+			1,
+			[]string{"4"},
+			[]string{"4"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "A",
+				},
+			},
+			1,
+			[]string{"4"},
+			[]string{"4"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "3",
+				},
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "2",
+				},
+			},
+			2,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 3,
+					Name:    "Test",
+					Value:   "1",
+				},
+			},
+			3,
+			[]string{"2"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "3",
+				},
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "1",
+				},
+			},
+			4,
+			[]string{"2"},
+			[]string{},
+		},
+	}
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			db.Create(&test.dbInput)
+			filter := Filter{
+				WatchID: test.WatchID,
+				Name:    "Test",
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultConditionLowest(
+				&filter,
+				db,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
 	err := os.Remove("./test.db")
 	if err != nil {
 		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestFilterLowerThan(t *testing.T) {
+	var tests = []struct {
+		Input     []string
+		Threshold string
+		Want      []string
+	}{
+		{[]string{"1"}, "2", []string{"1"}},
+		{[]string{"2"}, "1", []string{}},
+		{[]string{"1"}, "1", []string{}},
+		{[]string{"2", "3", "4"}, "1", []string{"1"}},
+		{[]string{"A", "3", "4"}, "2", []string{"2"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{
+						Results: test.Input,
+						Var2:    &test.Threshold,
+					},
+				},
+			}
+			getFilterResultConditionLowerThan(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestConditionHigherLast(t *testing.T) {
+	db := getTestDB()
+	const timeLayout = "2006-01-02"
+	time1, err := time.Parse(timeLayout, "2000-01-01")
+	if err != nil {
+		t.Error("Can't parse time")
+	}
+	time2, err := time.Parse(timeLayout, "2001-01-01")
+	if err != nil {
+		t.Error("Can't parse time")
+	}
+	var tests = []struct {
+		dbInput []FilterOutput
+		WatchID uint
+		Input   []string
+		Want    []string
+	}{
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "1",
+				},
+			},
+			1,
+			[]string{"2"},
+			[]string{"2"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "A",
+				},
+			},
+			1,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "3",
+					Time:    time1,
+				},
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "2",
+					Time:    time2,
+				},
+			},
+			2,
+			[]string{"3"},
+			[]string{"3"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 3,
+					Name:    "Test",
+					Value:   "2",
+				},
+			},
+			3,
+			[]string{"1"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "1",
+					Time:    time1,
+				},
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "3",
+					Time:    time2,
+				},
+			},
+			4,
+			[]string{"2"},
+			[]string{},
+		},
+	}
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			db.Create(&test.dbInput)
+			filter := Filter{
+				WatchID: test.WatchID,
+				Name:    "Test",
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultConditionHigherLast(
+				&filter,
+				db,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+	err = os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestConditionHighest(t *testing.T) {
+	db := getTestDB()
+	var tests = []struct {
+		dbInput []FilterOutput
+		WatchID uint
+		Input   []string
+		Want    []string
+	}{
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "1",
+				},
+			},
+			1,
+			[]string{"2"},
+			[]string{"2"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 1,
+					Name:    "Test",
+					Value:   "A",
+				},
+			},
+			1,
+			[]string{"1"},
+			[]string{"1"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "1",
+				},
+				{
+					WatchID: 2,
+					Name:    "Test",
+					Value:   "2",
+				},
+			},
+			2,
+			[]string{"3"},
+			[]string{"3"},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 3,
+					Name:    "Test",
+					Value:   "2",
+				},
+			},
+			3,
+			[]string{"1"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "1",
+				},
+				{
+					WatchID: 4,
+					Name:    "Test",
+					Value:   "3",
+				},
+			},
+			4,
+			[]string{"2"},
+			[]string{},
+		},
+	}
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			db.Create(&test.dbInput)
+			filter := Filter{
+				WatchID: test.WatchID,
+				Name:    "Test",
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+			}
+			getFilterResultConditionLowest(
+				&filter,
+				db,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestFilterHigherThan(t *testing.T) {
+	var tests = []struct {
+		Input     []string
+		Threshold string
+		Want      []string
+	}{
+		{[]string{"2"}, "1", []string{"2"}},
+		{[]string{"1"}, "2", []string{}},
+		{[]string{"1"}, "1", []string{}},
+		{[]string{"1", "2", "3"}, "4", []string{"4"}},
+		{[]string{"1", "2", "3", "A"}, "4", []string{"4"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{
+						Results: test.Input,
+						Var2:    &test.Threshold,
+					},
+				},
+			}
+			getFilterResultConditionLowerThan(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
 	}
 }
