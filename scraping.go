@@ -432,9 +432,9 @@ func getFilterResultRound(filter *Filter) {
 func storeFilterResult(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
+
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			log.Println(previousOutput)
 			if previousOutput.WatchID == 0 {
 				previousOutput.Name = filter.Name
 				previousOutput.Time = time.Now()
