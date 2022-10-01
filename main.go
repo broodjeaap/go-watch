@@ -134,6 +134,16 @@ func (web Web) watchUpdate(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
 }
 
+func (web Web) cacheView(c *gin.Context) {
+	c.HTML(http.StatusOK, "cacheView", web.urlCache)
+}
+
+func (web Web) cacheClear(c *gin.Context) {
+	url := c.PostForm("url")
+	delete(web.urlCache, url)
+	c.Redirect(http.StatusSeeOther, "/cache/view")
+}
+
 func passiveBot(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -176,7 +186,7 @@ func main() {
 	web := Web{
 		//bot,
 		db:       db,
-		urlCache: make(map[string]string, 5),
+		urlCache: make(map[string]string, 2),
 	}
 	router := gin.Default()
 
@@ -186,6 +196,8 @@ func main() {
 	templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
 	templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watch/create.html")
 	templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
+
+	templates.AddFromFiles("cacheView", "templates/base.html", "templates/cache/view.html")
 
 	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
 	router.HTMLRender = templates
@@ -197,6 +209,9 @@ func main() {
 	router.POST("/watch/create", web.watchCreatePost)
 	router.POST("/watch/update", web.watchUpdate)
 	router.POST("/watch/delete", web.deleteWatch)
+
+	router.GET("/cache/view", web.cacheView)
+	router.POST("/cache/clear", web.cacheClear)
 
 	router.Run("0.0.0.0:8080")
 }

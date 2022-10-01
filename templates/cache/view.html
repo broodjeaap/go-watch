@@ -1,0 +1,16 @@
+{{define "content"}}
+{{ range $url, $content := . }}
+<div class="card text-center">
+    <div class="card-header">
+        {{ $url }}
+        <form action="/cache/clear" method="post">
+            <input type="hidden" name="url" value="{{ $url }}">
+            <input type="submit" class="btn btn-danger btn-sm" value="Clear">
+        </form>
+    </div>
+    <div class="card-body">
+        <code class="card-text">{{ $content }}</code>
+    </div>
+</div>
+{{ end }}
+{{end}}
