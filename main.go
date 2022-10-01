@@ -133,67 +133,6 @@ func (web Web) watchUpdate(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
 }
 
-/*
-func (web Web) viewWatch(c *gin.Context) {
-	id := c.Param("id")
-
-	var watch Watch
-	web.db.Model(&Watch{}).First(&watch, id)
-
-	var filters []Filter
-	web.db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
-
-	filterMap := make(map[uint]*Filter)
-	for i := range filters {
-		filterMap[filters[i].ID] = &filters[i]
-	}
-
-	currentLayerFilters := []*Filter{}
-	for i := range filters {
-		filter := &filters[i]
-		if filter.ParentID != nil {
-			parent := filterMap[*filter.ParentID]
-			parent.Filters = append(parent.Filters, *filter)
-		} else {
-			currentLayerFilters = append(currentLayerFilters, filter)
-		}
-	}
-
-	bftFilters := []FilterDepth{}
-	nextLayerFilters := []*Filter{}
-	depth := 0
-	for len(nextLayerFilters) > 0 || len(currentLayerFilters) > 0 {
-		for len(currentLayerFilters) > 0 {
-			filter := currentLayerFilters[0]
-			bftFilters = append(bftFilters, FilterDepth{
-				Filter: filter,
-				Depth:  make([]struct{}, depth),
-			})
-			for _, filter := range filter.Filters {
-				nextLayerFilters = append(nextLayerFilters, &filter)
-			}
-			currentLayerFilters = currentLayerFilters[1:]
-		}
-		depth += 1
-		currentLayerFilters = nextLayerFilters
-		nextLayerFilters = []*Filter{}
-	}
-
-	for i := range bftFilters {
-		fd := &bftFilters[i]
-		fd.RevDepth = make([]struct{}, depth-len(fd.Depth))
-	}
-	numberOfColumns := depth + 4
-	c.HTML(http.StatusOK, "viewWatch", gin.H{
-		"Watch":       watch,
-		"Filters":     bftFilters,
-		"MaxDepth":    depth,
-		"Columns":     make([]struct{}, numberOfColumns),
-		"ColumnWidth": 100 / numberOfColumns,
-	})
-}
-*/
-
 func passiveBot(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
