@@ -12,11 +12,26 @@
 {{ end }}
 
 {{ define "left" }}
-<div>
-    <button type="button" id="filterButton" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
-        Add Filter
-    </button>
-</div>
+<table>
+    <tr>
+        <td>
+            <button type="button" id="filterButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
+                Add Filter
+            </button>
+        </td>
+        <td>
+            <button type="button" id="filterButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#WatchModal">
+                Edit Watch
+            </button>
+        </td>
+        <td>
+            <button type="button" id="saveButtonMain" class="btn btn-primary btn-sm">
+                Save Watch
+            </button>
+        </td>
+    </tr>
+</table>
+
 
 <div class="modal fade" id="FilterModal" tabindex="-1" aria-labelledby="FilterModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -74,18 +89,6 @@
     </div>
 </div>
 
-
-<div>
-    <button type="button" id="filterButton" class="btn btn-primary btn-block btn-sm" data-bs-toggle="modal" data-bs-target="#WatchModal">
-        Edit Watch
-    </button>
-</div>
-<div>
-    <button type="button" id="saveButtonMain" class="btn btn-primary btn-block btn-sm">
-        Save
-    </button>
-</div>
-
 <div class="modal fade" id="WatchModal" tabindex="-1" aria-labelledby="WatchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -122,7 +125,7 @@
                     <button class="btn btn-primary mt-4 float-start" id="saveButtonModal" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
                     <form action="/watch/delete" method="post">
                         <input type="hidden" name="watch_id" value="{{ .Watch.ID }}">
-                        <button class="btn btn-danger mt-4 float-end"  data-bs-dismiss="modal" id="deleteFilterButton">Delete Filter</button>
+                        <button class="btn btn-danger mt-4 float-end"  data-bs-dismiss="modal" id="deleteFilterButton">Delete Watch</button>
                     </form>
                 </div>
             </div>
@@ -157,11 +160,6 @@ function canvasInit() {
         diagrams.addConnectionById({{ .OutputID }}, {{ .InputID }});
     {{ end }}
     diagrams.fillParent();
-
-
-    {{ range .Values }}
-        console.log("{{ .Name }}", "{{ .Value }}", "{{ .Time }}")
-    {{ end }}
 }
 document.addEventListener('DOMContentLoaded', canvasInit, false);
 
