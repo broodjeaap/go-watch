@@ -22,7 +22,8 @@ var newWatchHTML = filepath.Join("templates", "newWatch.html")
 
 type Web struct {
 	//Bot *tgbotapi.BotAPI
-	db *gorm.DB
+	urlCache map[string]string
+	db       *gorm.DB
 }
 
 func (web Web) index(c *gin.Context) {
@@ -76,7 +77,7 @@ func (web Web) watchView(c *gin.Context) {
 	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, web.db)
+	processFilters(filters, web.db, web.urlCache, true, true)
 
 	c.HTML(http.StatusOK, "watchView", gin.H{
 		"Watch":       watch,
@@ -174,7 +175,8 @@ func main() {
 
 	web := Web{
 		//bot,
-		db,
+		db:       db,
+		urlCache: make(map[string]string, 5),
 	}
 	router := gin.Default()
 

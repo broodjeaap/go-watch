@@ -19,7 +19,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func processFilters(filters []Filter, db *gorm.DB) {
+func processFilters(filters []Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
 	processedMap := make(map[uint]bool, len(filters))
 	for len(filters) > 0 {
 		filter := &filters[0]
@@ -35,20 +35,20 @@ func processFilters(filters []Filter, db *gorm.DB) {
 			filters = append(filters, *filter)
 			continue
 		}
-		getFilterResult(filter, db)
+		getFilterResult(filter, db, urlCache, useCache, setCache)
 		processedMap[filter.ID] = true
 	}
 }
 
-func getFilterResult(filter *Filter, db *gorm.DB) {
+func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
 	switch {
 	case filter.Type == "gurl":
 		{
-			getFilterResultURL(filter)
+			getFilterResultURL(filter, urlCache, useCache, setCache)
 		}
 	case filter.Type == "gurls":
 		{
-			getFilterResultURL(filter)
+			getFilterResultURL(filter, urlCache, useCache, setCache)
 		}
 	case filter.Type == "xpath":
 		{
@@ -145,8 +145,14 @@ func getFilterResult(filter *Filter, db *gorm.DB) {
 	}
 }
 
-func getFilterResultURL(filter *Filter) {
+func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache bool, setCache bool) {
 	url := filter.Var1
+	val, exists := urlCache[url]
+	if useCache && exists {
+		filter.Results = append(filter.Results, val)
+		return
+	}
+
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Println("Could not fetch url", url)
@@ -157,7 +163,11 @@ func getFilterResultURL(filter *Filter) {
 		log.Println("Could not fetch url", url)
 		log.Println("Reason:", err)
 	}
-	filter.Results = append(filter.Results, string(body))
+	str := string(body)
+	filter.Results = append(filter.Results, str)
+	if setCache {
+		urlCache[url] = str
+	}
 }
 
 func getFilterResultXPath(filter *Filter) {
