@@ -153,7 +153,12 @@ function canvasInit() {
                 var1: "{{ .Var1 }}",
                 var2: "{{ .Var2 }}",
                 var3: "{{ .Var3 }}",
-            }
+            },
+            [
+                {{ range .Results }}
+                    ["{{ . }}"],
+                {{ end }}
+            ]
         );
     {{ end }}
     {{ range .Connections }}

@@ -227,6 +227,7 @@ class DiagramNode extends CanvasObject {
     children: Array<DiagramNode>;
 
     meta: Object = {};
+    results: Array<string>;
 
     constructor(
         id: number,
@@ -234,7 +235,8 @@ class DiagramNode extends CanvasObject {
         y: number, 
         label: string,
         meta: Object = {},
-        ctx: CanvasRenderingContext2D
+        ctx: CanvasRenderingContext2D,
+        results: Array<string> = new Array(),
     ){
         super(x, y, 0, 0)
         this.id = id;
@@ -249,6 +251,7 @@ class DiagramNode extends CanvasObject {
 
         this.input = new NodeIO(this, true);
         this.output = new NodeIO(this, false);
+        this.results = results;
     }
 
     update(ms: MouseState) {
@@ -298,7 +301,15 @@ class DiagramNode extends CanvasObject {
         let typeX = ms.offset.x + this.x + this.width / 2 - this.typeWidth / 2;
         let typeY = ms.offset.y + this.y + 3 * 3 + this.typeHeight + this.labelHeight;
         ctx.fillText(this.type, typeX, typeY);
-        
+
+        let resultCount = `${this.results.length}`
+        let resultCountSize = ctx.measureText(resultCount);
+        let resultCountWidth = resultCountSize.width;
+        let resultCountHeight = resultCountSize.actualBoundingBoxAscent + resultCountSize.actualBoundingBoxDescent;
+        let resultCountX = ms.offset.x + this.x + this.width - resultCountWidth - 3 * 3;
+        let resultCountY = ms.offset.y + this.y + resultCountHeight + 3 * 3;
+        ctx.fillText(resultCount, resultCountX, resultCountY)
+
         this.deleteButton.x = ms.offset.x + this.x;
         this.deleteButton.y = ms.offset.y + this.y + this.height - this.deleteButton.height;
         this.deleteButton.draw(ctx, ms);
@@ -559,8 +570,8 @@ class Diagrams {
 
     }
 
-    addNode(id: number, x: number, y: number, label: string, meta: Object = {}){
-        let node = new DiagramNode(id, x, y, label, meta, this.ctx);
+    addNode(id: number, x: number, y: number, label: string, meta: Object = {}, results: Array<string> = new Array()){
+        let node = new DiagramNode(id, x, y, label, meta, this.ctx, results);
         this.nodes.set(id, node);
     }
 

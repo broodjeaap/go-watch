@@ -191,8 +191,9 @@ var NodeConnection = /** @class */ (function (_super) {
 }(CanvasObject));
 var DiagramNode = /** @class */ (function (_super) {
     __extends(DiagramNode, _super);
-    function DiagramNode(id, x, y, label, meta, ctx) {
+    function DiagramNode(id, x, y, label, meta, ctx, results) {
         if (meta === void 0) { meta = {}; }
+        if (results === void 0) { results = new Array(); }
         var _this = _super.call(this, x, y, 0, 0) || this;
         _this.dragging = false;
         _this.dragOrigin = new Point();
@@ -207,6 +208,7 @@ var DiagramNode = /** @class */ (function (_super) {
         _this.logButton = new Button(0, 0, "Log", ctx, _diagram.editNodeCallback, _this);
         _this.input = new NodeIO(_this, true);
         _this.output = new NodeIO(_this, false);
+        _this.results = results;
         return _this;
     }
     DiagramNode.prototype.update = function (ms) {
@@ -253,6 +255,13 @@ var DiagramNode = /** @class */ (function (_super) {
         var typeX = ms.offset.x + this.x + this.width / 2 - this.typeWidth / 2;
         var typeY = ms.offset.y + this.y + 3 * 3 + this.typeHeight + this.labelHeight;
         ctx.fillText(this.type, typeX, typeY);
+        var resultCount = "" + this.results.length;
+        var resultCountSize = ctx.measureText(resultCount);
+        var resultCountWidth = resultCountSize.width;
+        var resultCountHeight = resultCountSize.actualBoundingBoxAscent + resultCountSize.actualBoundingBoxDescent;
+        var resultCountX = ms.offset.x + this.x + this.width - resultCountWidth - 3 * 3;
+        var resultCountY = ms.offset.y + this.y + resultCountHeight + 3 * 3;
+        ctx.fillText(resultCount, resultCountX, resultCountY);
         this.deleteButton.x = ms.offset.x + this.x;
         this.deleteButton.y = ms.offset.y + this.y + this.height - this.deleteButton.height;
         this.deleteButton.draw(ctx, ms);
@@ -529,9 +538,10 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.draw = function () {
     };
-    Diagrams.prototype.addNode = function (id, x, y, label, meta) {
+    Diagrams.prototype.addNode = function (id, x, y, label, meta, results) {
         if (meta === void 0) { meta = {}; }
-        var node = new DiagramNode(id, x, y, label, meta, this.ctx);
+        if (results === void 0) { results = new Array(); }
+        var node = new DiagramNode(id, x, y, label, meta, this.ctx, results);
         this.nodes.set(id, node);
     };
     Diagrams.prototype.addConnection = function (A, B) {
