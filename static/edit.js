@@ -589,7 +589,8 @@ function submitEditNode(node) {
     var var3Input = document.getElementById("var3Input");
     // @ts-ignore
     node.meta.var3 = var3Input.value;
-    //node.resize();
+    node.fixType();
+    node.resize(_diagram.ctx);
 }
 function saveWatch() {
     var e_1, _a, e_2, _b;

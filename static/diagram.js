@@ -65,14 +65,21 @@ var CanvasObject = /** @class */ (function () {
 }());
 var Button = /** @class */ (function (_super) {
     __extends(Button, _super);
-    function Button(x, y, label, ctx) {
+    function Button(x, y, label, ctx, callback, node) {
         var _this = _super.call(this, x, y, 0, 0) || this;
+        _this.callback = function () { };
         _this.label = label;
+        _this.callback = callback;
+        _this.node = node;
         _this.resize(ctx);
         return _this;
     }
     Button.prototype.update = function (ms) {
         this.hover = this.pointInObject(new Point(ms.world.x + ms.offset.x, ms.world.y + ms.offset.y));
+        if (ms.click && this.hover) {
+            this.callback(this.node);
+            ms.click = false;
+        }
     };
     Button.prototype.draw = function (ctx, ms) {
         ctx.fillStyle = this.hover ? "black" : "#6B6B6B";
@@ -193,16 +200,11 @@ var DiagramNode = /** @class */ (function (_super) {
         _this.id = id;
         _this.label = label;
         _this.meta = meta;
-        // @ts-ignore
-        _this.type = _this.meta.type;
-        if (["math", "condition"].indexOf(_this.type) >= 0) {
-            // @ts-ignore
-            _this.type = _this.meta.var1;
-        }
+        _this.fixType();
         _this.resize(ctx);
-        _this.deleteButton = new Button(0, 0, "Del", ctx);
-        _this.editButton = new Button(0, 0, "Edit", ctx);
-        _this.logButton = new Button(0, 0, "Log", ctx);
+        _this.deleteButton = new Button(0, 0, "Del", ctx, _diagram.deleteNodeCallback, _this);
+        _this.editButton = new Button(0, 0, "Edit", ctx, _diagram.editNodeCallback, _this);
+        _this.logButton = new Button(0, 0, "Log", ctx, _diagram.editNodeCallback, _this);
         _this.input = new NodeIO(_this, true);
         _this.output = new NodeIO(_this, false);
         return _this;
@@ -265,6 +267,14 @@ var DiagramNode = /** @class */ (function (_super) {
         ctx.strokeStyle = "#8E8E8E";
         ctx.lineWidth = 3;
         ctx.strokeRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
+    };
+    DiagramNode.prototype.fixType = function () {
+        // @ts-ignore
+        this.type = this.meta.type;
+        if (["math", "condition"].indexOf(this.type) >= 0) {
+            // @ts-ignore
+            this.type = this.meta.var1;
+        }
     };
     DiagramNode.prototype.resize = function (ctx) {
         ctx.font = "20px Helvetica";

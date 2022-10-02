@@ -39,14 +39,30 @@ class Button extends CanvasObject {
     labelWidth: number;
     labelHeight: number;
 
-    constructor(x: number, y: number, label: string, ctx: CanvasRenderingContext2D){
+    callback: (node: DiagramNode) => void = function (){};
+    node: DiagramNode;
+
+    constructor(
+            x: number, 
+            y: number, 
+            label: string, 
+            ctx: CanvasRenderingContext2D, 
+            callback: (node: DiagramNode) => void,
+            node: DiagramNode,
+        ){
         super(x, y, 0, 0);
         this.label = label;
+        this.callback = callback;
+        this.node = node;
         this.resize(ctx);
     }
 
     update(ms: MouseState){
         this.hover = this.pointInObject(new Point(ms.world.x + ms.offset.x, ms.world.y + ms.offset.y));
+        if (ms.click && this.hover){
+            this.callback(this.node);
+            ms.click = false;
+        }
     }
 
     draw(ctx: CanvasRenderingContext2D, ms: MouseState){
@@ -224,21 +240,15 @@ class DiagramNode extends CanvasObject {
         this.id = id;
         this.label = label;
         this.meta = meta;
-        // @ts-ignore
-        this.type = this.meta.type
-        if (["math", "condition"].indexOf(this.type) >= 0 ){
-            // @ts-ignore
-            this.type = this.meta.var1
-        }
+        this.fixType();
         this.resize(ctx);
 
-        this.deleteButton = new Button(0, 0, "Del", ctx);
-        this.editButton = new Button(0, 0, "Edit", ctx);
-        this.logButton = new Button(0, 0, "Log", ctx);
+        this.deleteButton = new Button(0, 0, "Del", ctx, _diagram.deleteNodeCallback, this);
+        this.editButton = new Button(0, 0, "Edit", ctx, _diagram.editNodeCallback, this);
+        this.logButton = new Button(0, 0, "Log", ctx, _diagram.editNodeCallback, this);
 
         this.input = new NodeIO(this, true);
         this.output = new NodeIO(this, false);
-
     }
 
     update(ms: MouseState) {
@@ -307,6 +317,15 @@ class DiagramNode extends CanvasObject {
         ctx.strokeStyle = "#8E8E8E";
         ctx.lineWidth = 3;
         ctx.strokeRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
+    }
+
+    fixType() {
+        // @ts-ignore
+        this.type = this.meta.type
+        if (["math", "condition"].indexOf(this.type) >= 0 ){
+            // @ts-ignore
+            this.type = this.meta.var1
+        }
     }
 
     resize(ctx: CanvasRenderingContext2D){

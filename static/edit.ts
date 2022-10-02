@@ -609,7 +609,8 @@ function submitEditNode(node: DiagramNode){
     // @ts-ignore
     node.meta.var3 = var3Input.value;
 
-    //node.resize();
+    node.fixType();
+    node.resize(_diagram.ctx);
 }
 
 function saveWatch(){
