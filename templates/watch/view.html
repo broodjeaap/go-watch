@@ -29,6 +29,11 @@
                 Save Watch
             </button>
         </td>
+        <td id="OpenLogTD" hidden> 
+            <button type="button" id="logButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#LogModal">
+                Open Log
+            </button>
+        </td>
     </tr>
 </table>
 
@@ -133,6 +138,31 @@
     </div>
 </div>
 
+<div class="modal fade" id="LogModal" tabindex="-1" aria-labelledby="LogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logModalLabel">-</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <table class="table" id="logTable">
+                        <thead>
+                            <tr>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 {{ end }}
@@ -141,7 +171,7 @@
 <script>
 var diagrams;
 function canvasInit() {
-    diagrams = new Diagrams("canvas", editNode, deleteNode);
+    diagrams = new Diagrams("canvas", editNode, deleteNode, logNode);
     {{ range .Filters }}
         diagrams.addNode(
             {{ .ID }}, 
@@ -156,7 +186,12 @@ function canvasInit() {
             },
             [
                 {{ range .Results }}
-                    ["{{ . }}"],
+                    '{{ . }}',
+                {{ end }}
+            ],
+            [
+                {{ range.Logs }}
+                    '{{ . }}',
                 {{ end }}
             ]
         );

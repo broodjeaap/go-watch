@@ -576,6 +576,26 @@ function editNode(node: DiagramNode){
     submitButton.onclick = function() {submitEditNode(node);}
 }
 
+function logNode(node: DiagramNode){
+    let logButton = document.getElementById("logButton") as HTMLButtonElement;
+    logButton.click();
+
+    let logTitle = document.getElementById("logModalLabel") as HTMLHeadElement;
+    logTitle.innerHTML = node.label;
+    let logBody = document.getElementById("logTableBody") as HTMLElement;
+    logBody.innerHTML = "";
+    let logTable = document.getElementById("logTable") as HTMLTableElement;
+    for (let log of node.logs){
+        let row = document.createElement("tr");
+        let cell = document.createElement("td");
+        let code = document.createElement("code");
+        code.innerHTML = log;
+        cell.appendChild(code);
+        row.appendChild(cell);
+        logBody.appendChild(row);
+    }
+}
+
 function deleteNode(node: DiagramNode){
     _diagram.nodes.delete(node.id)
     for (let i = 0; i < _diagram.connections.length; i++){

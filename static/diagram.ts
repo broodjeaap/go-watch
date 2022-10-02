@@ -311,6 +311,7 @@ class DiagramNode extends CanvasObject {
 
     meta: Object = {};
     results: Array<string>;
+    logs: Array<string>;
 
     constructor(
         id: number,
@@ -320,6 +321,7 @@ class DiagramNode extends CanvasObject {
         meta: Object = {},
         ctx: CanvasRenderingContext2D,
         results: Array<string> = new Array(),
+        logs: Array<string> = new Array(),
     ){
         super(x, y, 0, 0)
         this.id = id;
@@ -330,11 +332,12 @@ class DiagramNode extends CanvasObject {
 
         this.deleteButton = new Button(0, 0, "Del", ctx, _diagram.deleteNodeCallback, this);
         this.editButton = new Button(0, 0, "Edit", ctx, _diagram.editNodeCallback, this);
-        this.logButton = new Button(0, 0, "Log", ctx, _diagram.editNodeCallback, this);
+        this.logButton = new Button(0, 0, "Log", ctx, _diagram.logNodeCallback, this);
 
         this.input = new NodeIO(this, true);
         this.output = new NodeIO(this, false);
         this.results = results;
+        this.logs = logs;
     }
 
     update(ms: MouseState) {
@@ -346,7 +349,7 @@ class DiagramNode extends CanvasObject {
         if (this.hover){
             this.deleteButton.update(ms);
             this.editButton.update(ms);
-            this.logButton.update(ms)
+            this.logButton.update(ms);
             let onButtons = this.deleteButton.hover || this.editButton.hover || this.logButton.hover;
             if (!this.dragging && ms.leftDown && !ms.draggingNode && !ms.draggingConnection && !onButtons){
                 this.dragging = true;
@@ -411,6 +414,16 @@ class DiagramNode extends CanvasObject {
         
         this.input.draw(ctx, ms);
         this.output.draw(ctx, ms);
+
+        if(this.logs.length > 0){
+            ctx.moveTo(this.x + 21, this.y + 6);
+            ctx.fillStyle = "orange";
+            ctx.beginPath();
+            ctx.lineTo(this.x + 23, this.y + 21);
+            ctx.lineTo(this.x + 6, this.y + 21);
+            ctx.lineTo(this.x + 14, this.y + 6);
+            ctx.fill();            
+        }
         
         ctx.strokeStyle = "#8E8E8E";
         ctx.lineWidth = 3;
@@ -550,12 +563,14 @@ class Diagrams {
     scale: number = 1.0;
 
     editNodeCallback: (node: DiagramNode) => void = function (){};
+    logNodeCallback: (node: DiagramNode) => void = function (){};
     deleteNodeCallback: (node: DiagramNode) => void = function (){};
 
     constructor(
             canvasId: string, 
             editNodeCallback: (node: DiagramNode) => void = function (){},
-            deleteNodeCallback: (node: DiagramNode) => void = function (){}
+            deleteNodeCallback: (node: DiagramNode) => void = function (){},
+            logNodeCallback: (node: DiagramNode) => void = function (){},
         ){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
@@ -568,6 +583,7 @@ class Diagrams {
         _diagram = this;
         this.ctx = ctx;
         this.editNodeCallback = editNodeCallback;
+        this.logNodeCallback = logNodeCallback;
         this.deleteNodeCallback = deleteNodeCallback;
 
         this.canvas.onmousemove = diagramOnMouseMove;
@@ -659,8 +675,16 @@ class Diagrams {
 
     }
 
-    addNode(id: number, x: number, y: number, label: string, meta: Object = {}, results: Array<string> = new Array()){
-        let node = new DiagramNode(id, x, y, label, meta, this.ctx, results);
+    addNode(
+            id: number, 
+            x: number, 
+            y: number, 
+            label: string, 
+            meta: Object = {}, 
+            results: Array<string> = new Array(),
+            logs: Array<string> = new Array()
+        ){
+        let node = new DiagramNode(id, x, y, label, meta, this.ctx, results, logs);
         this.nodes.set(id, node);
     }
 

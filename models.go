@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Watch struct {
 	ID       uint   `form:"watch_id" yaml:"watch_id"`
@@ -21,6 +24,15 @@ type Filter struct {
 	Parents  []*Filter `gorm:"-:all"`
 	Children []*Filter `gorm:"-:all"`
 	Results  []string  `gorm:"-:all"`
+	Logs     []string  `gorm:"-:all"`
+}
+
+func (filter *Filter) logf(format string, v ...any) {
+	filter.Logs = append(filter.Logs, fmt.Sprintf(format, v...))
+}
+
+func (filter *Filter) log(v ...any) {
+	filter.Logs = append(filter.Logs, fmt.Sprint(v...))
 }
 
 type FilterConnection struct {

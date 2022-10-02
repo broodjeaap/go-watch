@@ -562,6 +562,35 @@ function editNode(node) {
     submitButton.innerHTML = "Save";
     submitButton.onclick = function () { submitEditNode(node); };
 }
+function logNode(node) {
+    var e_1, _a;
+    var logButton = document.getElementById("logButton");
+    logButton.click();
+    var logTitle = document.getElementById("logModalLabel");
+    logTitle.innerHTML = node.label;
+    var logBody = document.getElementById("logTableBody");
+    logBody.innerHTML = "";
+    var logTable = document.getElementById("logTable");
+    try {
+        for (var _b = __values(node.logs), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var log = _c.value;
+            var row = document.createElement("tr");
+            var cell = document.createElement("td");
+            var code = document.createElement("code");
+            code.innerHTML = log;
+            cell.appendChild(code);
+            row.appendChild(cell);
+            logBody.appendChild(row);
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+}
 function deleteNode(node) {
     _diagram.nodes["delete"](node.id);
     for (var i = 0; i < _diagram.connections.length; i++) {
@@ -593,7 +622,7 @@ function submitEditNode(node) {
     node.resize(_diagram.ctx);
 }
 function saveWatch() {
-    var e_1, _a, e_2, _b;
+    var e_2, _a, e_3, _b;
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -617,12 +646,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_1) throw e_1.error; }
+        finally { if (e_2) throw e_2.error; }
     }
     var filtersInput = document.getElementById("filtersInput");
     filtersInput.value = JSON.stringify(filters);
@@ -639,12 +668,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_2) throw e_2.error; }
+        finally { if (e_3) throw e_3.error; }
     }
     var connectionsInput = document.getElementById("connectionsInput");
     connectionsInput.value = JSON.stringify(connections);

@@ -273,9 +273,10 @@ var NewConnection = /** @class */ (function (_super) {
 }(CanvasObject));
 var DiagramNode = /** @class */ (function (_super) {
     __extends(DiagramNode, _super);
-    function DiagramNode(id, x, y, label, meta, ctx, results) {
+    function DiagramNode(id, x, y, label, meta, ctx, results, logs) {
         if (meta === void 0) { meta = {}; }
         if (results === void 0) { results = new Array(); }
+        if (logs === void 0) { logs = new Array(); }
         var _this = _super.call(this, x, y, 0, 0) || this;
         _this.dragging = false;
         _this.dragOrigin = new Point();
@@ -287,10 +288,11 @@ var DiagramNode = /** @class */ (function (_super) {
         _this.resize(ctx);
         _this.deleteButton = new Button(0, 0, "Del", ctx, _diagram.deleteNodeCallback, _this);
         _this.editButton = new Button(0, 0, "Edit", ctx, _diagram.editNodeCallback, _this);
-        _this.logButton = new Button(0, 0, "Log", ctx, _diagram.editNodeCallback, _this);
+        _this.logButton = new Button(0, 0, "Log", ctx, _diagram.logNodeCallback, _this);
         _this.input = new NodeIO(_this, true);
         _this.output = new NodeIO(_this, false);
         _this.results = results;
+        _this.logs = logs;
         return _this;
     }
     DiagramNode.prototype.update = function (ms) {
@@ -359,6 +361,15 @@ var DiagramNode = /** @class */ (function (_super) {
         this.logButton.draw(ctx, ms);
         this.input.draw(ctx, ms);
         this.output.draw(ctx, ms);
+        if (this.logs.length > 0) {
+            ctx.moveTo(this.x + 21, this.y + 6);
+            ctx.fillStyle = "orange";
+            ctx.beginPath();
+            ctx.lineTo(this.x + 23, this.y + 21);
+            ctx.lineTo(this.x + 6, this.y + 21);
+            ctx.lineTo(this.x + 14, this.y + 6);
+            ctx.fill();
+        }
         ctx.strokeStyle = "#8E8E8E";
         ctx.lineWidth = 3;
         ctx.strokeRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
@@ -469,9 +480,10 @@ var MouseState = /** @class */ (function () {
     return MouseState;
 }());
 var Diagrams = /** @class */ (function () {
-    function Diagrams(canvasId, editNodeCallback, deleteNodeCallback) {
+    function Diagrams(canvasId, editNodeCallback, deleteNodeCallback, logNodeCallback) {
         if (editNodeCallback === void 0) { editNodeCallback = function () { }; }
         if (deleteNodeCallback === void 0) { deleteNodeCallback = function () { }; }
+        if (logNodeCallback === void 0) { logNodeCallback = function () { }; }
         this.shouldTick = true;
         this.nodes = new Map();
         this.connections = new Array();
@@ -482,6 +494,7 @@ var Diagrams = /** @class */ (function () {
         this.newConnection = null;
         this.scale = 1.0;
         this.editNodeCallback = function () { };
+        this.logNodeCallback = function () { };
         this.deleteNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
         if (this.canvas === null) {
@@ -494,6 +507,7 @@ var Diagrams = /** @class */ (function () {
         _diagram = this;
         this.ctx = ctx;
         this.editNodeCallback = editNodeCallback;
+        this.logNodeCallback = logNodeCallback;
         this.deleteNodeCallback = deleteNodeCallback;
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
@@ -625,10 +639,11 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.draw = function () {
     };
-    Diagrams.prototype.addNode = function (id, x, y, label, meta, results) {
+    Diagrams.prototype.addNode = function (id, x, y, label, meta, results, logs) {
         if (meta === void 0) { meta = {}; }
         if (results === void 0) { results = new Array(); }
-        var node = new DiagramNode(id, x, y, label, meta, this.ctx, results);
+        if (logs === void 0) { logs = new Array(); }
+        var node = new DiagramNode(id, x, y, label, meta, this.ctx, results, logs);
         this.nodes.set(id, node);
     };
     Diagrams.prototype.addConnection = function (A, B) {

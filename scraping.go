@@ -141,7 +141,7 @@ func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, us
 			}
 		}
 	default:
-		log.Println("getFilterResult called with filter.Type == ", filter.Type)
+		filter.log("getFilterResult called with filter.Type == ", filter.Type)
 	}
 }
 
@@ -155,13 +155,13 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache boo
 
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Println("Could not fetch url", url)
-		log.Println("Reason:", err)
+		filter.log("Could not fetch url", url)
+		filter.log("Reason:", err)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println("Could not fetch url", url)
-		log.Println("Reason:", err)
+		filter.log("Could not fetch url", url)
+		filter.log("Reason:", err)
 	}
 	str := string(body)
 	filter.Results = append(filter.Results, str)
@@ -171,15 +171,11 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache boo
 }
 
 func getFilterResultXPath(filter *Filter) {
-	if filter.Parents == nil {
-		log.Println("Filter", filter.Name, "called without parents for", filter.Type)
-		return
-	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			doc, err := htmlquery.Parse(strings.NewReader(result))
 			if err != nil {
-				log.Print(err)
+				filter.log(err)
 				continue
 			}
 			nodes, _ := htmlquery.QueryAll(doc, filter.Var1)
@@ -193,10 +189,6 @@ func getFilterResultXPath(filter *Filter) {
 }
 
 func getFilterResultJSON(filter *Filter) {
-	if filter.Parents == nil {
-		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
-		return
-	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			for _, match := range gjson.Get(result, filter.Var1).Array() {
@@ -207,20 +199,16 @@ func getFilterResultJSON(filter *Filter) {
 }
 
 func getFilterResultCSS(filter *Filter) {
-	if filter.Parents == nil {
-		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
-		return
-	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			doc, err := html.Parse(strings.NewReader(result))
 			if err != nil {
-				log.Print(err)
+				filter.log(err)
 				continue
 			}
 			sel, err := cascadia.Parse(filter.Var1)
 			if err != nil {
-				log.Print(err)
+				filter.log(err)
 				continue
 			}
 			for _, node := range cascadia.QueryAll(doc, sel) {
@@ -233,17 +221,13 @@ func getFilterResultCSS(filter *Filter) {
 }
 
 func getFilterResultReplace(filter *Filter) {
-	if filter.Parents == nil {
-		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
+	r, err := regexp.Compile(filter.Var1)
+	if err != nil {
+		filter.log(err)
 		return
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			r, err := regexp.Compile(filter.Var1)
-			if err != nil {
-				log.Print(err)
-				continue
-			}
 			if filter.Var2 == nil {
 				filter.Results = append(filter.Results, r.ReplaceAllString(result, ""))
 			} else {
@@ -254,10 +238,6 @@ func getFilterResultReplace(filter *Filter) {
 }
 
 func getFilterResultMatch(filter *Filter) {
-	if filter.Parents == nil {
-		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
-		return
-	}
 	r, err := regexp.Compile(filter.Var1)
 	if err != nil {
 		log.Print(err)
@@ -273,10 +253,6 @@ func getFilterResultMatch(filter *Filter) {
 }
 
 func getFilterResultSubstring(filter *Filter) {
-	if filter.Parents == nil {
-		log.Println("Filter", filter.Name, "called without parent for", filter.Type)
-		return
-	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			substrings := strings.Split(filter.Var1, ",")
@@ -287,6 +263,7 @@ func getFilterResultSubstring(filter *Filter) {
 				if strings.Contains(substring, ":") {
 					from_to := strings.Split(substring, ":")
 					if len(from_to) != 2 {
+						filter.log("Missing value in range: ", substring)
 						return
 					}
 					fromStr := from_to[0]
@@ -297,6 +274,7 @@ func getFilterResultSubstring(filter *Filter) {
 					from64, err := strconv.ParseInt(fromStr, 10, 32)
 					var from = int(from64)
 					if hasFrom && err != nil {
+						filter.log("Could not parse left side of: ", substring)
 						return
 					} else if from < 0 {
 						from = len(asRunes) + from
@@ -309,6 +287,7 @@ func getFilterResultSubstring(filter *Filter) {
 					to64, err := strconv.ParseInt(toStr, 10, 32)
 					var to = int(to64)
 					if hasTo && err != nil {
+						filter.log("Could not parse right side of: ", substring)
 						return
 					} else if to < 0 {
 						to = len(asRunes) + to
@@ -323,6 +302,7 @@ func getFilterResultSubstring(filter *Filter) {
 				} else {
 					pos, err := strconv.ParseInt(substring, 10, 32)
 					if err != nil || pos < 0 {
+						filter.log("Could not parse: ", substring)
 						return
 					}
 					sb.WriteRune(asRunes[pos])
@@ -339,6 +319,12 @@ func getFilterResultSum(filter *Filter) {
 		for _, result := range parent.Results {
 			if number, err := strconv.ParseFloat(result, 64); err == nil {
 				sum += number
+			} else {
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 			}
 		}
 	}
@@ -354,6 +340,12 @@ func getFilterResultMin(filter *Filter) {
 				if number < min {
 					min = number
 					setMin = true
+				}
+			} else {
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
 				}
 			}
 		}
@@ -374,6 +366,12 @@ func getFilterResultMax(filter *Filter) {
 					max = number
 					setMax = true
 				}
+			} else {
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 			}
 		}
 	}
@@ -391,6 +389,12 @@ func getFilterResultAverage(filter *Filter) {
 			if number, err := strconv.ParseFloat(result, 64); err == nil {
 				sum += number
 				count++
+			} else {
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 			}
 		}
 	}
@@ -433,6 +437,12 @@ func getFilterResultRound(filter *Filter) {
 			if number, err := strconv.ParseFloat(result, 64); err == nil {
 				rounded := roundFloat(number, uint(decimals))
 				filter.Results = append(filter.Results, fmt.Sprintf("%f", rounded))
+			} else {
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 			}
 		}
 	}
@@ -485,12 +495,16 @@ func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 			} else {
 				lastValue, err := strconv.ParseFloat(previousOutput.Value, 64)
 				if err != nil {
-					log.Println("Could not convert previous value to number:", previousOutput.Value)
+					filter.log("Could not convert previous value to number:", previousOutput.Value)
 					continue
 				}
 				number, err := strconv.ParseFloat(result, 64)
 				if err != nil {
-					log.Println("Could not convert new value to number:", result)
+					if len(result) > 50 {
+						filter.log("Could not convert value, with length ", len(result), ", to number")
+					} else {
+						filter.log("Could not convert value, ", result, ", to number")
+					}
 					continue
 				}
 				if number < lastValue {
@@ -509,7 +523,7 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 		for _, previousOutput := range previousOutputs {
 			number, err := strconv.ParseFloat(previousOutput.Value, 64)
 			if err != nil {
-				log.Println("Could not convert result to number:", previousOutput.Value)
+				filter.log("Could not convert result to number:", previousOutput.Value)
 				continue
 			}
 			if number < lowest {
@@ -523,7 +537,11 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 		for _, result := range parent.Results {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
-				log.Println("Could not convert result to number:", result)
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 				continue
 			}
 			if number < lowest {
@@ -535,19 +553,23 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 
 func getFilterResultConditionLowerThan(filter *Filter) {
 	if filter.Var2 == nil {
-		log.Println("No threshold given for Lower Than Filter")
+		filter.log("No threshold given")
 		return
 	}
 	threshold, err := strconv.ParseFloat(*filter.Var2, 64)
 	if err != nil {
-		log.Println("Could not convert convert threshold to number:", *filter.Var2)
+		filter.log("Could not convert convert threshold to number:", *filter.Var2)
 		return
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
-				log.Println("Could not convert new value to number:", result)
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 				continue
 			}
 			if number < threshold {
@@ -567,12 +589,16 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 			} else {
 				lastValue, err := strconv.ParseFloat(previousOutput.Value, 64)
 				if err != nil {
-					log.Println("Could not convert previous value to number:", previousOutput.Value)
+					filter.log("Could not convert previous value to number:", previousOutput.Value)
 					continue
 				}
 				number, err := strconv.ParseFloat(result, 64)
 				if err != nil {
-					log.Println("Could not convert new value to number:", result)
+					if len(result) > 50 {
+						filter.log("Could not convert value, with length ", len(result), ", to number")
+					} else {
+						filter.log("Could not convert value, ", result, ", to number")
+					}
 					continue
 				}
 				if number > lastValue {
@@ -591,7 +617,7 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 		for _, previousOutput := range previousOutputs {
 			number, err := strconv.ParseFloat(previousOutput.Value, 64)
 			if err != nil {
-				log.Println("Could not convert result to number:", previousOutput.Value)
+				filter.log("Could not convert result to number:", previousOutput.Value)
 				continue
 			}
 			if number > highest {
@@ -605,7 +631,11 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 		for _, result := range parent.Results {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
-				log.Println("Could not convert result to number:", result)
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 				continue
 			}
 			if number > highest {
@@ -617,19 +647,23 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 
 func getFilterResultConditionHigherThan(filter *Filter) {
 	if filter.Var2 == nil {
-		log.Println("No threshold given for Higher Than Filter")
+		filter.log("No threshold given for Higher Than Filter")
 		return
 	}
 	threshold, err := strconv.ParseFloat(*filter.Var2, 64)
 	if err != nil {
-		log.Println("Could not convert convert threshold to number:", *filter.Var2)
+		filter.log("Could not convert convert threshold to number:", *filter.Var2)
 		return
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
-				log.Println("Could not convert new value to number:", result)
+				if len(result) > 50 {
+					filter.log("Could not convert value, with length ", len(result), ", to number")
+				} else {
+					filter.log("Could not convert value, ", result, ", to number")
+				}
 				continue
 			}
 			if number > threshold {
