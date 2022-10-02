@@ -97,7 +97,10 @@ class NodeIO extends CanvasObject {
         this.reposition();
     }
     update(ms: MouseState): void {
-        
+        if (!ms.draggingConnection && !this.input && this.pointInObject(ms.world) && ms.leftDown){
+            ms.draggingConnection = true;
+            _diagram.newConnection = new NewConnection(this.node);
+        }
     }
 
     draw(ctx: CanvasRenderingContext2D, ms: MouseState): void {
@@ -115,6 +118,16 @@ class NodeIO extends CanvasObject {
             this.x = this.node.x + this.node.width;
             this.y = this.node.y + this.node.height / 2;
         }
+    }
+
+    pointInObject(p: Point): boolean {
+        let inCircle = Math.pow(p.x - this.x, 2) + Math.pow(p.y - this.y, 2) <= this.radius * this.radius;
+        if (!inCircle){
+            this.hover = false;
+        } else {
+            this.hover = this.input ? p.x < this.x : p.x > this.x;
+        }
+        return this.hover;
     }
 }
 
@@ -202,6 +215,76 @@ class NodeConnection extends CanvasObject {
     }
 }
 
+class NewConnection extends CanvasObject {
+    output: DiagramNode;
+    input: DiagramNode | null;
+    
+    controlPoints = {
+        dX: 0,
+        outputX: 0,
+        outputY: 0,
+        inputX: 0,
+        inputY: 0,
+        cp1x: 0,
+        cp1y: 0,
+        cp2x: 0,
+        cp2y: 0,
+    }
+    constructor(output: DiagramNode){
+        super(0, 0, 0, 0);
+        this.output = output;
+    }
+
+    update(ms: MouseState): void {
+        this.input = null;
+        for (let node of _diagram.nodes.values()){
+            if (this.output.id != node.id && node.pointNearNode(ms.world)){
+                this.input = node;
+            }
+        }
+        
+        if (this.input == null){
+            this.controlPoints.outputX = ms.offset.x + this.output.output.x;
+            this.controlPoints.outputY = ms.offset.y + this.output.output.y;
+            this.controlPoints.inputX = ms.offset.x + ms.world.x;
+            this.controlPoints.inputY = ms.offset.y + ms.world.y;
+            this.controlPoints.dX = Math.abs(this.controlPoints.outputX - this.controlPoints.inputX);
+        } else {
+            this.controlPoints.outputX = ms.offset.x + this.output.output.x;
+            this.controlPoints.outputY = ms.offset.y + this.output.output.y;
+            this.controlPoints.inputX = ms.offset.x + this.input.input.x;
+            this.controlPoints.inputY = ms.offset.y + this.input.input.y;
+            this.controlPoints.dX = Math.abs(this.controlPoints.outputX - this.controlPoints.inputX);
+
+        }
+        
+        this.controlPoints.cp1x = (this.controlPoints.outputX + this.controlPoints.dX);
+        this.controlPoints.cp1y = this.controlPoints.outputY;
+        this.controlPoints.cp2x = (this.controlPoints.inputX - this.controlPoints.dX);
+        this.controlPoints.cp2y = this.controlPoints.inputY;
+    }
+    draw(ctx: CanvasRenderingContext2D, ms: MouseState): void {
+        ctx.beginPath();
+        ctx.moveTo(this.controlPoints.outputX, this.controlPoints.outputY);
+        ctx.strokeStyle = "#7575A5";
+        ctx.lineWidth = 5;
+        ctx.bezierCurveTo(
+            this.controlPoints.cp1x, 
+            this.controlPoints.cp1y, 
+            this.controlPoints.cp2x, 
+            this.controlPoints.cp2y, 
+            this.controlPoints.inputX, 
+            this.controlPoints.inputY
+        );
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    reposition(){
+        
+    }
+}
+
 class DiagramNode extends CanvasObject {
     id: number;
     label: string;
@@ -255,7 +338,11 @@ class DiagramNode extends CanvasObject {
     }
 
     update(ms: MouseState) {
-        this.hover = (!ms.draggingNode || this.dragging) && this.pointInObject(ms.world);
+        if (this.pointNearNode(ms.world)){
+            this.input.update(ms);
+            this.output.update(ms);
+        }
+        this.hover = (!ms.draggingNode || this.dragging) && super.pointInObject(ms.world);
         if (this.hover){
             this.deleteButton.update(ms);
             this.editButton.update(ms);
@@ -354,34 +441,23 @@ class DiagramNode extends CanvasObject {
         this.width = Math.max(150, this.labelWidth, this.typeWidth);
     }
 
-    pointInNode(x: number, y: number){
-        if (x < this.x){
-            return false;
-        }
-        if (y < this.y){
-            return false;
-        }
-        if (x > this.x + this.width) {
-            return false;
-        }
-        if (y > this.y + this.height) {
-            return false;
-        }
-        return true;
+    pointInObject(p: Point): boolean {
+        return this.pointNearNode(p) && (super.pointInObject(p) || this.input.pointInObject(p) || this.output.pointInObject(p));
     }
 
-    pointNearNode(x: number, y: number){
+
+    pointNearNode(p: Point){
         // including the input/output circles
-        if (x < this.x - this.height / 3){
+        if (p.x < this.x - this.input.radius){
             return false;
         }
-        if (y < this.y){
+        if (p.y < this.y){
             return false;
         }
-        if (x > this.x + this.width + this.height / 3){
+        if (p.x > this.x + this.width + this.output.radius){
             return false;
         }
-        if (y > this.y + this.height) {
+        if (p.y > this.y + this.height) {
             return false;
         }
         return true;
@@ -469,7 +545,7 @@ class Diagrams {
     nodeDragging: DiagramNode | null = null;
     nodeHover: DiagramNode | null = null;
 
-    makingConnectionNode: DiagramNode | null = null;
+    newConnection: NewConnection | null = null;
 
     scale: number = 1.0;
 
@@ -513,8 +589,14 @@ class Diagrams {
         for (let connection of this.connections){
             connection.update(this.mouseState);
         }
+        if (this.newConnection != null){
+            this.newConnection.update(this.mouseState);
+        }
         for (let connection of this.connections){
             connection.draw(this.ctx, this.mouseState);
+        }
+        if (this.newConnection != null){
+            this.newConnection.draw(this.ctx, this.mouseState);
         }
         for (let node of this.nodes.values()){
             node.draw(this.ctx, this.mouseState);
@@ -556,6 +638,13 @@ class Diagrams {
         this.mouseState.leftDown = false;
         this.mouseState.panning = false;
         this.mouseState.leftUp = true;
+        if (this.newConnection != null){
+            if (this.newConnection.input != null){
+                this.addConnection(this.newConnection.output, this.newConnection.input);
+                this.mouseState.draggingConnection = false;
+            }
+        }
+        this.newConnection = null;
     }
 
     drawBackground(){

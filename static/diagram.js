@@ -11,6 +11,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -26,17 +37,6 @@ var __read = (this && this.__read) || function (o, n) {
         finally { if (e) throw e.error; }
     }
     return ar;
-};
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 var CanvasObject = /** @class */ (function () {
     function CanvasObject(x, y, width, height) {
@@ -112,6 +112,10 @@ var NodeIO = /** @class */ (function (_super) {
         return _this;
     }
     NodeIO.prototype.update = function (ms) {
+        if (!ms.draggingConnection && !this.input && this.pointInObject(ms.world) && ms.leftDown) {
+            ms.draggingConnection = true;
+            _diagram.newConnection = new NewConnection(this.node);
+        }
     };
     NodeIO.prototype.draw = function (ctx, ms) {
         ctx.fillStyle = this.input ? "red" : "blue";
@@ -128,6 +132,16 @@ var NodeIO = /** @class */ (function (_super) {
             this.x = this.node.x + this.node.width;
             this.y = this.node.y + this.node.height / 2;
         }
+    };
+    NodeIO.prototype.pointInObject = function (p) {
+        var inCircle = Math.pow(p.x - this.x, 2) + Math.pow(p.y - this.y, 2) <= this.radius * this.radius;
+        if (!inCircle) {
+            this.hover = false;
+        }
+        else {
+            this.hover = this.input ? p.x < this.x : p.x > this.x;
+        }
+        return this.hover;
     };
     return NodeIO;
 }(CanvasObject));
@@ -189,6 +203,74 @@ var NodeConnection = /** @class */ (function (_super) {
     };
     return NodeConnection;
 }(CanvasObject));
+var NewConnection = /** @class */ (function (_super) {
+    __extends(NewConnection, _super);
+    function NewConnection(output) {
+        var _this = _super.call(this, 0, 0, 0, 0) || this;
+        _this.controlPoints = {
+            dX: 0,
+            outputX: 0,
+            outputY: 0,
+            inputX: 0,
+            inputY: 0,
+            cp1x: 0,
+            cp1y: 0,
+            cp2x: 0,
+            cp2y: 0
+        };
+        _this.output = output;
+        return _this;
+    }
+    NewConnection.prototype.update = function (ms) {
+        var e_1, _a;
+        this.input = null;
+        try {
+            for (var _b = __values(_diagram.nodes.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var node = _c.value;
+                if (this.output.id != node.id && node.pointNearNode(ms.world)) {
+                    this.input = node;
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        if (this.input == null) {
+            this.controlPoints.outputX = ms.offset.x + this.output.output.x;
+            this.controlPoints.outputY = ms.offset.y + this.output.output.y;
+            this.controlPoints.inputX = ms.offset.x + ms.world.x;
+            this.controlPoints.inputY = ms.offset.y + ms.world.y;
+            this.controlPoints.dX = Math.abs(this.controlPoints.outputX - this.controlPoints.inputX);
+        }
+        else {
+            this.controlPoints.outputX = ms.offset.x + this.output.output.x;
+            this.controlPoints.outputY = ms.offset.y + this.output.output.y;
+            this.controlPoints.inputX = ms.offset.x + this.input.input.x;
+            this.controlPoints.inputY = ms.offset.y + this.input.input.y;
+            this.controlPoints.dX = Math.abs(this.controlPoints.outputX - this.controlPoints.inputX);
+        }
+        this.controlPoints.cp1x = (this.controlPoints.outputX + this.controlPoints.dX);
+        this.controlPoints.cp1y = this.controlPoints.outputY;
+        this.controlPoints.cp2x = (this.controlPoints.inputX - this.controlPoints.dX);
+        this.controlPoints.cp2y = this.controlPoints.inputY;
+    };
+    NewConnection.prototype.draw = function (ctx, ms) {
+        ctx.beginPath();
+        ctx.moveTo(this.controlPoints.outputX, this.controlPoints.outputY);
+        ctx.strokeStyle = "#7575A5";
+        ctx.lineWidth = 5;
+        ctx.bezierCurveTo(this.controlPoints.cp1x, this.controlPoints.cp1y, this.controlPoints.cp2x, this.controlPoints.cp2y, this.controlPoints.inputX, this.controlPoints.inputY);
+        ctx.stroke();
+        ctx.closePath();
+    };
+    NewConnection.prototype.reposition = function () {
+    };
+    return NewConnection;
+}(CanvasObject));
 var DiagramNode = /** @class */ (function (_super) {
     __extends(DiagramNode, _super);
     function DiagramNode(id, x, y, label, meta, ctx, results) {
@@ -212,7 +294,11 @@ var DiagramNode = /** @class */ (function (_super) {
         return _this;
     }
     DiagramNode.prototype.update = function (ms) {
-        this.hover = (!ms.draggingNode || this.dragging) && this.pointInObject(ms.world);
+        if (this.pointNearNode(ms.world)) {
+            this.input.update(ms);
+            this.output.update(ms);
+        }
+        this.hover = (!ms.draggingNode || this.dragging) && _super.prototype.pointInObject.call(this, ms.world);
         if (this.hover) {
             this.deleteButton.update(ms);
             this.editButton.update(ms);
@@ -297,33 +383,21 @@ var DiagramNode = /** @class */ (function (_super) {
         this.typeHeight = typeSize.actualBoundingBoxAscent + typeSize.actualBoundingBoxDescent;
         this.width = Math.max(150, this.labelWidth, this.typeWidth);
     };
-    DiagramNode.prototype.pointInNode = function (x, y) {
-        if (x < this.x) {
-            return false;
-        }
-        if (y < this.y) {
-            return false;
-        }
-        if (x > this.x + this.width) {
-            return false;
-        }
-        if (y > this.y + this.height) {
-            return false;
-        }
-        return true;
+    DiagramNode.prototype.pointInObject = function (p) {
+        return this.pointNearNode(p) && (_super.prototype.pointInObject.call(this, p) || this.input.pointInObject(p) || this.output.pointInObject(p));
     };
-    DiagramNode.prototype.pointNearNode = function (x, y) {
+    DiagramNode.prototype.pointNearNode = function (p) {
         // including the input/output circles
-        if (x < this.x - this.height / 3) {
+        if (p.x < this.x - this.input.radius) {
             return false;
         }
-        if (y < this.y) {
+        if (p.y < this.y) {
             return false;
         }
-        if (x > this.x + this.width + this.height / 3) {
+        if (p.x > this.x + this.width + this.output.radius) {
             return false;
         }
-        if (y > this.y + this.height) {
+        if (p.y > this.y + this.height) {
             return false;
         }
         return true;
@@ -405,7 +479,7 @@ var Diagrams = /** @class */ (function () {
         this.panning = false;
         this.nodeDragging = null;
         this.nodeHover = null;
-        this.makingConnectionNode = null;
+        this.newConnection = null;
         this.scale = 1.0;
         this.editNodeCallback = function () { };
         this.deleteNodeCallback = function () { };
@@ -428,7 +502,7 @@ var Diagrams = /** @class */ (function () {
         tick();
     }
     Diagrams.prototype.tick = function () {
-        var e_1, _a, e_2, _b, e_3, _c, e_4, _d;
+        var e_2, _a, e_3, _b, e_4, _c, e_5, _d;
         this.drawBackground();
         if (this.mouseState.leftUp && !this.mouseState.panning && !this.mouseState.draggingNode && !this.mouseState.draggingConnection) {
             this.mouseState.click = true;
@@ -439,12 +513,12 @@ var Diagrams = /** @class */ (function () {
                 node.update(this.mouseState);
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (_f && !_f.done && (_a = _e["return"])) _a.call(_e);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         try {
             for (var _g = __values(this.connections), _h = _g.next(); !_h.done; _h = _g.next()) {
@@ -452,12 +526,15 @@ var Diagrams = /** @class */ (function () {
                 connection.update(this.mouseState);
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_h && !_h.done && (_b = _g["return"])) _b.call(_g);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
+        }
+        if (this.newConnection != null) {
+            this.newConnection.update(this.mouseState);
         }
         try {
             for (var _j = __values(this.connections), _k = _j.next(); !_k.done; _k = _j.next()) {
@@ -465,12 +542,15 @@ var Diagrams = /** @class */ (function () {
                 connection.draw(this.ctx, this.mouseState);
             }
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
                 if (_k && !_k.done && (_c = _j["return"])) _c.call(_j);
             }
-            finally { if (e_3) throw e_3.error; }
+            finally { if (e_4) throw e_4.error; }
+        }
+        if (this.newConnection != null) {
+            this.newConnection.draw(this.ctx, this.mouseState);
         }
         try {
             for (var _l = __values(this.nodes.values()), _m = _l.next(); !_m.done; _m = _l.next()) {
@@ -478,12 +558,12 @@ var Diagrams = /** @class */ (function () {
                 node.draw(this.ctx, this.mouseState);
             }
         }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
                 if (_m && !_m.done && (_d = _l["return"])) _d.call(_l);
             }
-            finally { if (e_4) throw e_4.error; }
+            finally { if (e_5) throw e_5.error; }
         }
         this.mouseState.leftUp = false;
         this.mouseState.click = false;
@@ -502,7 +582,7 @@ var Diagrams = /** @class */ (function () {
         this.mouseState.world.y = this.mouseState.canvas.y - this.mouseState.offset.y;
     };
     Diagrams.prototype.onmousedown = function (ev) {
-        var e_5, _a;
+        var e_6, _a;
         if (ev.button != 0) {
             return;
         }
@@ -515,12 +595,12 @@ var Diagrams = /** @class */ (function () {
                 }
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            finally { if (e_5) throw e_5.error; }
+            finally { if (e_6) throw e_6.error; }
         }
         this.mouseState.panning = true;
     };
@@ -528,6 +608,13 @@ var Diagrams = /** @class */ (function () {
         this.mouseState.leftDown = false;
         this.mouseState.panning = false;
         this.mouseState.leftUp = true;
+        if (this.newConnection != null) {
+            if (this.newConnection.input != null) {
+                this.addConnection(this.newConnection.output, this.newConnection.input);
+                this.mouseState.draggingConnection = false;
+            }
+        }
+        this.newConnection = null;
     };
     Diagrams.prototype.drawBackground = function () {
         this.ctx.fillStyle = "#D8D8D8";
@@ -561,7 +648,7 @@ var Diagrams = /** @class */ (function () {
         this.connections.push(new NodeConnection(A, B));
     };
     Diagrams.prototype.removeConnection = function (A, B) {
-        var e_6, _a;
+        var e_7, _a;
         var index = 0;
         try {
             for (var _b = __values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -574,12 +661,12 @@ var Diagrams = /** @class */ (function () {
                 index++;
             }
         }
-        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            finally { if (e_6) throw e_6.error; }
+            finally { if (e_7) throw e_7.error; }
         }
     };
     Diagrams.prototype.onresize = function () {
