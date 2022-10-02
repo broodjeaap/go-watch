@@ -105,6 +105,20 @@ class NodeIO extends CanvasObject {
 class NodeConnection extends CanvasObject {
     output: DiagramNode;
     input: DiagramNode;
+    
+    controlPoints = {
+        dX: 0,
+        outputX: 0,
+        outputY: 0,
+        inputX: 0,
+        inputY: 0,
+        cp1x: 0,
+        cp1y: 0,
+        cp2x: 0,
+        cp2y: 0,
+    }
+
+    halfWayPoint: Point = new Point();
 
     constructor(output: DiagramNode, input: DiagramNode){
         super(0, 0, 0, 0);
@@ -113,40 +127,58 @@ class NodeConnection extends CanvasObject {
     }
 
     update(ms: MouseState): void {
+        this.controlPoints.outputX = ms.offset.x + this.output.output.x;
+        this.controlPoints.outputY = ms.offset.y + this.output.output.y;
+        this.controlPoints.inputX = ms.offset.x + this.input.input.x;
+        this.controlPoints.inputY = ms.offset.y + this.input.input.y;
+        this.controlPoints.dX = Math.abs(this.controlPoints.outputX - this.controlPoints.inputX);
         
+        this.controlPoints.cp1x = (this.controlPoints.outputX + this.controlPoints.dX);
+        this.controlPoints.cp1y = this.controlPoints.outputY;
+        this.controlPoints.cp2x = (this.controlPoints.inputX - this.controlPoints.dX);
+        this.controlPoints.cp2y = this.controlPoints.inputY;
+        
+        this.halfWayPoint = getBezierXY(
+            0.5, 
+            this.controlPoints.outputX, 
+            this.controlPoints.outputY, 
+            this.controlPoints.cp1x, 
+            this.controlPoints.cp1y, 
+            this.controlPoints.cp2x, 
+            this.controlPoints.cp2y, 
+            this.controlPoints.inputX, 
+            this.controlPoints.inputY
+        );
+        this.hover = Math.pow(this.halfWayPoint.x - ms.canvas.x, 2) + Math.pow(this.halfWayPoint.y - ms.canvas.y, 2) <= 15*15;
+        if (this.hover && ms.click){
+            _diagram.removeConnection(this.output, this.input);
+            ms.click = false;
+        }
     }
     draw(ctx: CanvasRenderingContext2D, ms: MouseState): void {
-        let outputX = ms.offset.x + this.output.output.x;
-        let outputY = ms.offset.y + this.output.output.y;
-        let inputX = ms.offset.x + this.input.input.x;
-        let inputY = ms.offset.y + this.input.input.y;
-        let dX = Math.abs(outputX - inputX);
         ctx.beginPath();
-        ctx.moveTo(outputX, outputY);
+        ctx.moveTo(this.controlPoints.outputX, this.controlPoints.outputY);
         ctx.strokeStyle = "#757575";
         ctx.lineWidth = 5;
-        let cp1x = (outputX + dX);
-        let cp1y = outputY;
-        let cp2x = (inputX - dX);
-        let cp2y = inputY;
         ctx.bezierCurveTo(
-            cp1x, 
-            cp1y, 
-            cp2x, 
-            cp2y, 
-            inputX, 
-            inputY
+            this.controlPoints.cp1x, 
+            this.controlPoints.cp1y, 
+            this.controlPoints.cp2x, 
+            this.controlPoints.cp2y, 
+            this.controlPoints.inputX, 
+            this.controlPoints.inputY
         );
         ctx.stroke();
         ctx.closePath();
-        /*
-        let halfway = getBezierXY(0.5, outputX, outputY, cp1x, cp1y, cp2x, cp2y, inputX, inputY)
-        let mouseOnHalfway = Math.pow(this.mouseX - halfway.x, 2) + Math.pow(this.mouseY - halfway.y, 2) <= 10*10
-        if (mouseOnHalfway){
-            this.removeConnection(output, input);
-            break;
-        }
-        */
+        
+        ctx.beginPath();
+        ctx.strokeStyle = this.hover ? "red" : "rgba(200, 200, 200, 0.8)";
+        ctx.moveTo(this.halfWayPoint.x - 10, this.halfWayPoint.y - 10);
+        ctx.lineTo(this.halfWayPoint.x + 10, this.halfWayPoint.y + 10);
+        ctx.moveTo(this.halfWayPoint.x + 10, this.halfWayPoint.y - 10);
+        ctx.lineTo(this.halfWayPoint.x - 10, this.halfWayPoint.y + 10);
+        ctx.stroke();
+        ctx.closePath();
     }
 
     reposition(){
@@ -387,6 +419,7 @@ class MouseState {
     panning: boolean = false;
     draggingNode: boolean = false;
     draggingConnection: boolean = false;
+    click: boolean = true;
 }
 
 class Diagrams {
@@ -441,6 +474,9 @@ class Diagrams {
 
     tick(){
         this.drawBackground();
+        if (this.mouseState.leftUp && !this.mouseState.panning && !this.mouseState.draggingNode && !this.mouseState.draggingConnection){
+            this.mouseState.click = true;
+        }
         for (let node of this.nodes.values()){
             node.update(this.mouseState);
         }
@@ -453,10 +489,8 @@ class Diagrams {
         for (let node of this.nodes.values()){
             node.draw(this.ctx, this.mouseState);
         }
-        if (this.mouseState.leftUp){
-            console.log("Click");
-        }
         this.mouseState.leftUp = false;
+        this.mouseState.click = false;
     }
 
     onmousemove(ev: MouseEvent){
@@ -552,10 +586,10 @@ class Diagrams {
 
 // http://www.independent-software.com/determining-coordinates-on-a-html-canvas-bezier-curve.html
 function getBezierXY(t, sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey) {
-    return {
-      x: Math.pow(1-t,3) * sx + 3 * t * Math.pow(1 - t, 2) * cp1x 
+    return new Point(
+      Math.pow(1-t,3) * sx + 3 * t * Math.pow(1 - t, 2) * cp1x 
         + 3 * t * t * (1 - t) * cp2x + t * t * t * ex,
-      y: Math.pow(1-t,3) * sy + 3 * t * Math.pow(1 - t, 2) * cp1y 
+      Math.pow(1-t,3) * sy + 3 * t * Math.pow(1 - t, 2) * cp1y 
         + 3 * t * t * (1 - t) * cp2y + t * t * t * ey
-    };
+    );
   }
