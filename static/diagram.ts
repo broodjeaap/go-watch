@@ -475,26 +475,6 @@ class DiagramNode extends CanvasObject {
         }
         return true;
     }
-
-    getInputCircleXY(){
-        return [this.x, this.y + this.height / 2]
-    }
-
-    getOutputCircleXY(){
-        return [this.x + this.width, this.y + this.height / 2]
-    }
-
-    pointInInputCircle(x: number, y: number){
-        let [circleX, circleY] = this.getInputCircleXY()
-        let radiusSqrd = Math.pow(this.height / 3, 2);
-        return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
-    }
-
-    pointInOutputCircle(x: number, y: number){
-        let [circleX, circleY] = this.getOutputCircleXY()
-        let radiusSqrd = Math.pow(this.height / 3, 2);
-        return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
-    }
 }
 
 let _diagram: Diagrams;
@@ -669,10 +649,6 @@ class Diagrams {
         this.ctx.strokeStyle = "#888";
         this.ctx.lineWidth = 5;
         this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-
-    draw(){
-
     }
 
     addNode(

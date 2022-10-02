@@ -22,22 +22,6 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 var CanvasObject = /** @class */ (function () {
     function CanvasObject(x, y, width, height) {
         this.x = x;
@@ -413,22 +397,6 @@ var DiagramNode = /** @class */ (function (_super) {
         }
         return true;
     };
-    DiagramNode.prototype.getInputCircleXY = function () {
-        return [this.x, this.y + this.height / 2];
-    };
-    DiagramNode.prototype.getOutputCircleXY = function () {
-        return [this.x + this.width, this.y + this.height / 2];
-    };
-    DiagramNode.prototype.pointInInputCircle = function (x, y) {
-        var _a = __read(this.getInputCircleXY(), 2), circleX = _a[0], circleY = _a[1];
-        var radiusSqrd = Math.pow(this.height / 3, 2);
-        return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
-    };
-    DiagramNode.prototype.pointInOutputCircle = function (x, y) {
-        var _a = __read(this.getOutputCircleXY(), 2), circleX = _a[0], circleY = _a[1];
-        var radiusSqrd = Math.pow(this.height / 3, 2);
-        return Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2) <= radiusSqrd;
-    };
     return DiagramNode;
 }(CanvasObject));
 var _diagram;
@@ -636,8 +604,6 @@ var Diagrams = /** @class */ (function () {
         this.ctx.strokeStyle = "#888";
         this.ctx.lineWidth = 5;
         this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
-    };
-    Diagrams.prototype.draw = function () {
     };
     Diagrams.prototype.addNode = function (id, x, y, label, meta, results, logs) {
         if (meta === void 0) { meta = {}; }
