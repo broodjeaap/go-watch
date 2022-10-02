@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"time"
 )
 
@@ -28,11 +29,11 @@ type Filter struct {
 }
 
 func (filter *Filter) logf(format string, v ...any) {
-	filter.Logs = append(filter.Logs, fmt.Sprintf(format, v...))
+	filter.Logs = append(filter.Logs, html.EscapeString(fmt.Sprintf(format, v...)))
 }
 
 func (filter *Filter) log(v ...any) {
-	filter.Logs = append(filter.Logs, fmt.Sprint(v...))
+	filter.Logs = append(filter.Logs, html.EscapeString(fmt.Sprint(v...)))
 }
 
 type FilterConnection struct {
