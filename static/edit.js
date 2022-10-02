@@ -565,7 +565,9 @@ function editNode(node) {
 function deleteNode(node) {
     _diagram.nodes["delete"](node.id);
     for (var i = 0; i < _diagram.connections.length; i++) {
-        var _a = __read(_diagram.connections[i], 2), output = _a[0], input = _a[1];
+        var connection = _diagram.connections[i];
+        var output = connection.output;
+        var input = connection.input;
         if (node.id == output.id || node.id == input.id) {
             _diagram.connections.splice(i, 1);
             i--;
@@ -626,7 +628,9 @@ function saveWatch() {
     var connections = new Array();
     try {
         for (var _e = __values(_diagram.connections), _f = _e.next(); !_f.done; _f = _e.next()) {
-            var _g = __read(_f.value, 2), output = _g[0], input = _g[1];
+            var connection = _f.value;
+            var output = connection.output;
+            var input = connection.input;
             connections.push({
                 connection_watch_id: watchId,
                 filter_output_id: output.id,

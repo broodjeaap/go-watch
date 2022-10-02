@@ -579,7 +579,9 @@ function editNode(node: DiagramNode){
 function deleteNode(node: DiagramNode){
     _diagram.nodes.delete(node.id)
     for (let i = 0; i < _diagram.connections.length; i++){
-        let [output, input] = _diagram.connections[i];
+        let connection = _diagram.connections[i];
+        let output = connection.output;
+        let input = connection.input;
         if (node.id == output.id || node.id == input.id){
             _diagram.connections.splice(i, 1)
             i--;
@@ -635,7 +637,9 @@ function saveWatch(){
     filtersInput.value = JSON.stringify(filters);
 
     let connections = new Array<Object>();
-    for (let [output, input] of _diagram.connections){
+    for (let connection of _diagram.connections){
+        let output = connection.output;
+        let input = connection.input;
         connections.push({
             connection_watch_id: watchId,
             filter_output_id: output.id,
