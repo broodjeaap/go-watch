@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"math"
@@ -110,6 +111,10 @@ func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, us
 	case filter.Type == "store":
 		{
 			storeFilterResult(filter, db)
+		}
+	case filter.Type == "notify":
+		{
+			notifyFilter(filter, db)
 		}
 	case filter.Type == "condition":
 		{
@@ -698,5 +703,25 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 }
 
 func notifyFilter(filter *Filter, db *gorm.DB) {
+	tmpl, err := template.New("test").Parse(filter.Var1)
+	if err != nil {
+		filter.log("Could not parse template: ", err)
+		return
+	}
 
+	dataMap := make(map[string]any, 20)
+	for _, parent := range filter.Parents {
+		dataMap[parent.Name] = html.UnescapeString(strings.Join(parent.Results, ", "))
+	}
+
+	id := filter.WatchID
+
+	var watch Watch
+	db.Model(&Watch{}).First(&watch, id)
+	dataMap["Watch"] = watch
+
+	var buffer bytes.Buffer
+	tmpl.Execute(&buffer, dataMap)
+
+	log.Print(buffer.String())
 }
