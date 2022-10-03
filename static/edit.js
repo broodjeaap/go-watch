@@ -120,7 +120,7 @@ function onTypeChange(node) {
             var1Input.value = var1Value;
             var1Input.classList.add("form-control");
             var1Label.innerHTML = "XPath";
-            var1Input.placeholder = "//a[@class='price";
+            var1Input.placeholder = "//a[@class='price]";
             var1Div.appendChild(var1Input);
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
@@ -441,7 +441,7 @@ function onTypeChange(node) {
             higherThan.value = "highert";
             higherThan.innerHTML = "Higher Than";
             conditionSelect.appendChild(higherThan);
-            conditionSelect.onchange = function () { onConditionChange(node); };
+            conditionSelect.onchange = function () { onConditionChange(); };
             var1Div.appendChild(conditionSelect);
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
@@ -459,6 +459,7 @@ function onTypeChange(node) {
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
             var3Div.appendChild(var3Input);
+            onConditionChange(node);
             break;
         }
         case "notify": {
@@ -527,15 +528,23 @@ function onConditionChange(node) {
     var var2Label = document.getElementById("var2Label");
     var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
+    var var1Value = "";
     var var2Value = "";
     var var3Value = "";
     if (node != null) {
+        // @ts-ignore
+        var1Value = node.meta.var1;
+        var1Input.value = var1Value;
         // @ts-ignore
         var2Value = node.meta.var2;
         // @ts-ignore
         var3Value = node.meta.var3;
     }
-    switch (var1Input.value) {
+    else {
+        var1Value = var1Input.value;
+    }
+    var1Label.innerHTML = "Condition";
+    switch (var1Value) {
         case "lowert": {
             var2Input.disabled = false;
             var2Input.type = "number";
@@ -611,10 +620,11 @@ function editNode(node) {
             cardBody.classList.add("card-body", "text-center");
             var pre = document.createElement("pre");
             var code = document.createElement("code");
-            if (result.length > 50) {
-                code.innerHTML = "String of length >50";
+            if (result.length > 200) {
+                code.innerHTML = "String of length >200";
             }
             else {
+                result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                 code.innerHTML = "'" + result + "'";
             }
             cardDiv.appendChild(cardBody);

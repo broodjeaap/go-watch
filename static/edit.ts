@@ -97,7 +97,7 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.value = var1Value;
             var1Input.classList.add("form-control")
             var1Label.innerHTML = "XPath";
-            var1Input.placeholder = "//a[@class='price";
+            var1Input.placeholder = "//a[@class='price]";
             var1Div.appendChild(var1Input);
 
             let var2Input = document.createElement("input");
@@ -433,7 +433,7 @@ function onTypeChange(node: DiagramNode | null = null){
             higherThan.value = "highert"
             higherThan.innerHTML = "Higher Than";
             conditionSelect.appendChild(higherThan);
-            conditionSelect.onchange = function() {onConditionChange(node)}
+            conditionSelect.onchange = function() {onConditionChange()}
             var1Div.appendChild(conditionSelect);
 
             let var2Input = document.createElement("input");
@@ -453,6 +453,7 @@ function onTypeChange(node: DiagramNode | null = null){
             var3Input.disabled = true;
             var3Label.innerHTML = "-";
             var3Div.appendChild(var3Input);
+            onConditionChange(node);
             break;
         }
         case "notify":{
@@ -526,16 +527,24 @@ function onConditionChange(node: DiagramNode | null = null){
     let var3Input = document.getElementById("var3Input") as HTMLInputElement;
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
 
+    let var1Value = "";
     let var2Value = "";
     let var3Value = "";
     if (node != null){
         // @ts-ignore
+        var1Value = node.meta.var1;
+        var1Input.value = var1Value;
+        // @ts-ignore
         var2Value = node.meta.var2;
         // @ts-ignore
         var3Value = node.meta.var3;
+    } else {
+        var1Value = var1Input.value;
     }
 
-    switch(var1Input.value) {
+    var1Label.innerHTML = "Condition";
+
+    switch(var1Value) {
         case "lowert": {
             var2Input.disabled = false;
             var2Input.type = "number";
@@ -623,9 +632,10 @@ function editNode(node: DiagramNode){
         cardBody.classList.add("card-body", "text-center");
         let pre = document.createElement("pre");
         let code = document.createElement("code");
-        if (result.length > 50){
-            code.innerHTML = `String of length >50`;
+        if (result.length > 200){
+            code.innerHTML = `String of length >200`;
         } else {
+            result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             code.innerHTML = `'${result}'`;
         }
         cardDiv.appendChild(cardBody);
