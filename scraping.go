@@ -326,10 +326,10 @@ func getFilterResultContains(filter *Filter) {
 
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			log.Println(result, substring, invert, strings.Contains(result, substring))
-			if strings.Contains(result, substring) {
+			contains := strings.Contains(result, substring)
+			if contains && !invert {
 				filter.Results = append(filter.Results, result)
-			} else if invert {
+			} else if !contains && invert {
 				filter.Results = append(filter.Results, result)
 			}
 		}

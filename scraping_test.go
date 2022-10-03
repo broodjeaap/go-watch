@@ -258,6 +258,39 @@ func TestFilterSubstring(t *testing.T) {
 	}
 }
 
+func TestFilterContains(t *testing.T) {
+	var tests = []struct {
+		Input  []string
+		Query  string
+		Invert string
+		Want   []string
+	}{
+		{[]string{"some text", "other text"}, "some", "false", []string{"some text"}},
+		{[]string{"some text", "other text"}, "some", "true", []string{"other text"}},
+		{[]string{"some text", "other text"}, "needle", "false", []string{}},
+		{[]string{"some text", "other text"}, "needle", "true", []string{"some text", "other text"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s %s %s", test.Input, test.Query, test.Invert)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+				Var1: test.Query,
+				Var2: &test.Invert,
+			}
+			getFilterResultContains(
+				&filter,
+			)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
 func TestFilterSum(t *testing.T) {
 	var tests = []struct {
 		Input []string
