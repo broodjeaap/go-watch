@@ -376,7 +376,7 @@ var DiagramNode = /** @class */ (function (_super) {
         var typeSize = ctx.measureText(this.type);
         this.typeWidth = typeSize.width;
         this.typeHeight = typeSize.actualBoundingBoxAscent + typeSize.actualBoundingBoxDescent;
-        this.width = Math.max(150, this.labelWidth, this.typeWidth);
+        this.width = Math.max(130, this.labelWidth * 1.5, this.typeWidth * 1.2);
     };
     DiagramNode.prototype.pointInObject = function (p) {
         return this.pointNearNode(p) && (_super.prototype.pointInObject.call(this, p) || this.input.pointInObject(p) || this.output.pointInObject(p));

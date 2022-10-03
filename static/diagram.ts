@@ -451,7 +451,7 @@ class DiagramNode extends CanvasObject {
         this.typeWidth = typeSize.width;
         this.typeHeight = typeSize.actualBoundingBoxAscent + typeSize.actualBoundingBoxDescent;
         
-        this.width = Math.max(150, this.labelWidth, this.typeWidth);
+        this.width = Math.max(130, this.labelWidth * 1.5, this.typeWidth * 1.2);
     }
 
     pointInObject(p: Point): boolean {
