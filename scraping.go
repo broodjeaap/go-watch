@@ -155,13 +155,13 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache boo
 
 	resp, err := http.Get(url)
 	if err != nil {
-		filter.log("Could not fetch url: ", url)
-		filter.log("Reason: ", err)
+		filter.log("Could not fetch url: ", url, " - ", err)
+		return
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		filter.log("Could not fetch url: ", url)
-		filter.log("Reason: ", err)
+		filter.log("Could not fetch url: ", url, " - ", err)
+		return
 	}
 	str := string(body)
 	filter.Results = append(filter.Results, str)
