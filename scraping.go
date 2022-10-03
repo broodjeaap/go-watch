@@ -21,6 +21,7 @@ import (
 )
 
 func processFilters(filters []Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
+	allFilters := filters
 	processedMap := make(map[uint]bool, len(filters))
 	for len(filters) > 0 {
 		filter := &filters[0]
@@ -36,12 +37,12 @@ func processFilters(filters []Filter, db *gorm.DB, urlCache map[string]string, u
 			filters = append(filters, *filter)
 			continue
 		}
-		getFilterResult(filter, db, urlCache, useCache, setCache)
+		getFilterResult(allFilters, filter, db, urlCache, useCache, setCache)
 		processedMap[filter.ID] = true
 	}
 }
 
-func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
+func getFilterResult(filters []Filter, filter *Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
 	switch {
 	case filter.Type == "gurl":
 		{
@@ -49,7 +50,7 @@ func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, us
 		}
 	case filter.Type == "gurls":
 		{
-			getFilterResultURL(filter, urlCache, useCache, setCache)
+			getFilterResultURLs(filter, urlCache, useCache, setCache)
 		}
 	case filter.Type == "xpath":
 		{
@@ -114,7 +115,7 @@ func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, us
 		}
 	case filter.Type == "notify":
 		{
-			notifyFilter(filter, db)
+			notifyFilter(filters, filter, db)
 		}
 	case filter.Type == "condition":
 		{
@@ -176,6 +177,35 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache boo
 	filter.Results = append(filter.Results, str)
 	if setCache {
 		urlCache[url] = str
+	}
+}
+
+func getFilterResultURLs(filter *Filter, urlCache map[string]string, useCache bool, setCache bool) {
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			url := result
+			val, exists := urlCache[url]
+			if useCache && exists {
+				filter.Results = append(filter.Results, val)
+				continue
+			}
+
+			resp, err := http.Get(url)
+			if err != nil {
+				filter.log("Could not fetch url: ", url, " - ", err)
+				continue
+			}
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				filter.log("Could not fetch url: ", url, " - ", err)
+				continue
+			}
+			str := string(body)
+			filter.Results = append(filter.Results, str)
+			if setCache {
+				urlCache[url] = str
+			}
+		}
 	}
 }
 
@@ -249,7 +279,7 @@ func getFilterResultReplace(filter *Filter) {
 func getFilterResultMatch(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
 	if err != nil {
-		log.Print(err)
+		filter.log("Could not compile regex: ", err)
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -480,11 +510,11 @@ func getFilterResultRound(filter *Filter) {
 func storeFilterResult(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
-
+	// TODO fix filter.Name above and parent.name below
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			if previousOutput.WatchID == 0 {
-				previousOutput.Name = filter.Name
+				previousOutput.Name = parent.Name
 				previousOutput.Time = time.Now()
 				previousOutput.Value = result
 				previousOutput.WatchID = filter.WatchID
@@ -702,16 +732,27 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 	}
 }
 
-func notifyFilter(filter *Filter, db *gorm.DB) {
-	tmpl, err := template.New("test").Parse(filter.Var1)
+func notifyFilter(filters []Filter, filter *Filter, db *gorm.DB) {
+	haveResults := false
+	for _, parent := range filter.Parents {
+		if len(parent.Results) > 0 {
+			haveResults = true
+		}
+	}
+	if !haveResults {
+		filter.log("No output from previous filter(s), need at least 1 to 'trigger'")
+		log.Println("test")
+		return
+	}
+	tmpl, err := template.New("notify").Parse(filter.Var1)
 	if err != nil {
 		filter.log("Could not parse template: ", err)
 		return
 	}
 
 	dataMap := make(map[string]any, 20)
-	for _, parent := range filter.Parents {
-		dataMap[parent.Name] = html.UnescapeString(strings.Join(parent.Results, ", "))
+	for _, f := range filters {
+		dataMap[f.Name] = html.UnescapeString(strings.Join(f.Results, ", "))
 	}
 
 	id := filter.WatchID
