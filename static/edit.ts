@@ -266,6 +266,46 @@ function onTypeChange(node: DiagramNode | null = null){
             var3Div.appendChild(var3Input);
             break;
         }
+        case "contains": {
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
+            var1Label.innerHTML = "Substring";
+            var1Input.placeholder = "some";
+            var1Div.appendChild(var1Input);
+
+            let notSelect = document.createElement("select");
+            notSelect.name = "var2";
+            notSelect.id = "var2Input";
+            notSelect.classList.add("form-control");
+            let no = document.createElement("option");
+            no.value = "false"
+            no.innerHTML = "No";
+            notSelect.appendChild(no);
+            let yes = document.createElement("option");
+            yes.value = "true"
+            yes.innerHTML = "Yes";
+            notSelect.appendChild(yes);
+            var2Div.appendChild(notSelect);
+            var2Label.innerHTML = "Invert";
+            if (var2Value == "true" || var2Value == "false"){
+                notSelect.value = var2Value;
+            } else {
+                notSelect.value = "false";
+            }
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
+        }
         case "math": {
             let mathSelect = document.createElement("select");
             mathSelect.name = "var1";

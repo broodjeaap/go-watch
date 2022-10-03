@@ -74,6 +74,10 @@ func getFilterResult(filter *Filter, db *gorm.DB, urlCache map[string]string, us
 		{
 			getFilterResultSubstring(filter)
 		}
+	case filter.Type == "contains":
+		{
+			getFilterResultContains(filter)
+		}
 	case filter.Type == "math":
 		{
 			switch {
@@ -309,6 +313,25 @@ func getFilterResultSubstring(filter *Filter) {
 				}
 			}
 			filter.Results = append(filter.Results, sb.String())
+		}
+	}
+}
+
+func getFilterResultContains(filter *Filter) {
+	substring := filter.Var1
+	invert, err := strconv.ParseBool(*filter.Var2)
+	if err != nil {
+		invert = false
+	}
+
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			log.Println(result, substring, invert, strings.Contains(result, substring))
+			if strings.Contains(result, substring) {
+				filter.Results = append(filter.Results, result)
+			} else if invert {
+				filter.Results = append(filter.Results, result)
+			}
 		}
 	}
 }
