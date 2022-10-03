@@ -57,6 +57,10 @@ func (web Web) deleteWatch(c *gin.Context) {
 		return
 	}
 
+	web.db.Delete(&FilterConnection{}, "watch_id = ?", id)
+	web.db.Delete(&FilterOutput{}, "watch_id = ?", id)
+	web.db.Delete(&Filter{}, "watch_id = ?", id)
+
 	web.db.Delete(&Watch{}, id)
 	c.Redirect(http.StatusSeeOther, "/")
 }
