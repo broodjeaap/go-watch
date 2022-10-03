@@ -701,6 +701,9 @@ function submitEditNode(node: DiagramNode){
 
     node.fixType();
     node.resize(_diagram.ctx);
+    let saveWatchButton = document.getElementById("saveButtonMain") as HTMLButtonElement;
+    saveWatchButton.classList.remove("btn-primary");
+    saveWatchButton.classList.add("btn-danger");
 }
 
 function saveWatch(){

@@ -700,6 +700,9 @@ function submitEditNode(node) {
     node.meta.var3 = var3Input.value;
     node.fixType();
     node.resize(_diagram.ctx);
+    var saveWatchButton = document.getElementById("saveButtonMain");
+    saveWatchButton.classList.remove("btn-primary");
+    saveWatchButton.classList.add("btn-danger");
 }
 function saveWatch() {
     var e_3, _a, e_4, _b;
