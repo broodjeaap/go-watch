@@ -416,12 +416,12 @@ class DiagramNode extends CanvasObject {
         this.output.draw(ctx, ms);
 
         if(this.logs.length > 0){
-            ctx.moveTo(this.x + 21, this.y + 6);
+            ctx.moveTo(ms.offset.x + this.x + 21, ms.offset.y + this.y + 6);
             ctx.fillStyle = "orange";
             ctx.beginPath();
-            ctx.lineTo(this.x + 23, this.y + 21);
-            ctx.lineTo(this.x + 6, this.y + 21);
-            ctx.lineTo(this.x + 14, this.y + 6);
+            ctx.lineTo(ms.offset.x + this.x + 23, ms.offset.y + this.y + 21);
+            ctx.lineTo(ms.offset.x + this.x + 6, ms.offset.y + this.y + 21);
+            ctx.lineTo(ms.offset.x + this.x + 14, ms.offset.y + this.y + 6);
             ctx.fill();            
         }
         
