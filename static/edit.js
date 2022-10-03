@@ -536,6 +536,7 @@ function onSubmitNewFilter() {
     });
 }
 function editNode(node) {
+    var e_1, _a;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
@@ -560,10 +561,40 @@ function editNode(node) {
     onTypeChange(node);
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.innerHTML = "Save";
+    var filterModalFooter = document.getElementById("filterResultsDiv");
+    filterModalFooter.innerHTML = "";
+    try {
+        for (var _b = __values(node.results), _c = _b.next(); !_c.done; _c = _b.next()) {
+            var result = _c.value;
+            var cardDiv = document.createElement("div");
+            cardDiv.classList.add("card", "my-2");
+            var cardBody = document.createElement("div");
+            cardBody.classList.add("card-body", "text-center");
+            var pre = document.createElement("pre");
+            var code = document.createElement("code");
+            if (result.length > 50) {
+                code.innerHTML = "String of length >50";
+            }
+            else {
+                code.innerHTML = "'" + result + "'";
+            }
+            cardDiv.appendChild(cardBody);
+            pre.appendChild(code);
+            cardBody.appendChild(pre);
+            filterModalFooter.appendChild(cardDiv);
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
     submitButton.onclick = function () { submitEditNode(node); };
 }
 function logNode(node) {
-    var e_1, _a;
+    var e_2, _a;
     var logButton = document.getElementById("logButton");
     logButton.click();
     var logTitle = document.getElementById("logModalLabel");
@@ -583,12 +614,12 @@ function logNode(node) {
             logBody.appendChild(row);
         }
     }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
     finally {
         try {
             if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
         }
-        finally { if (e_1) throw e_1.error; }
+        finally { if (e_2) throw e_2.error; }
     }
 }
 function deleteNode(node) {
@@ -622,7 +653,7 @@ function submitEditNode(node) {
     node.resize(_diagram.ctx);
 }
 function saveWatch() {
-    var e_2, _a, e_3, _b;
+    var e_3, _a, e_4, _b;
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -646,12 +677,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_2) throw e_2.error; }
+        finally { if (e_3) throw e_3.error; }
     }
     var filtersInput = document.getElementById("filtersInput");
     filtersInput.value = JSON.stringify(filters);
@@ -668,12 +699,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_3) throw e_3.error; }
+        finally { if (e_4) throw e_4.error; }
     }
     var connectionsInput = document.getElementById("connectionsInput");
     connectionsInput.value = JSON.stringify(connections);
@@ -684,6 +715,11 @@ function addFilterButtonClicked() {
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.onclick = onSubmitNewFilter;
     submitButton.innerHTML = "Add Filter";
+    var filterModalFooter = document.getElementById("filterResultsDiv");
+    filterModalFooter.innerHTML = "";
+    var var1Input = document.getElementById("typeInput");
+    var1Input.value = "xpath";
+    onTypeChange();
 }
 function pageInit() {
     var select = document.getElementById("typeInput");

@@ -85,8 +85,10 @@
                             </div>
                         </div>
                     </form>
-                    <div>
+                    <div >
                         <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
+                    </div>
+                    <div id="filterResultsDiv">
                     </div>
                 </div>
             </div>
@@ -147,10 +149,10 @@
             </div>
             <div class="modal-body">
                 <div>
-                    <table class="table" id="logTable">
+                    <table class="table table-hover table-sm" id="logTable">
                         <thead>
                             <tr>
-                                <th>Message</th>
+                                <th scope="col">Message</th>
                             </tr>
                         </thead>
                         <tbody id="logTableBody">

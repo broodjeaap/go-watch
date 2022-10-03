@@ -573,6 +573,26 @@ function editNode(node: DiagramNode){
     onTypeChange(node);
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.innerHTML = "Save";
+
+    let filterModalFooter = document.getElementById("filterResultsDiv") as HTMLDivElement;
+    filterModalFooter.innerHTML = "";
+    for (let result of node.results){
+        let cardDiv = document.createElement("div");
+        cardDiv.classList.add("card", "my-2");
+        let cardBody = document.createElement("div");
+        cardBody.classList.add("card-body", "text-center");
+        let pre = document.createElement("pre");
+        let code = document.createElement("code");
+        if (result.length > 50){
+            code.innerHTML = `String of length >50`;
+        } else {
+            code.innerHTML = `'${result}'`;
+        }
+        cardDiv.appendChild(cardBody);
+        pre.appendChild(code);
+        cardBody.appendChild(pre);
+        filterModalFooter.appendChild(cardDiv);
+    }
     submitButton.onclick = function() {submitEditNode(node);}
 }
 
@@ -678,6 +698,13 @@ function addFilterButtonClicked(){
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.onclick = onSubmitNewFilter
     submitButton.innerHTML = "Add Filter"
+    
+    let filterModalFooter = document.getElementById("filterResultsDiv") as HTMLDivElement;
+    filterModalFooter.innerHTML = "";
+    
+    let var1Input = document.getElementById("typeInput") as HTMLInputElement;
+    var1Input.value = "xpath";
+    onTypeChange();
 }
 
 function pageInit(){
