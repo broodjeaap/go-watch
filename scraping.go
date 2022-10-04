@@ -28,7 +28,7 @@ func processFilters(filters []Filter, db *gorm.DB, urlCache map[string]string, u
 		filters = filters[1:]
 		var allParentsProcessed = true
 		for _, parent := range filter.Parents {
-			if _, contains := processedMap[parent.ID]; !contains {
+			if _, contains := processedMap[parent.ID]; !contains && parent.Type != "cron" {
 				allParentsProcessed = false
 				break
 			}
@@ -116,6 +116,10 @@ func getFilterResult(filters []Filter, filter *Filter, db *gorm.DB, urlCache map
 	case filter.Type == "notify":
 		{
 			notifyFilter(filters, filter, db)
+		}
+	case filter.Type == "cron":
+		{
+
 		}
 	case filter.Type == "condition":
 		{
@@ -741,7 +745,6 @@ func notifyFilter(filters []Filter, filter *Filter, db *gorm.DB) {
 	}
 	if !haveResults {
 		filter.log("No output from previous filter(s), need at least 1 to 'trigger'")
-		log.Println("test")
 		return
 	}
 	tmpl, err := template.New("notify").Parse(filter.Var1)
@@ -765,4 +768,18 @@ func notifyFilter(filters []Filter, filter *Filter, db *gorm.DB) {
 	tmpl.Execute(&buffer, dataMap)
 
 	log.Print(buffer.String())
+}
+
+func triggerSchedule(watchID uint, db *gorm.DB) {
+	var watch Watch
+	db.Model(&Watch{}).First(&watch, watchID)
+
+	var filters []Filter
+	db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
+
+	var connections []FilterConnection
+	db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
+
+	buildFilterTree(filters, connections)
+	processFilters(filters, db, make(map[string]string, 0), true, true)
 }

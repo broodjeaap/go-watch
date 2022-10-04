@@ -485,6 +485,35 @@ function onTypeChange(node: DiagramNode | null = null){
             var3Div.appendChild(var3Input);
             break;
         }
+        case "cron":{
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
+            var1Label.innerHTML = "CRON";
+            var1Input.placeholder = "30 3-6,20-23 * * *";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+
+            let var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
+        }
     }
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -217,5 +218,14 @@ func main() {
 	router.GET("/cache/view", web.cacheView)
 	router.POST("/cache/clear", web.cacheClear)
 
+	var cronFilters []Filter
+	db.Model(&Filter{}).Find(&cronFilters, "type = 'cron'")
+	c := cron.New()
+	for _, cronFilter := range cronFilters {
+		c.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, db) })
+	}
+	c.Start()
+
 	router.Run("0.0.0.0:8080")
+
 }
