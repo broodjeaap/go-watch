@@ -92,7 +92,7 @@ func (web *Web) initCronJobs() {
 	web.cronWatch = make(map[uint]cron.Entry, len(cronFilters))
 	web.cron = cron.New()
 	for _, cronFilter := range cronFilters {
-		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web.db) })
+		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web) })
 		if err != nil {
 			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
 			continue
@@ -162,7 +162,7 @@ func (web *Web) watchView(c *gin.Context) {
 	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, web.db, web.urlCache, true, true)
+	processFilters(filters, web, &watch, true, true)
 
 	c.HTML(http.StatusOK, "watchView", gin.H{
 		"Watch":       watch,

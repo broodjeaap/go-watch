@@ -20,7 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func processFilters(filters []Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
+func processFilters(filters []Filter, web *Web, watch *Watch, useCache bool, setCache bool) {
 	allFilters := filters
 	processedMap := make(map[uint]bool, len(filters))
 	for len(filters) > 0 {
@@ -37,20 +37,20 @@ func processFilters(filters []Filter, db *gorm.DB, urlCache map[string]string, u
 			filters = append(filters, *filter)
 			continue
 		}
-		getFilterResult(allFilters, filter, db, urlCache, useCache, setCache)
+		getFilterResult(allFilters, filter, watch, web, useCache, setCache)
 		processedMap[filter.ID] = true
 	}
 }
 
-func getFilterResult(filters []Filter, filter *Filter, db *gorm.DB, urlCache map[string]string, useCache bool, setCache bool) {
+func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, useCache bool, setCache bool) {
 	switch {
 	case filter.Type == "gurl":
 		{
-			getFilterResultURL(filter, urlCache, useCache, setCache)
+			getFilterResultURL(filter, web.urlCache, useCache, setCache)
 		}
 	case filter.Type == "gurls":
 		{
-			getFilterResultURLs(filter, urlCache, useCache, setCache)
+			getFilterResultURLs(filter, web.urlCache, useCache, setCache)
 		}
 	case filter.Type == "xpath":
 		{
@@ -111,11 +111,11 @@ func getFilterResult(filters []Filter, filter *Filter, db *gorm.DB, urlCache map
 		}
 	case filter.Type == "store":
 		{
-			storeFilterResult(filter, db)
+			storeFilterResult(filter, web.db)
 		}
 	case filter.Type == "notify":
 		{
-			notifyFilter(filters, filter, db)
+			notifyFilter(filters, filter, watch, web.db)
 		}
 	case filter.Type == "cron":
 		{
@@ -126,15 +126,15 @@ func getFilterResult(filters []Filter, filter *Filter, db *gorm.DB, urlCache map
 			switch filter.Var1 {
 			case "diff":
 				{
-					getFilterResultConditionDiff(filter, db)
+					getFilterResultConditionDiff(filter, web.db)
 				}
 			case "lowerl":
 				{
-					getFilterResultConditionLowerLast(filter, db)
+					getFilterResultConditionLowerLast(filter, web.db)
 				}
 			case "lowest":
 				{
-					getFilterResultConditionLowest(filter, db)
+					getFilterResultConditionLowest(filter, web.db)
 				}
 			case "lowert":
 				{
@@ -142,11 +142,11 @@ func getFilterResult(filters []Filter, filter *Filter, db *gorm.DB, urlCache map
 				}
 			case "higherl":
 				{
-					getFilterResultConditionHigherLast(filter, db)
+					getFilterResultConditionHigherLast(filter, web.db)
 				}
 			case "highest":
 				{
-					getFilterResultConditionHighest(filter, db)
+					getFilterResultConditionHighest(filter, web.db)
 				}
 			case "highert":
 				{
@@ -736,7 +736,7 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 	}
 }
 
-func notifyFilter(filters []Filter, filter *Filter, db *gorm.DB) {
+func notifyFilter(filters []Filter, filter *Filter, watch *Watch, db *gorm.DB) {
 	haveResults := false
 	for _, parent := range filter.Parents {
 		if len(parent.Results) > 0 {
@@ -758,10 +758,6 @@ func notifyFilter(filters []Filter, filter *Filter, db *gorm.DB) {
 		dataMap[f.Name] = html.UnescapeString(strings.Join(f.Results, ", "))
 	}
 
-	id := filter.WatchID
-
-	var watch Watch
-	db.Model(&Watch{}).First(&watch, id)
 	dataMap["Watch"] = watch
 
 	var buffer bytes.Buffer
@@ -770,16 +766,16 @@ func notifyFilter(filters []Filter, filter *Filter, db *gorm.DB) {
 	log.Print(buffer.String())
 }
 
-func triggerSchedule(watchID uint, db *gorm.DB) {
-	var watch Watch
-	db.Model(&Watch{}).First(&watch, watchID)
+func triggerSchedule(watchID uint, web *Web) {
+	var watch *Watch
+	web.db.Model(&Watch{}).First(&watch, watchID)
 
 	var filters []Filter
-	db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
+	web.db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
 
 	var connections []FilterConnection
-	db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
+	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, db, make(map[string]string, 0), true, true)
+	processFilters(filters, web, watch, true, true)
 }
