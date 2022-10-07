@@ -88,7 +88,6 @@ func (web *Web) initTemplates() {
 
 func (web *Web) initCronJobs() {
 	var cronFilters []Filter
-	log.Println(web.db, cronFilters)
 	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron'")
 	web.cronWatch = make(map[uint]cron.Entry, len(cronFilters))
 	web.cron = cron.New()
@@ -98,6 +97,7 @@ func (web *Web) initCronJobs() {
 			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
 			continue
 		}
+		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
 		web.cronWatch[cronFilter.WatchID] = web.cron.Entry(entryID)
 	}
 	web.cron.Start()
