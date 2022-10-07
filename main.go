@@ -23,11 +23,91 @@ var newWatchHTML = filepath.Join("templates", "newWatch.html")
 
 type Web struct {
 	//Bot *tgbotapi.BotAPI
-	urlCache map[string]string
-	db       *gorm.DB
+	router    *gin.Engine
+	templates multitemplate.Renderer
+	cron      *cron.Cron
+	urlCache  map[string]string
+	cronWatch map[uint]cron.Entry
+	db        *gorm.DB
 }
 
-func (web Web) index(c *gin.Context) {
+func newWeb() *Web {
+	web := &Web{
+		urlCache: make(map[string]string, 5),
+	}
+	web.init()
+	return web
+}
+
+func (web *Web) init() {
+	web.urlCache = make(map[string]string, 5)
+	web.initDB()
+
+	web.initRouter()
+	web.initCronJobs()
+}
+
+func (web *Web) initDB() {
+	db, err := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
+	if err != nil {
+		log.Panicln("Could not start DB: ", err)
+	}
+	web.db = db
+	web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
+}
+func (web *Web) initRouter() {
+	web.router = gin.Default()
+
+	web.router.Static("/static", "./static")
+
+	web.initTemplates()
+	web.router.HTMLRender = web.templates
+
+	web.router.GET("/", web.index)
+
+	web.router.GET("/watch/:id", web.watchView)
+	web.router.GET("/watch/new", web.watchCreate)
+	web.router.POST("/watch/create", web.watchCreatePost)
+	web.router.POST("/watch/update", web.watchUpdate)
+	web.router.POST("/watch/delete", web.deleteWatch)
+
+	web.router.GET("/cache/view", web.cacheView)
+	web.router.POST("/cache/clear", web.cacheClear)
+}
+
+func (web *Web) initTemplates() {
+	web.templates = multitemplate.NewRenderer()
+	web.templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
+	web.templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watch/create.html")
+	web.templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
+
+	web.templates.AddFromFiles("cacheView", "templates/base.html", "templates/cache/view.html")
+
+	web.templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
+}
+
+func (web *Web) initCronJobs() {
+	var cronFilters []Filter
+	log.Println(web.db, cronFilters)
+	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron'")
+	web.cronWatch = make(map[uint]cron.Entry, len(cronFilters))
+	web.cron = cron.New()
+	for _, cronFilter := range cronFilters {
+		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web.db) })
+		if err != nil {
+			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
+			continue
+		}
+		web.cronWatch[cronFilter.WatchID] = web.cron.Entry(entryID)
+	}
+	web.cron.Start()
+}
+
+func (web *Web) run() {
+	web.router.Run("0.0.0.0:8080")
+}
+
+func (web *Web) index(c *gin.Context) {
 	//msg := tgbotapi.NewMessage(viper.GetInt64("telegram.chat"), message)
 	//web.Bot.Send(msg)
 	watches := []Watch{}
@@ -35,11 +115,11 @@ func (web Web) index(c *gin.Context) {
 	c.HTML(http.StatusOK, "index", watches)
 }
 
-func (web Web) watchCreate(c *gin.Context) {
+func (web *Web) watchCreate(c *gin.Context) {
 	c.HTML(http.StatusOK, "watchCreate", gin.H{})
 }
 
-func (web Web) watchCreatePost(c *gin.Context) {
+func (web *Web) watchCreatePost(c *gin.Context) {
 	var watch Watch
 	errMap, err := bindAndValidateWatch(&watch, c)
 	if err != nil {
@@ -50,7 +130,7 @@ func (web Web) watchCreatePost(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
 }
 
-func (web Web) deleteWatch(c *gin.Context) {
+func (web *Web) deleteWatch(c *gin.Context) {
 	id, err := strconv.Atoi(c.PostForm("watch_id"))
 	if err != nil {
 		log.Println(err)
@@ -66,7 +146,7 @@ func (web Web) deleteWatch(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
-func (web Web) watchView(c *gin.Context) {
+func (web *Web) watchView(c *gin.Context) {
 	id := c.Param("id")
 
 	var watch Watch
@@ -92,7 +172,7 @@ func (web Web) watchView(c *gin.Context) {
 	})
 }
 
-func (web Web) watchUpdate(c *gin.Context) {
+func (web *Web) watchUpdate(c *gin.Context) {
 	var watch Watch
 	bindAndValidateWatch(&watch, c)
 
@@ -139,11 +219,11 @@ func (web Web) watchUpdate(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
 }
 
-func (web Web) cacheView(c *gin.Context) {
+func (web *Web) cacheView(c *gin.Context) {
 	c.HTML(http.StatusOK, "cacheView", web.urlCache)
 }
 
-func (web Web) cacheClear(c *gin.Context) {
+func (web *Web) cacheClear(c *gin.Context) {
 	url := c.PostForm("url")
 	delete(web.urlCache, url)
 	c.Redirect(http.StatusSeeOther, "/cache/view")
@@ -177,9 +257,6 @@ func main() {
 		log.Fatalln("Could not load config file")
 	}
 
-	db, _ := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
-	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
-
 	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 
 	//bot.Debug = true
@@ -188,44 +265,6 @@ func main() {
 
 	//go passiveBot(bot)
 
-	web := Web{
-		//bot,
-		db:       db,
-		urlCache: make(map[string]string, 2),
-	}
-	router := gin.Default()
-
-	router.Static("/static", "./static")
-
-	templates := multitemplate.NewRenderer()
-	templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
-	templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watch/create.html")
-	templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
-
-	templates.AddFromFiles("cacheView", "templates/base.html", "templates/cache/view.html")
-
-	templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
-	router.HTMLRender = templates
-
-	router.GET("/", web.index)
-
-	router.GET("/watch/:id", web.watchView)
-	router.GET("/watch/new", web.watchCreate)
-	router.POST("/watch/create", web.watchCreatePost)
-	router.POST("/watch/update", web.watchUpdate)
-	router.POST("/watch/delete", web.deleteWatch)
-
-	router.GET("/cache/view", web.cacheView)
-	router.POST("/cache/clear", web.cacheClear)
-
-	var cronFilters []Filter
-	db.Model(&Filter{}).Find(&cronFilters, "type = 'cron'")
-	c := cron.New()
-	for _, cronFilter := range cronFilters {
-		c.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, db) })
-	}
-	c.Start()
-
-	router.Run("0.0.0.0:8080")
-
+	web := newWeb()
+	web.run()
 }
