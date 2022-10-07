@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"html"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 type Watch struct {
-	ID       uint   `form:"watch_id" yaml:"watch_id"`
-	Name     string `form:"watch_name" yaml:"watch_name" binding:"required" validate:"min=1"`
-	Interval int    `form:"interval" yaml:"interval" binding:"required"`
+	ID        uint        `form:"watch_id" yaml:"watch_id"`
+	Name      string      `form:"watch_name" yaml:"watch_name" binding:"required" validate:"min=1"`
+	Interval  int         `form:"interval" yaml:"interval" binding:"required"`
+	CronEntry *cron.Entry `gorm:"-:all"`
 }
 
 type Filter struct {

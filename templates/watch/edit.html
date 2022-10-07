@@ -1,0 +1,213 @@
+{{define "head"}}
+<script src="/static/diagram.js"></script>
+<script src="/static/edit.js"></script>
+{{ end }}
+{{define "content"}}
+<div class="canvas_parent">
+    <canvas id="canvas">
+
+    </canvas>
+</div>
+
+{{ end }}
+
+{{ define "left" }}
+<table>
+    <tr>
+        <td>
+            <button type="button" id="filterButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
+                Add Filter
+            </button>
+        </td>
+        <td>
+            <button type="button" id="filterButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#WatchModal">
+                Edit Watch
+            </button>
+        </td>
+        <td>
+            <button type="button" id="saveButtonMain" class="btn btn-primary btn-sm">
+                Save Watch
+            </button>
+        </td>
+        <td id="OpenLogTD" hidden> 
+            <button type="button" id="logButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#LogModal">
+                Open Log
+            </button>
+        </td>
+    </tr>
+</table>
+
+
+<div class="modal fade" id="FilterModal" tabindex="-1" aria-labelledby="FilterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="FilterModalLabel">Add Filter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <form action="/filter/create" method="post">
+                        <div class="mb-3 m-3 row">
+                            <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
+                            <div class="col-sm-10 p-2">
+                                <input type="text" class="form-control" name="filter_name" id="nameInput" placeholder="Name">
+                            </div>
+                            <label for="typeInput" class="col-sm-2 col-form-label">Type:</label>
+                            <div class="col-sm-10 p-2">
+                                <select id="typeInput" class="form-control" name="type">
+                                    <option value="xpath" selected="true">XPath</option>
+                                    <option value="gurl">Get URL</option>
+                                    <option value="gurls">Get URLs</option>
+                                    <option value="json">JSON</option>
+                                    <option value="css">CSS</option>
+                                    <option value="replace">Replace</option>
+                                    <option value="match">Match</option>
+                                    <option value="substring">Substring</option>
+                                    <option value="contains">Contains</option>
+                                    <option value="math">Math</option>
+                                    <option value="store">Store</option>
+                                    <option value="condition">Condition</option>
+                                    <option value="notify">Notify</option>`
+                                    <option value="cron">Schedule</option>
+                                </select>
+                            </div>
+
+                            <label for="var1" id="var1Label" class="col-sm-2 col-form-label">XPath:</label>
+                            <div class="col-sm-10 p-2" id="var1Div">
+                                <input type="text" class="form-control" name="var1" id="var1Input" placeholder="//a[@class='price']">
+                            </div>
+                            <label for="var2" id="var2Label" class="col-sm-2 col-form-label">-</label>
+                            <div class="col-sm-10 p-2" id="var2Div">
+                                <input type="text" class="form-control" name="var2" id="var2Input" placeholder="" disabled>
+                            </div>
+                            <label for="var3" id="var3Label" class="col-sm-2 col-form-label">-</label>
+                            <div class="col-sm-10 p-2" id="var3Div">
+                                <input type="text" class="form-control" name="var3" id="var3Input" placeholder="" disabled>
+                            </div>
+                        </div>
+                    </form>
+                    <div >
+                        <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
+                    </div>
+                    <div id="filterResultsDiv">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="WatchModal" tabindex="-1" aria-labelledby="WatchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="WatchModalLabel">Watch - {{ .Watch.Name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <form action="/watch/update" id="saveWatchForm" method="post">
+                        <div class="mb-3 m-3 row">
+                            <input type="hidden" id="watch_id" name="watch_id" value="{{ .Watch.ID }}">
+                            <label for="watchNameInput" class="col-sm-2 col-form-label">Name:</label>
+                            <div class="col-sm-10 p-2">
+                                <input type="text" class="form-control" id="watchNameInput" name="watch_name" value="{{ .Watch.Name }}" placeholder="Name">
+                            </div>
+
+                            <label for="scheduleInput" class="col-sm-2 col-form-label">Schedule:</label>
+                            <div class="col-sm-10 p-2">
+                                <select id="scheduleInput" class="form-control" name="schedule_id">
+                                    <option value=".ID">.Name</option>
+                                </select>
+                            </div>
+                            <label for="proxyInput" class="col-sm-2 col-form-label">Proxy Pool:</label>
+                            <div class="col-sm-10 p-2">
+                                <select id="proxyInput" class="form-control" name="proxy_pool_id">
+                                    <option value=".ID">.Name</option>
+                                </select>
+                            </div>
+                            <input type="hidden" id="filtersInput" name="filters" value="">
+                            <input type="hidden" id="connectionsInput" name="connections" value="">
+                        </div>
+                    </form>
+                    <button class="btn btn-primary mt-4 float-start" id="saveButtonModal" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
+                    <form action="/watch/delete" method="post">
+                        <input type="hidden" name="watch_id" value="{{ .Watch.ID }}">
+                        <button class="btn btn-danger mt-4 float-end"  data-bs-dismiss="modal" id="deleteFilterButton">Delete Watch</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="LogModal" tabindex="-1" aria-labelledby="LogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logModalLabel">-</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <table class="table table-hover table-sm" id="logTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{{ end }}
+
+{{define "scripts"}}
+<script>
+var diagrams;
+function canvasInit() {
+    diagrams = new Diagrams("canvas", editNode, deleteNode, logNode);
+    {{ range .Filters }}
+        diagrams.addNode(
+            {{ .ID }}, 
+            {{ .X }}, 
+            {{ .Y }}, 
+            "{{ .Name }}", 
+            {
+                type: "{{ .Type }}",
+                var1: "{{ .Var1 }}",
+                var2: "{{ .Var2 }}",
+                var3: "{{ .Var3 }}",
+            },
+            [
+                {{ range .Results }}
+                    '{{ . }}',
+                {{ end }}
+            ],
+            [
+                {{ range.Logs }}
+                    '{{ . }}',
+                {{ end }}
+            ]
+        );
+    {{ end }}
+    {{ range .Connections }}
+        diagrams.addConnectionById({{ .OutputID }}, {{ .InputID }});
+    {{ end }}
+    diagrams.fillParent();
+}
+document.addEventListener('DOMContentLoaded', canvasInit, false);
+
+
+
+</script>
+{{ end }}

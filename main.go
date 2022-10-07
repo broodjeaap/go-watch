@@ -65,7 +65,8 @@ func (web *Web) initRouter() {
 
 	web.router.GET("/", web.index)
 
-	web.router.GET("/watch/:id", web.watchView)
+	web.router.GET("/watch/view/:id", web.watchView)
+	web.router.GET("/watch/edit/:id", web.watchEdit)
 	web.router.GET("/watch/new", web.watchCreate)
 	web.router.POST("/watch/create", web.watchCreatePost)
 	web.router.POST("/watch/update", web.watchUpdate)
@@ -80,6 +81,7 @@ func (web *Web) initTemplates() {
 	web.templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
 	web.templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watch/create.html")
 	web.templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
+	web.templates.AddFromFiles("watchEdit", "templates/base.html", "templates/watch/edit.html")
 
 	web.templates.AddFromFiles("cacheView", "templates/base.html", "templates/cache/view.html")
 
@@ -107,11 +109,22 @@ func (web *Web) run() {
 	web.router.Run("0.0.0.0:8080")
 }
 
+type WatchEntry struct {
+	Watch *Watch
+	Entry *cron.Entry
+}
+
 func (web *Web) index(c *gin.Context) {
 	//msg := tgbotapi.NewMessage(viper.GetInt64("telegram.chat"), message)
 	//web.Bot.Send(msg)
 	watches := []Watch{}
 	web.db.Find(&watches)
+
+	for i := 0; i < len(watches); i++ {
+		entry := web.cronWatch[watches[i].ID]
+		watches[i].CronEntry = &entry
+	}
+
 	c.HTML(http.StatusOK, "index", watches)
 }
 
@@ -151,6 +164,33 @@ func (web *Web) watchView(c *gin.Context) {
 
 	var watch Watch
 	web.db.Model(&Watch{}).First(&watch, id)
+	entry, exists := web.cronWatch[watch.ID]
+	if !exists {
+		log.Println("Could not find entry for Watch", watch.ID)
+		c.HTML(http.StatusNotFound, "watchView", gin.H{"error": "Entry not found"})
+		return
+	}
+	watch.CronEntry = &entry
+
+	var values []FilterOutput
+	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
+
+	valueMap := make(map[string][]FilterOutput, len(values))
+	for _, value := range values {
+		valueMap[value.Name] = append(valueMap[value.Name], value)
+	}
+
+	c.HTML(http.StatusOK, "watchView", gin.H{
+		"Watch":    watch,
+		"ValueMap": valueMap,
+	})
+}
+
+func (web *Web) watchEdit(c *gin.Context) {
+	id := c.Param("id")
+
+	var watch Watch
+	web.db.Model(&Watch{}).First(&watch, id)
 
 	var filters []Filter
 	web.db.Model(&Filter{}).Where("watch_id = ?", watch.ID).Find(&filters)
@@ -164,7 +204,7 @@ func (web *Web) watchView(c *gin.Context) {
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, &watch, true, true)
 
-	c.HTML(http.StatusOK, "watchView", gin.H{
+	c.HTML(http.StatusOK, "watchEdit", gin.H{
 		"Watch":       watch,
 		"Filters":     filters,
 		"Connections": connections,
@@ -216,7 +256,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 		web.db.Create(&newConnections)
 	}
 
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
 }
 
 func (web *Web) cacheView(c *gin.Context) {
