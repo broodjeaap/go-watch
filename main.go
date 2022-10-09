@@ -184,7 +184,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		return
 	}
 	web.db.Create(&watch)
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/%d", watch.ID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
 }
 
 func (web *Web) deleteWatch(c *gin.Context) {
