@@ -111,7 +111,7 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 		}
 	case filter.Type == "store":
 		{
-			storeFilterResult(filter, web.db)
+			storeFilterResult(filter, web.db, debug)
 		}
 	case filter.Type == "notify":
 		{
@@ -511,7 +511,10 @@ func getFilterResultRound(filter *Filter) {
 	}
 }
 
-func storeFilterResult(filter *Filter, db *gorm.DB) {
+func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
+	if debug {
+		return
+	}
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
 	// TODO fix filter.Name above and parent.name below
