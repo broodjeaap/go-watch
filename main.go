@@ -22,13 +22,13 @@ var indexHTML = filepath.Join("templates", "index.html")
 var newWatchHTML = filepath.Join("templates", "newWatch.html")
 
 type Web struct {
-	//Bot *tgbotapi.BotAPI
 	router    *gin.Engine
 	templates multitemplate.Renderer
 	cron      *cron.Cron
 	urlCache  map[string]string
 	cronWatch map[uint]cron.Entry
 	db        *gorm.DB
+	Bot       *tgbotapi.BotAPI
 }
 
 func newWeb() *Web {
@@ -45,6 +45,7 @@ func (web *Web) init() {
 
 	web.initRouter()
 	web.initCronJobs()
+	web.initNotifiers()
 }
 
 func (web *Web) initDB() {
@@ -105,6 +106,36 @@ func (web *Web) initCronJobs() {
 	web.cron.Start()
 }
 
+func (web *Web) initNotifiers() {
+	bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
+	bot.Debug = true
+	web.Bot = bot
+	log.Printf("Authorized on account %s", bot.Self.UserName)
+	go web.passiveBot()
+}
+
+func (web *Web) passiveBot() {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	updates := web.Bot.GetUpdatesChan(u)
+
+	for update := range updates {
+		if update.Message != nil { // If we got a message
+			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+			msg.ReplyToMessageID = update.Message.MessageID
+
+			web.Bot.Send(msg)
+		}
+	}
+}
+
+func (web *Web) notify(message string) {
+	msg := tgbotapi.NewMessage(viper.GetInt64("telegram.chat"), message)
+	web.Bot.Send(msg)
+}
+
 func (web *Web) run() {
 	web.router.Run("0.0.0.0:8080")
 }
@@ -115,8 +146,6 @@ type WatchEntry struct {
 }
 
 func (web *Web) index(c *gin.Context) {
-	//msg := tgbotapi.NewMessage(viper.GetInt64("telegram.chat"), message)
-	//web.Bot.Send(msg)
 	watches := []Watch{}
 	web.db.Find(&watches)
 
@@ -243,7 +272,7 @@ func (web *Web) watchEdit(c *gin.Context) {
 	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, web, &watch, true, true)
+	processFilters(filters, web, &watch, true)
 
 	c.HTML(http.StatusOK, "watchEdit", gin.H{
 		"Watch":       watch,
@@ -328,23 +357,6 @@ func (web *Web) cacheClear(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/cache/view")
 }
 
-func passiveBot(bot *tgbotapi.BotAPI) {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-	updates := bot.GetUpdatesChan(u)
-
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
-
-			bot.Send(msg)
-		}
-	}
-}
-
 func main() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -355,14 +367,6 @@ func main() {
 	if err != nil {
 		log.Fatalln("Could not load config file")
 	}
-
-	//bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
-
-	//bot.Debug = true
-
-	//log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	//go passiveBot(bot)
 
 	web := newWeb()
 	web.run()

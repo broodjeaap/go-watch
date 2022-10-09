@@ -20,7 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func processFilters(filters []Filter, web *Web, watch *Watch, useCache bool, setCache bool) {
+func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
 	allFilters := filters
 	processedMap := make(map[uint]bool, len(filters))
 	for len(filters) > 0 {
@@ -37,20 +37,20 @@ func processFilters(filters []Filter, web *Web, watch *Watch, useCache bool, set
 			filters = append(filters, *filter)
 			continue
 		}
-		getFilterResult(allFilters, filter, watch, web, useCache, setCache)
+		getFilterResult(allFilters, filter, watch, web, debug)
 		processedMap[filter.ID] = true
 	}
 }
 
-func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, useCache bool, setCache bool) {
+func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, debug bool) {
 	switch {
 	case filter.Type == "gurl":
 		{
-			getFilterResultURL(filter, web.urlCache, useCache, setCache)
+			getFilterResultURL(filter, web.urlCache, debug)
 		}
 	case filter.Type == "gurls":
 		{
-			getFilterResultURLs(filter, web.urlCache, useCache, setCache)
+			getFilterResultURLs(filter, web.urlCache, debug)
 		}
 	case filter.Type == "xpath":
 		{
@@ -115,7 +115,7 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, u
 		}
 	case filter.Type == "notify":
 		{
-			notifyFilter(filters, filter, watch, web.db)
+			notifyFilter(filters, filter, watch, web, debug)
 		}
 	case filter.Type == "cron":
 		{
@@ -159,10 +159,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, u
 	}
 }
 
-func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache bool, setCache bool) {
+func getFilterResultURL(filter *Filter, urlCache map[string]string, debug bool) {
 	url := filter.Var1
 	val, exists := urlCache[url]
-	if useCache && exists {
+	if debug && exists {
 		filter.Results = append(filter.Results, val)
 		return
 	}
@@ -179,17 +179,17 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, useCache boo
 	}
 	str := string(body)
 	filter.Results = append(filter.Results, str)
-	if setCache {
+	if debug {
 		urlCache[url] = str
 	}
 }
 
-func getFilterResultURLs(filter *Filter, urlCache map[string]string, useCache bool, setCache bool) {
+func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool) {
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			url := result
 			val, exists := urlCache[url]
-			if useCache && exists {
+			if debug && exists {
 				filter.Results = append(filter.Results, val)
 				continue
 			}
@@ -206,7 +206,7 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, useCache bo
 			}
 			str := string(body)
 			filter.Results = append(filter.Results, str)
-			if setCache {
+			if debug {
 				urlCache[url] = str
 			}
 		}
@@ -736,7 +736,7 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 	}
 }
 
-func notifyFilter(filters []Filter, filter *Filter, watch *Watch, db *gorm.DB) {
+func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debug bool) {
 	haveResults := false
 	for _, parent := range filter.Parents {
 		if len(parent.Results) > 0 {
@@ -762,8 +762,11 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, db *gorm.DB) {
 
 	var buffer bytes.Buffer
 	tmpl.Execute(&buffer, dataMap)
-
-	log.Print(buffer.String())
+	if debug {
+		log.Println(buffer.String())
+	} else {
+		web.notify(buffer.String())
+	}
 }
 
 func triggerSchedule(watchID uint, web *Web) {
@@ -777,5 +780,5 @@ func triggerSchedule(watchID uint, web *Web) {
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, web, watch, true, true)
+	processFilters(filters, web, watch, false)
 }
