@@ -495,14 +495,25 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.placeholder = "30 3-6,20-23 * * *";
             var1Div.appendChild(var1Input);
 
-            let var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control")
-            var2Input.disabled = true;
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
+            let enabledSelect = document.createElement("select");
+            enabledSelect.name = "var2";
+            enabledSelect.id = "var2Input";
+            enabledSelect.classList.add("form-control");
+            let enabledOption = document.createElement("option");
+            enabledOption.value = "yes"
+            enabledOption.innerHTML = "Enabled";
+            enabledSelect.appendChild(enabledOption);
+            let disabledOption = document.createElement("option");
+            disabledOption.value = "no"
+            disabledOption.innerHTML = "Disabled";
+            enabledSelect.appendChild(disabledOption);
+            if (var2Value == ""){
+                enabledSelect.value = "yes";
+            } else {
+                enabledSelect.value = var2Value;
+            }
+            var2Div.appendChild(enabledSelect);
+            var2Label.innerHTML = "Enabled"
 
             let var3Input = document.createElement("input");
             var3Input.name = "var3";

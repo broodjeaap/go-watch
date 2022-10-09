@@ -8,14 +8,18 @@
         <div class="card d-flex justify-content-around">
             <div class="card-body">
               <h4 class="card-title text-center">{{ .Watch.Name }}</h4>
-                <div class="row">
-                    <div class="col-4">Previous</div>
-                    <div class="col-8">{{ .Watch.CronEntry.Prev.Format "2006-01-02 15:04:05" }}</div>
-                </div>
-                <div class="row">
-                    <div class="col-4">Next</div>
-                    <div class="col-8">{{ .Watch.CronEntry.Next.Format "2006-01-02 15:04:05" }}</div>
-                </div>
+              {{ if not .Watch.CronEntry }}
+              <h5>No Schedule</h5>
+              {{ else }}
+              <div class="row">
+                  <div class="col-4">Previous</div>
+                  <div class="col-8">{{ .Watch.CronEntry.Prev.Format "2006-01-02 15:04:05" }}</div>
+              </div>
+              <div class="row">
+                  <div class="col-4">Next</div>
+                  <div class="col-8">{{ .Watch.CronEntry.Next.Format "2006-01-02 15:04:05" }}</div>
+              </div>
+              {{ end }}
             </div>
           </div>
     </div>
