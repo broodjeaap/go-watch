@@ -35,25 +35,45 @@
 <script>
     function canvasInit() {
         const ctx = document.getElementById("chartCanvas").getContext('2d');
+        const colors = [
+            "rgba(255, 0, 41, 1)",
+            "rgba(55, 126, 184, 1)",
+            "rgba(102, 166, 30, 1)",
+            "rgba(152, 78, 163, 1)",
+            "rgba(0, 210, 213, 1)",
+            "rgba(255, 127, 0, 1)",
+            "rgba(175, 141, 0, 1)",
+            "rgba(127, 128. 205, 1)",
+            "rgba(179, 233, 0, 1)",
+            "rgba(196, 46, 96, 1)",
+            "rgba(166, 86, 40, 1)",
+            "rgba(247, 129, 191, 1)",
+            "rgba(141, 211, 199, 1)",
+            "rgba(190, 186, 218, 1)",
+            "rgba(251, 128, 114, 1)",
+            "rgba(128. 177, 211, 1)"
+        ];
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                datasets:[{
+                datasets:[
                     {{ range $name, $values := .ValueMap }}
+                    {
                         label: {{ $name }},
+                        fill: false,
+                        borderColor: colors[{{ index $.colorMap $name}}],
                         data: [
                             {{ range $value := $values }}
                                 {x: luxon.DateTime.fromISO('{{ $value.Time.Format "2006-01-02T15:04:05Z07:00" }}'), y: '{{ $value.Value }}'},
                             {{ end }}
                         ],
-                    {{ end }}
-                }]
+                    },
+                    {{ end }}]
             },
             options: {
                 scales: {
                     x: {
-                        type: 'time',
-                        distribution: 'series',
+                        type: 'time'
                     },
                     y: {
                         beginAtZero: true,

@@ -173,16 +173,28 @@ func (web *Web) watchView(c *gin.Context) {
 	watch.CronEntry = &entry
 
 	var values []FilterOutput
-	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
+	web.db.Model(&FilterOutput{}).Order("time asc").Where("watch_id = ?", watch.ID).Find(&values)
 
 	valueMap := make(map[string][]FilterOutput, len(values))
+	names := make(map[string]bool, 5)
 	for _, value := range values {
+		names[value.Name] = true
 		valueMap[value.Name] = append(valueMap[value.Name], value)
 	}
+
+	colorMap := make(map[string]int, len(names))
+	index := 0
+	for name, _ := range names {
+		colorMap[name] = index % 16 // only 16 colors
+		index += 1
+	}
+
+	//data := make([]map[string]string, len(valueMap))
 
 	c.HTML(http.StatusOK, "watchView", gin.H{
 		"Watch":    watch,
 		"ValueMap": valueMap,
+		"colorMap": colorMap,
 	})
 }
 
