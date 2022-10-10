@@ -659,8 +659,8 @@ function editNode(node) {
             cardBody.classList.add("card-body", "text-center");
             var pre = document.createElement("pre");
             var code = document.createElement("code");
-            if (result.length > 200) {
-                code.innerHTML = "String of length >200";
+            if (result.length > 1500) {
+                code.innerHTML = "String of length >1500";
             }
             else {
                 result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

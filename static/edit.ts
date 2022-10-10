@@ -672,8 +672,8 @@ function editNode(node: DiagramNode){
         cardBody.classList.add("card-body", "text-center");
         let pre = document.createElement("pre");
         let code = document.createElement("code");
-        if (result.length > 200){
-            code.innerHTML = `String of length >200`;
+        if (result.length > 1500){
+            code.innerHTML = `String of length >1500`;
         } else {
             result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             code.innerHTML = `'${result}'`;
