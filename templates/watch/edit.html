@@ -29,6 +29,16 @@
                 Save Watch
             </button>
         </td>
+        <td> 
+            <a href="/watch/export/{{ .Watch.ID }}" class="btn btn-success btn-sm">
+                Export Watch
+            </a>
+        </td>
+        <td> 
+            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#ImportModal">
+                Import Watch
+            </button>
+        </td>
         <td id="OpenLogTD" hidden> 
             <button type="button" id="logButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#LogModal">
                 Open Log
@@ -146,7 +156,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="logModalLabel">-</h5>
+                <h5 class="modal-title" id="LogModalLabel">-</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -167,7 +177,27 @@
     </div>
 </div>
 
-
+<div class="modal fade" id="ImportModal" tabindex="-1" aria-labelledby="ImportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ImportModalLabel">Import</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/watch/import/{{ .Watch.ID }}" enctype="multipart/form-data" method="post" class="row g-3">
+                    <div class="mb-3">
+                        <label for="json" class="form-label">Upload JSON to import</label>
+                        <input class="form-control" type="file" id="json" name="json">
+                        <div class="col-auto mt-3">
+                            <button type="submit" class="btn btn-primary mb-3">Import</button>
+                        </div>                    
+                    </div>        
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {{ end }}
 

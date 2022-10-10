@@ -53,3 +53,8 @@ type FilterOutput struct {
 	Value   string    `yaml:"filter_output_value" json:"filter_output_value"`
 	Time    time.Time `yaml:"filter_output_time" json:"filter_output_time"`
 }
+
+type WatchExport struct {
+	Filters     []Filter           `json:"filters"`
+	Connections []FilterConnection `json:"connections"`
+}

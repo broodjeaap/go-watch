@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -72,6 +73,8 @@ func (web *Web) initRouter() {
 	web.router.POST("/watch/create", web.watchCreatePost)
 	web.router.POST("/watch/update", web.watchUpdate)
 	web.router.POST("/watch/delete", web.deleteWatch)
+	web.router.GET("/watch/export/:id", web.exportWatch)
+	web.router.POST("/watch/import/:id", web.importWatch)
 
 	web.router.GET("/cache/view", web.cacheView)
 	web.router.POST("/cache/clear", web.cacheClear)
@@ -355,6 +358,104 @@ func (web *Web) cacheClear(c *gin.Context) {
 	url := c.PostForm("url")
 	delete(web.urlCache, url)
 	c.Redirect(http.StatusSeeOther, "/cache/view")
+}
+
+func (web *Web) exportWatch(c *gin.Context) {
+	watchID := c.Param("id")
+	export := WatchExport{}
+	var watch Watch
+	web.db.Model(&Watch{}).Find(&watch, watchID)
+	web.db.Model(&Filter{}).Find(&export.Filters, "watch_id = ?", watchID)
+	web.db.Model(&FilterConnection{}).Find(&export.Connections, "watch_id = ?", watchID)
+
+	c.Header("Content-Disposition", "attachment; filename="+watch.Name+".json")
+	c.Header("Content-Type", c.Request.Header.Get("Content-Type"))
+
+	c.JSON(http.StatusOK, export)
+}
+
+func (web *Web) importWatch(c *gin.Context) {
+	watchID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	file, err := c.FormFile("json")
+
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	openedFile, err := file.Open()
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	jsn, _ := ioutil.ReadAll(openedFile)
+
+	export := WatchExport{}
+
+	if err := json.Unmarshal(jsn, &export); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// stop/delete cronjobs running for this watch
+	var cronFilters []Filter
+	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watchID).Find(&cronFilters)
+	for _, filter := range cronFilters {
+		entry, exist := web.cronWatch[filter.ID]
+		if exist {
+			web.cron.Remove(entry.ID)
+			delete(web.cronWatch, filter.ID)
+		}
+	}
+
+	filterMap := make(map[uint]*Filter)
+	for i := range export.Filters {
+		filter := &export.Filters[i]
+		filterMap[filter.ID] = filter
+		filter.ID = 0
+		filter.WatchID = uint(watchID)
+		if filter.Type == "cron" {
+			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
+			if err != nil {
+				log.Println("Could not start job for Watch: ", filter.WatchID)
+				continue
+			}
+			log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
+			web.cronWatch[filter.ID] = web.cron.Entry(entryID)
+		}
+	}
+	web.db.Delete(&Filter{}, "watch_id = ?", watchID)
+
+	if len(export.Filters) > 0 {
+		tx := web.db.Create(&export.Filters)
+		if tx.Error != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	web.db.Delete(&FilterConnection{}, "watch_id = ?", watchID)
+	for i := range export.Connections {
+		connection := &export.Connections[i]
+		connection.ID = 0
+		connection.WatchID = uint(watchID)
+		connection.OutputID = filterMap[connection.OutputID].ID
+		connection.InputID = filterMap[connection.InputID].ID
+	}
+	if len(export.Connections) > 0 {
+		tx := web.db.Create(&export.Connections)
+		if tx.Error != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watchID))
 }
 
 func main() {
