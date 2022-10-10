@@ -419,15 +419,6 @@ func (web *Web) importWatch(c *gin.Context) {
 		filterMap[filter.ID] = filter
 		filter.ID = 0
 		filter.WatchID = uint(watchID)
-		if filter.Type == "cron" {
-			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
-			if err != nil {
-				log.Println("Could not start job for Watch: ", filter.WatchID)
-				continue
-			}
-			log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
-			web.cronWatch[filter.ID] = web.cron.Entry(entryID)
-		}
 	}
 	web.db.Delete(&Filter{}, "watch_id = ?", watchID)
 
@@ -436,6 +427,17 @@ func (web *Web) importWatch(c *gin.Context) {
 		if tx.Error != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
+		}
+		for _, filter := range export.Filters {
+			if filter.Type == "cron" {
+				entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
+				if err != nil {
+					log.Println("Could not start job for Watch: ", filter.WatchID)
+					continue
+				}
+				log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
+				web.cronWatch[filter.ID] = web.cron.Entry(entryID)
+			}
 		}
 	}
 
