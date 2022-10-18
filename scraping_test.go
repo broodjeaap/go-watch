@@ -1067,7 +1067,7 @@ func TestConditionHighest(t *testing.T) {
 					{Results: test.Input},
 				},
 			}
-			getFilterResultConditionLowest(
+			getFilterResultConditionHighest(
 				&filter,
 				db,
 			)
