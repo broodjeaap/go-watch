@@ -562,10 +562,14 @@ function onMathChange(node: DiagramNode | null = null){
 function onConditionChange(node: DiagramNode | null = null){
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
+    let var1Div = document.getElementById("var1Div") as HTMLDivElement;
     let var2Input = document.getElementById("var2Input") as HTMLInputElement;
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
+    let var2Div = document.getElementById("var2Div") as HTMLDivElement;
+    var2Div.innerHTML = "";
     let var3Input = document.getElementById("var3Input") as HTMLInputElement;
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
+    let var3Div = document.getElementById("var3Div") as HTMLDivElement;
 
     let var1Value = "";
     let var2Value = "";
@@ -586,25 +590,49 @@ function onConditionChange(node: DiagramNode | null = null){
 
     switch(var1Value) {
         case "lowert": {
-            var2Input.disabled = false;
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
             var2Input.type = "number";
             var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Label.innerHTML = "Threshold";
+            var2Div.appendChild(var2Input)
             break;
         }
         case "highert": {
-            var2Input.disabled = false;
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
             var2Input.type = "number";
             var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
             var2Label.innerHTML = "Threshold";
+            var2Div.appendChild(var2Input)
             break;
         }
         default: {
-            var2Input.disabled = true;
-            var2Input.type = "text";
-            var2Input.value = var2Value;
-            var2Label.innerHTML = "-";
-            break;
+            let filterSelect = document.createElement("select");
+            filterSelect.name = "var2";
+            filterSelect.id = "var2Input";
+            filterSelect.disabled = false;
+            filterSelect.classList.add("form-control");
+            
+            for(let node of _diagram.nodes.values()) {
+                if (node.type != "store"){
+                    continue;
+                }
+                let nodeOption = document.createElement("option");
+                nodeOption.value = node.label;
+                nodeOption.innerHTML = node.label;
+                filterSelect.appendChild(nodeOption);
+            }
+            if (var2Value != ""){
+                filterSelect.value = var2Value;
+            }
+            var2Label.innerHTML = "Filter";
+            var2Div.appendChild(filterSelect);
+            break
         }
     }
 }

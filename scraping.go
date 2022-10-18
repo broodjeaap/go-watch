@@ -538,7 +538,7 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 
 func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
-	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
+	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 
@@ -553,7 +553,7 @@ func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 
 func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
-	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
+	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			if previousOutput.WatchID == 0 {
@@ -646,7 +646,7 @@ func getFilterResultConditionLowerThan(filter *Filter) {
 
 func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
-	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
+	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			if previousOutput.WatchID == 0 {
@@ -676,7 +676,7 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 
 func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 	var previousOutputs []FilterOutput
-	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Find(&previousOutputs)
+	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Find(&previousOutputs)
 	highest := math.MaxFloat64
 	if previousOutputs != nil {
 		for _, previousOutput := range previousOutputs {

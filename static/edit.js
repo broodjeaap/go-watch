@@ -1,3 +1,14 @@
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -17,17 +28,6 @@ var __read = (this && this.__read) || function (o, n) {
 var __spread = (this && this.__spread) || function () {
     for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
     return ar;
-};
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
 function onTypeChange(node) {
     if (node === void 0) { node = null; }
@@ -560,13 +560,18 @@ function onMathChange(node) {
     }
 }
 function onConditionChange(node) {
+    var e_1, _a;
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
+    var var1Div = document.getElementById("var1Div");
     var var2Input = document.getElementById("var2Input");
     var var2Label = document.getElementById("var2Label");
+    var var2Div = document.getElementById("var2Div");
+    var2Div.innerHTML = "";
     var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
+    var var3Div = document.getElementById("var3Div");
     var var1Value = "";
     var var2Value = "";
     var var3Value = "";
@@ -585,24 +590,57 @@ function onConditionChange(node) {
     var1Label.innerHTML = "Condition";
     switch (var1Value) {
         case "lowert": {
-            var2Input.disabled = false;
-            var2Input.type = "number";
-            var2Input.value = var2Value;
+            var var2Input_1 = document.createElement("input");
+            var2Input_1.name = "var2";
+            var2Input_1.id = "var2Input";
+            var2Input_1.type = "number";
+            var2Input_1.value = var2Value;
+            var2Input_1.classList.add("form-control");
             var2Label.innerHTML = "Threshold";
+            var2Div.appendChild(var2Input_1);
             break;
         }
         case "highert": {
-            var2Input.disabled = false;
-            var2Input.type = "number";
-            var2Input.value = var2Value;
+            var var2Input_2 = document.createElement("input");
+            var2Input_2.name = "var2";
+            var2Input_2.id = "var2Input";
+            var2Input_2.type = "number";
+            var2Input_2.value = var2Value;
+            var2Input_2.classList.add("form-control");
             var2Label.innerHTML = "Threshold";
+            var2Div.appendChild(var2Input_2);
             break;
         }
         default: {
-            var2Input.disabled = true;
-            var2Input.type = "text";
-            var2Input.value = var2Value;
-            var2Label.innerHTML = "-";
+            var filterSelect = document.createElement("select");
+            filterSelect.name = "var2";
+            filterSelect.id = "var2Input";
+            filterSelect.disabled = false;
+            filterSelect.classList.add("form-control");
+            try {
+                for (var _b = __values(_diagram.nodes.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var node_1 = _c.value;
+                    if (node_1.type != "store") {
+                        continue;
+                    }
+                    var nodeOption = document.createElement("option");
+                    nodeOption.value = node_1.label;
+                    nodeOption.innerHTML = node_1.label;
+                    filterSelect.appendChild(nodeOption);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            if (var2Value != "") {
+                filterSelect.value = var2Value;
+            }
+            var2Label.innerHTML = "Filter";
+            var2Div.appendChild(filterSelect);
             break;
         }
     }
@@ -623,7 +661,7 @@ function onSubmitNewFilter() {
     });
 }
 function editNode(node) {
-    var e_1, _a;
+    var e_2, _a;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
@@ -672,17 +710,17 @@ function editNode(node) {
             filterModalFooter.appendChild(cardDiv);
         }
     }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
     finally {
         try {
             if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
         }
-        finally { if (e_1) throw e_1.error; }
+        finally { if (e_2) throw e_2.error; }
     }
     submitButton.onclick = function () { submitEditNode(node); };
 }
 function logNode(node) {
-    var e_2, _a;
+    var e_3, _a;
     var logButton = document.getElementById("logButton");
     logButton.click();
     var logTitle = document.getElementById("logModalLabel");
@@ -702,12 +740,12 @@ function logNode(node) {
             logBody.appendChild(row);
         }
     }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
     finally {
         try {
             if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
         }
-        finally { if (e_2) throw e_2.error; }
+        finally { if (e_3) throw e_3.error; }
     }
 }
 function deleteNode(node) {
@@ -744,7 +782,7 @@ function submitEditNode(node) {
     saveWatchButton.classList.add("btn-danger");
 }
 function saveWatch() {
-    var e_3, _a, e_4, _b;
+    var e_4, _a, e_5, _b;
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -768,12 +806,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_3) throw e_3.error; }
+        finally { if (e_4) throw e_4.error; }
     }
     var filtersInput = document.getElementById("filtersInput");
     filtersInput.value = JSON.stringify(filters);
@@ -790,12 +828,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+    catch (e_5_1) { e_5 = { error: e_5_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_4) throw e_4.error; }
+        finally { if (e_5) throw e_5.error; }
     }
     var connectionsInput = document.getElementById("connectionsInput");
     connectionsInput.value = JSON.stringify(connections);
