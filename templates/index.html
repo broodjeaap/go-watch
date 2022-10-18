@@ -13,8 +13,13 @@
         {{ range . }}
         <tr class="pointer" onclick="window.location='/watch/view/{{ .ID }}'">
             <td class="h3">{{ .Name }}</td>
-            <td class="h3">{{ .CronEntry.Prev.Format "2006-01-02 15:04:05" }}</td>
-            <td class="h3">{{ .CronEntry.Next.Format "2006-01-02 15:04:05" }}</td>
+            {{ if .CronEntry }}
+                <td class="h3">{{ .CronEntry.Prev.Format "2006-01-02 15:04:05" }}</td>
+                <td class="h3">{{ .CronEntry.Next.Format "2006-01-02 15:04:05" }}</td>
+
+            {{ else }}
+                <td class="h3" colspan="2">No schedule (Add cron filter)</td>
+            {{ end }}
             <td>
                 <a href="/watch/edit/{{ .ID }}" class="btn btn-success">Edit</a>
             </td>
