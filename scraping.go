@@ -596,7 +596,6 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 				lowest = number
 			}
 		}
-		return
 	}
 
 	for _, parent := range filter.Parents {
