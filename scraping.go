@@ -515,25 +515,18 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 	if debug {
 		return
 	}
-	var previousOutput FilterOutput
-	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Limit(1).Find(&previousOutput)
-	// TODO fix filter.Name above and parent.name below
+	filterOutputs := make([]FilterOutput, 1)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			if previousOutput.WatchID == 0 {
-				previousOutput.Name = parent.Name
-				previousOutput.Time = time.Now()
-				previousOutput.Value = result
-				previousOutput.WatchID = filter.WatchID
-				db.Create(&previousOutput)
-			} else {
-				previousOutput.Time = time.Now()
-				previousOutput.ID = 0
-				previousOutput.Value = result
-				db.Create(&previousOutput)
-			}
+			filterOutputs = append(filterOutputs, FilterOutput{
+				WatchID: filter.WatchID,
+				Name:    filter.Name,
+				Time:    time.Now(),
+				Value:   result,
+			})
 		}
 	}
+	db.Create(&filterOutputs)
 }
 
 func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
