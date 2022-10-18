@@ -167,10 +167,6 @@ func (web *Web) index(c *gin.Context) {
 		}
 		watchMap[filter.WatchID].CronEntry = &entry
 	}
-	for i := 0; i < len(watches); i++ {
-		entry := web.cronWatch[watches[i].ID]
-		watches[i].CronEntry = &entry
-	}
 
 	c.HTML(http.StatusOK, "index", watches)
 }
@@ -313,28 +309,37 @@ func (web *Web) watchUpdate(c *gin.Context) {
 		if exist {
 			web.cron.Remove(entry.ID)
 			delete(web.cronWatch, filter.ID)
+		} else {
+			log.Println("Tried removing cron entry but ID not found ", filter.ID)
+			log.Println(web.cronWatch)
 		}
 	}
 
+	web.db.Delete(&Filter{}, "watch_id = ?", watch.ID)
+
 	filterMap := make(map[uint]*Filter)
-	for i := range newFilters {
-		filter := &newFilters[i]
-		filterMap[filter.ID] = filter
-		filter.ID = 0
-		if filter.Type == "cron" {
+	if len(newFilters) > 0 {
+		for i := range newFilters {
+			filter := &newFilters[i]
+			filterMap[filter.ID] = filter
+			filter.ID = 0
+		}
+
+		web.db.Create(&newFilters)
+
+		for i := range newFilters {
+			filter := &newFilters[i]
+			if filter.Type != "cron" {
+				continue
+			}
 			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
 			if err != nil {
 				log.Println("Could not start job for Watch: ", filter.WatchID)
 				continue
 			}
-			log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
+			log.Println("Started CronJob for WatchID", filter.WatchID, "FilterID", filter.ID, "with schedule:", filter.Var1)
 			web.cronWatch[filter.ID] = web.cron.Entry(entryID)
 		}
-	}
-	web.db.Delete(&Filter{}, "watch_id = ?", watch.ID)
-
-	if len(newFilters) > 0 {
-		web.db.Create(&newFilters)
 	}
 
 	web.db.Delete(&FilterConnection{}, "watch_id = ?", watch.ID)
