@@ -507,6 +507,7 @@ func TestConditionDiff(t *testing.T) {
 	if err != nil {
 		t.Error("Can't parse time")
 	}
+	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
 		WatchID uint
@@ -517,7 +518,7 @@ func TestConditionDiff(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "Last",
 				},
 			},
@@ -529,13 +530,13 @@ func TestConditionDiff(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "Previous",
 					Time:    time1,
 				},
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "Last",
 					Time:    time2,
 				},
@@ -548,7 +549,7 @@ func TestConditionDiff(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 3,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "Same",
 				},
 			},
@@ -560,13 +561,13 @@ func TestConditionDiff(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "Previous",
 					Time:    time1,
 				},
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "Same",
 					Time:    time2,
 				},
@@ -583,6 +584,7 @@ func TestConditionDiff(t *testing.T) {
 			filter := Filter{
 				WatchID: test.WatchID,
 				Name:    "Test",
+				Var2:    &testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -613,6 +615,7 @@ func TestConditionLowerLast(t *testing.T) {
 	if err != nil {
 		t.Error("Can't parse time")
 	}
+	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
 		WatchID uint
@@ -623,7 +626,7 @@ func TestConditionLowerLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 				},
 			},
@@ -635,7 +638,7 @@ func TestConditionLowerLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "A",
 				},
 			},
@@ -647,13 +650,13 @@ func TestConditionLowerLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 					Time:    time1,
 				},
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 					Time:    time2,
 				},
@@ -666,7 +669,7 @@ func TestConditionLowerLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 3,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 			},
@@ -678,13 +681,13 @@ func TestConditionLowerLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 					Time:    time1,
 				},
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 					Time:    time2,
 				},
@@ -700,7 +703,8 @@ func TestConditionLowerLast(t *testing.T) {
 			db.Create(&test.dbInput)
 			filter := Filter{
 				WatchID: test.WatchID,
-				Name:    "Test",
+				Name:    testName,
+				Var2:    &testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -722,6 +726,7 @@ func TestConditionLowerLast(t *testing.T) {
 
 func TestConditionLowest(t *testing.T) {
 	db := getTestDB()
+	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
 		WatchID uint
@@ -732,7 +737,7 @@ func TestConditionLowest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "5",
 				},
 			},
@@ -744,7 +749,7 @@ func TestConditionLowest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "A",
 				},
 			},
@@ -756,12 +761,12 @@ func TestConditionLowest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 				},
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 				},
 			},
@@ -773,7 +778,7 @@ func TestConditionLowest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 3,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 			},
@@ -785,12 +790,12 @@ func TestConditionLowest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 				},
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 			},
@@ -805,7 +810,8 @@ func TestConditionLowest(t *testing.T) {
 			db.Create(&test.dbInput)
 			filter := Filter{
 				WatchID: test.WatchID,
-				Name:    "Test",
+				Name:    testName,
+				Var2:    &testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -870,6 +876,7 @@ func TestConditionHigherLast(t *testing.T) {
 	if err != nil {
 		t.Error("Can't parse time")
 	}
+	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
 		WatchID uint
@@ -880,7 +887,7 @@ func TestConditionHigherLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 			},
@@ -892,7 +899,7 @@ func TestConditionHigherLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "A",
 				},
 			},
@@ -904,13 +911,13 @@ func TestConditionHigherLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 					Time:    time1,
 				},
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 					Time:    time2,
 				},
@@ -923,7 +930,7 @@ func TestConditionHigherLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 3,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 				},
 			},
@@ -935,13 +942,13 @@ func TestConditionHigherLast(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 					Time:    time1,
 				},
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 					Time:    time2,
 				},
@@ -957,7 +964,8 @@ func TestConditionHigherLast(t *testing.T) {
 			db.Create(&test.dbInput)
 			filter := Filter{
 				WatchID: test.WatchID,
-				Name:    "Test",
+				Name:    testName,
+				Var2:    &testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -979,6 +987,7 @@ func TestConditionHigherLast(t *testing.T) {
 
 func TestConditionHighest(t *testing.T) {
 	db := getTestDB()
+	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
 		WatchID uint
@@ -989,7 +998,7 @@ func TestConditionHighest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 			},
@@ -1001,7 +1010,7 @@ func TestConditionHighest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 1,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "A",
 				},
 			},
@@ -1013,12 +1022,12 @@ func TestConditionHighest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 				{
 					WatchID: 2,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 				},
 			},
@@ -1030,7 +1039,7 @@ func TestConditionHighest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 3,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "2",
 				},
 			},
@@ -1042,12 +1051,12 @@ func TestConditionHighest(t *testing.T) {
 			[]FilterOutput{
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "1",
 				},
 				{
 					WatchID: 4,
-					Name:    "Test",
+					Name:    testName,
 					Value:   "3",
 				},
 			},
@@ -1062,7 +1071,8 @@ func TestConditionHighest(t *testing.T) {
 			db.Create(&test.dbInput)
 			filter := Filter{
 				WatchID: test.WatchID,
-				Name:    "Test",
+				Name:    testName,
+				Var2:    &testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
