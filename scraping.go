@@ -23,9 +23,16 @@ import (
 func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
 	allFilters := filters
 	processedMap := make(map[uint]bool, len(filters))
+
+	// collect 'store' filters so we can process them separately  at the end
+	storeFilters := make([]Filter, 5)
 	for len(filters) > 0 {
 		filter := &filters[0]
 		filters = filters[1:]
+		if filter.Type == "store" {
+			storeFilters = append(storeFilters, *filter)
+			continue
+		}
 		var allParentsProcessed = true
 		for _, parent := range filter.Parents {
 			if _, contains := processedMap[parent.ID]; !contains && parent.Type != "cron" {
@@ -39,6 +46,11 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
 		}
 		getFilterResult(allFilters, filter, watch, web, debug)
 		processedMap[filter.ID] = true
+	}
+
+	// process the store filters last
+	for _, storeFilter := range storeFilters {
+		getFilterResult(allFilters, &storeFilter, watch, web, debug)
 	}
 }
 
