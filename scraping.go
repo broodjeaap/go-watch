@@ -752,8 +752,6 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 		}
 	}
 	if !haveResults {
-		filter.log("No output from previous filter(s), need at least 1 to 'trigger'")
-		log.Println("No output from previous filter(s), need at least 1 to 'trigger'")
 		return
 	}
 	tmpl, err := template.New("notify").Parse(filter.Var1)
@@ -777,6 +775,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 	} else {
 		web.notify(buffer.String())
 	}
+
 }
 
 func triggerSchedule(watchID uint, web *Web) {
