@@ -597,6 +597,7 @@ class Diagrams {
         for (let node of this.nodes.values()){
             node.draw(this.ctx, this.mouseState);
         }
+        this.drawWarning();
         this.mouseState.leftUp = false;
         this.mouseState.click = false;
     }
@@ -649,6 +650,28 @@ class Diagrams {
         this.ctx.strokeStyle = "#888";
         this.ctx.lineWidth = 5;
         this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    drawWarning(){
+        let nodeWithLogs: DiagramNode | null = null;
+        for (let node of this.nodes.values()){
+            if (node.logs.length > 0) {
+                nodeWithLogs = node;
+                break;
+            }
+        }
+        if (nodeWithLogs == null){
+            return
+        }
+        let warningString = `Check log of '${nodeWithLogs.label}' Filter!`
+        this.ctx.font = "30px Helvetica";
+        let warningSize = this.ctx.measureText(warningString);
+
+        this.ctx.fillStyle = "orange";
+        this.ctx.fillRect(this.canvas.width - warningSize.width - 30, 0, warningSize.width + 30, 50);
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillText(warningString, this.canvas.width - warningSize.width - 15, 35)
+
     }
 
     addNode(

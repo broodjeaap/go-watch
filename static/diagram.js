@@ -547,6 +547,7 @@ var Diagrams = /** @class */ (function () {
             }
             finally { if (e_5) throw e_5.error; }
         }
+        this.drawWarning();
         this.mouseState.leftUp = false;
         this.mouseState.click = false;
     };
@@ -605,6 +606,36 @@ var Diagrams = /** @class */ (function () {
         this.ctx.lineWidth = 5;
         this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
     };
+    Diagrams.prototype.drawWarning = function () {
+        var e_7, _a;
+        var nodeWithLogs = null;
+        try {
+            for (var _b = __values(this.nodes.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var node = _c.value;
+                if (node.logs.length > 0) {
+                    nodeWithLogs = node;
+                    break;
+                }
+            }
+        }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+            }
+            finally { if (e_7) throw e_7.error; }
+        }
+        if (nodeWithLogs == null) {
+            return;
+        }
+        var warningString = "Check log of '" + nodeWithLogs.label + "' Filter!";
+        this.ctx.font = "30px Helvetica";
+        var warningSize = this.ctx.measureText(warningString);
+        this.ctx.fillStyle = "orange";
+        this.ctx.fillRect(this.canvas.width - warningSize.width - 30, 0, warningSize.width + 30, 50);
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillText(warningString, this.canvas.width - warningSize.width - 15, 35);
+    };
     Diagrams.prototype.addNode = function (id, x, y, label, meta, results, logs) {
         if (meta === void 0) { meta = {}; }
         if (results === void 0) { results = new Array(); }
@@ -629,7 +660,7 @@ var Diagrams = /** @class */ (function () {
         this.connections.push(new NodeConnection(A, B));
     };
     Diagrams.prototype.removeConnection = function (A, B) {
-        var e_7, _a;
+        var e_8, _a;
         var index = 0;
         try {
             for (var _b = __values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -642,12 +673,12 @@ var Diagrams = /** @class */ (function () {
                 index++;
             }
         }
-        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        catch (e_8_1) { e_8 = { error: e_8_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
             }
-            finally { if (e_7) throw e_7.error; }
+            finally { if (e_8) throw e_8.error; }
         }
     };
     Diagrams.prototype.onresize = function () {
