@@ -763,10 +763,10 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 
 	dataMap := make(map[string]any, 20)
 	for _, f := range filters {
-		dataMap[f.Name] = html.UnescapeString(strings.Join(f.Results, ", "))
+		dataMap[f.Name] = template.HTML(strings.Join(f.Results, ", "))
 	}
 
-	dataMap["Watch"] = watch
+	dataMap["WatchName"] = template.HTML(watch.Name)
 
 	var buffer bytes.Buffer
 	tmpl.Execute(&buffer, dataMap)
