@@ -31,6 +31,7 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
 		filters = filters[1:]
 		if filter.Type == "store" {
 			storeFilters = append(storeFilters, *filter)
+			processedMap[filter.ID] = true
 			continue
 		}
 		var allParentsProcessed = true
@@ -527,6 +528,7 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 	if debug {
 		return
 	}
+
 	filterOutputs := make([]FilterOutput, 1)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -546,7 +548,6 @@ func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-
 			if previousOutput.WatchID == 0 {
 				filter.Results = append(filter.Results, result)
 			} else if previousOutput.Value != result {
@@ -752,11 +753,13 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 	}
 	if !haveResults {
 		filter.log("No output from previous filter(s), need at least 1 to 'trigger'")
+		log.Println("No output from previous filter(s), need at least 1 to 'trigger'")
 		return
 	}
 	tmpl, err := template.New("notify").Parse(filter.Var1)
 	if err != nil {
 		filter.log("Could not parse template: ", err)
+		log.Println("Could not parse template: ", err)
 		return
 	}
 
