@@ -16,6 +16,7 @@ import (
 	"github.com/andybalholm/cascadia"
 	"github.com/antchfx/htmlquery"
 	"github.com/tidwall/gjson"
+	lualibs "github.com/vadv/gopher-lua-libs"
 	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/net/html"
 	"gorm.io/gorm"
@@ -800,6 +801,8 @@ func triggerSchedule(watchID uint, web *Web) {
 func luaFilter(filter *Filter) {
 	L := lua.NewState()
 	defer L.Close()
+
+	lualibs.Preload(L)
 
 	inputs := L.CreateTable(10, 0)
 	for _, parent := range filter.Parents {
