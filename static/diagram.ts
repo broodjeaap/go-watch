@@ -298,7 +298,6 @@ class DiagramNode extends CanvasObject {
 
     deleteButton: Button;
     editButton: Button;
-    logButton: Button;
 
     dragging: boolean = false;
     dragOrigin: Point = new Point();
@@ -332,7 +331,6 @@ class DiagramNode extends CanvasObject {
 
         this.deleteButton = new Button(0, 0, "Del", ctx, _diagram.deleteNodeCallback, this);
         this.editButton = new Button(0, 0, "Edit", ctx, _diagram.editNodeCallback, this);
-        this.logButton = new Button(0, 0, "Log", ctx, _diagram.logNodeCallback, this);
 
         this.input = new NodeIO(this, true);
         this.output = new NodeIO(this, false);
@@ -349,8 +347,7 @@ class DiagramNode extends CanvasObject {
         if (this.hover){
             this.deleteButton.update(ms);
             this.editButton.update(ms);
-            this.logButton.update(ms);
-            let onButtons = this.deleteButton.hover || this.editButton.hover || this.logButton.hover;
+            let onButtons = this.deleteButton.hover || this.editButton.hover;
             if (!this.dragging && ms.leftDown && !ms.draggingNode && !ms.draggingConnection && !onButtons){
                 this.dragging = true;
                 ms.draggingNode = true;
@@ -360,7 +357,6 @@ class DiagramNode extends CanvasObject {
         } else {
             this.deleteButton.hover = false;
             this.editButton.hover = false;
-            this.logButton.hover = false;
         }
 
         if (!ms.leftDown){
@@ -388,8 +384,9 @@ class DiagramNode extends CanvasObject {
         ctx.fillText(this.label, labelX, labelY);
         
         ctx.font = "15px Helvetica";
+        ctx.fillStyle = "#898989";
         let typeX = ms.offset.x + this.x + this.width / 2 - this.typeWidth / 2;
-        let typeY = ms.offset.y + this.y + 3 * 3 + this.typeHeight + this.labelHeight;
+        let typeY = ms.offset.y + this.y + this.height - 3;
         ctx.fillText(this.type, typeX, typeY);
 
         let resultCount = `${this.results.length}`
@@ -407,10 +404,6 @@ class DiagramNode extends CanvasObject {
         this.editButton.x = ms.offset.x + this.x + this.width - this.editButton.width;
         this.editButton.y = ms.offset.y + this.y + this.height - this.editButton.height;
         this.editButton.draw(ctx, ms);
-
-        this.logButton.x = ms.offset.x + this.x + this.width / 2 - this.logButton.width / 2;
-        this.logButton.y = ms.offset.y + this.y + this.height - this.logButton.height;
-        this.logButton.draw(ctx, ms);
         
         this.input.draw(ctx, ms);
         this.output.draw(ctx, ms);
@@ -543,14 +536,12 @@ class Diagrams {
     scale: number = 1.0;
 
     editNodeCallback: (node: DiagramNode) => void = function (){};
-    logNodeCallback: (node: DiagramNode) => void = function (){};
     deleteNodeCallback: (node: DiagramNode) => void = function (){};
 
     constructor(
             canvasId: string, 
             editNodeCallback: (node: DiagramNode) => void = function (){},
             deleteNodeCallback: (node: DiagramNode) => void = function (){},
-            logNodeCallback: (node: DiagramNode) => void = function (){},
         ){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
@@ -563,7 +554,6 @@ class Diagrams {
         _diagram = this;
         this.ctx = ctx;
         this.editNodeCallback = editNodeCallback;
-        this.logNodeCallback = logNodeCallback;
         this.deleteNodeCallback = deleteNodeCallback;
 
         this.canvas.onmousemove = diagramOnMouseMove;

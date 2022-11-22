@@ -692,7 +692,7 @@ function onSubmitNewFilter() {
     });
 }
 function editNode(node) {
-    var e_2, _a;
+    var e_2, _a, e_3, _b;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
@@ -717,11 +717,39 @@ function editNode(node) {
     onTypeChange(node);
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.innerHTML = "Save";
+    var logHeader = document.getElementById("logHeader");
+    if (node.logs.length > 0) {
+        logHeader.innerHTML = "Logs";
+    }
+    else {
+        logHeader.innerHTML = "";
+    }
+    var logBody = document.getElementById("logTableBody");
+    logBody.innerHTML = "";
+    try {
+        for (var _c = __values(node.logs), _d = _c.next(); !_d.done; _d = _c.next()) {
+            var log = _d.value;
+            var row = document.createElement("tr");
+            var cell = document.createElement("td");
+            var code = document.createElement("code");
+            code.innerHTML = log;
+            cell.appendChild(code);
+            row.appendChild(cell);
+            logBody.appendChild(row);
+        }
+    }
+    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    finally {
+        try {
+            if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
+        }
+        finally { if (e_2) throw e_2.error; }
+    }
     var filterModalFooter = document.getElementById("filterResultsDiv");
     filterModalFooter.innerHTML = "";
     try {
-        for (var _b = __values(node.results), _c = _b.next(); !_c.done; _c = _b.next()) {
-            var result = _c.value;
+        for (var _e = __values(node.results), _f = _e.next(); !_f.done; _f = _e.next()) {
+            var result = _f.value;
             var cardDiv = document.createElement("div");
             cardDiv.classList.add("card", "my-2");
             var cardBody = document.createElement("div");
@@ -741,43 +769,14 @@ function editNode(node) {
             filterModalFooter.appendChild(cardDiv);
         }
     }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
-    finally {
-        try {
-            if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-        }
-        finally { if (e_2) throw e_2.error; }
-    }
-    submitButton.onclick = function () { submitEditNode(node); };
-}
-function logNode(node) {
-    var e_3, _a;
-    var logButton = document.getElementById("logButton");
-    logButton.click();
-    var logTitle = document.getElementById("logModalLabel");
-    logTitle.innerHTML = node.label;
-    var logBody = document.getElementById("logTableBody");
-    logBody.innerHTML = "";
-    var logTable = document.getElementById("logTable");
-    try {
-        for (var _b = __values(node.logs), _c = _b.next(); !_c.done; _c = _b.next()) {
-            var log = _c.value;
-            var row = document.createElement("tr");
-            var cell = document.createElement("td");
-            var code = document.createElement("code");
-            code.innerHTML = log;
-            cell.appendChild(code);
-            row.appendChild(cell);
-            logBody.appendChild(row);
-        }
-    }
     catch (e_3_1) { e_3 = { error: e_3_1 }; }
     finally {
         try {
-            if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+            if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
         finally { if (e_3) throw e_3.error; }
     }
+    submitButton.onclick = function () { submitEditNode(node); };
 }
 function deleteNode(node) {
     _diagram.nodes["delete"](node.id);

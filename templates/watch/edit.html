@@ -39,11 +39,6 @@
                 Import Watch
             </button>
         </td>
-        <td id="OpenLogTD" hidden> 
-            <button type="button" id="logButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#LogModal">
-                Open Log
-            </button>
-        </td>
         <td> 
             <a href="/watch/view/{{ .Watch.ID }}" class="btn btn-outline-secondary btn-sm">
                 View Watch
@@ -106,6 +101,13 @@
                     <div >
                         <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
                     </div>
+                    <div class="h3 text-center text-danger" id="logHeader">Logs</div>
+                    <table class="table table-hover table-sm" id="logTable">
+                        <tbody id="logTableBody">
+
+                        </tbody>
+                    </table>
+                    <div class="h3 text-center">Outputs</div>
                     <div id="filterResultsDiv">
                     </div>
                 </div>
@@ -158,31 +160,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="LogModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="logModalLabel">-</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <table class="table table-hover table-sm" id="logTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Message</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logTableBody">
-
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="modal fade" id="ImportModal" tabindex="-1" aria-labelledby="ImportModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -211,7 +188,7 @@
 <script>
 var diagrams;
 function canvasInit() {
-    diagrams = new Diagrams("canvas", editNode, deleteNode, logNode);
+    diagrams = new Diagrams("canvas", editNode, deleteNode);
     {{ range .Filters }}
         diagrams.addNode(
             {{ .ID }}, 

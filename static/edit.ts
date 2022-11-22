@@ -724,6 +724,24 @@ function editNode(node: DiagramNode){
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.innerHTML = "Save";
 
+    let logHeader = document.getElementById("logHeader") as HTMLHeadElement;
+    if (node.logs.length > 0){
+        logHeader.innerHTML = "Logs";
+    } else {
+        logHeader.innerHTML = "";
+    }
+    let logBody = document.getElementById("logTableBody") as HTMLElement;
+    logBody.innerHTML = "";
+    for (let log of node.logs){
+        let row = document.createElement("tr");
+        let cell = document.createElement("td");
+        let code = document.createElement("code");
+        code.innerHTML = log;
+        cell.appendChild(code);
+        row.appendChild(cell);
+        logBody.appendChild(row);
+    }
+
     let filterModalFooter = document.getElementById("filterResultsDiv") as HTMLDivElement;
     filterModalFooter.innerHTML = "";
     for (let result of node.results){
@@ -745,26 +763,6 @@ function editNode(node: DiagramNode){
         filterModalFooter.appendChild(cardDiv);
     }
     submitButton.onclick = function() {submitEditNode(node);}
-}
-
-function logNode(node: DiagramNode){
-    let logButton = document.getElementById("logButton") as HTMLButtonElement;
-    logButton.click();
-
-    let logTitle = document.getElementById("logModalLabel") as HTMLHeadElement;
-    logTitle.innerHTML = node.label;
-    let logBody = document.getElementById("logTableBody") as HTMLElement;
-    logBody.innerHTML = "";
-    let logTable = document.getElementById("logTable") as HTMLTableElement;
-    for (let log of node.logs){
-        let row = document.createElement("tr");
-        let cell = document.createElement("td");
-        let code = document.createElement("code");
-        code.innerHTML = log;
-        cell.appendChild(code);
-        row.appendChild(cell);
-        logBody.appendChild(row);
-    }
 }
 
 function deleteNode(node: DiagramNode){

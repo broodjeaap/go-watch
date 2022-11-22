@@ -272,7 +272,6 @@ var DiagramNode = /** @class */ (function (_super) {
         _this.resize(ctx);
         _this.deleteButton = new Button(0, 0, "Del", ctx, _diagram.deleteNodeCallback, _this);
         _this.editButton = new Button(0, 0, "Edit", ctx, _diagram.editNodeCallback, _this);
-        _this.logButton = new Button(0, 0, "Log", ctx, _diagram.logNodeCallback, _this);
         _this.input = new NodeIO(_this, true);
         _this.output = new NodeIO(_this, false);
         _this.results = results;
@@ -288,8 +287,7 @@ var DiagramNode = /** @class */ (function (_super) {
         if (this.hover) {
             this.deleteButton.update(ms);
             this.editButton.update(ms);
-            this.logButton.update(ms);
-            var onButtons = this.deleteButton.hover || this.editButton.hover || this.logButton.hover;
+            var onButtons = this.deleteButton.hover || this.editButton.hover;
             if (!this.dragging && ms.leftDown && !ms.draggingNode && !ms.draggingConnection && !onButtons) {
                 this.dragging = true;
                 ms.draggingNode = true;
@@ -300,7 +298,6 @@ var DiagramNode = /** @class */ (function (_super) {
         else {
             this.deleteButton.hover = false;
             this.editButton.hover = false;
-            this.logButton.hover = false;
         }
         if (!ms.leftDown) {
             this.dragging = false;
@@ -324,8 +321,9 @@ var DiagramNode = /** @class */ (function (_super) {
         var labelY = ms.offset.y + this.y + 3 * 2 + this.labelHeight;
         ctx.fillText(this.label, labelX, labelY);
         ctx.font = "15px Helvetica";
+        ctx.fillStyle = "#898989";
         var typeX = ms.offset.x + this.x + this.width / 2 - this.typeWidth / 2;
-        var typeY = ms.offset.y + this.y + 3 * 3 + this.typeHeight + this.labelHeight;
+        var typeY = ms.offset.y + this.y + this.height - 3;
         ctx.fillText(this.type, typeX, typeY);
         var resultCount = "" + this.results.length;
         var resultCountSize = ctx.measureText(resultCount);
@@ -340,9 +338,6 @@ var DiagramNode = /** @class */ (function (_super) {
         this.editButton.x = ms.offset.x + this.x + this.width - this.editButton.width;
         this.editButton.y = ms.offset.y + this.y + this.height - this.editButton.height;
         this.editButton.draw(ctx, ms);
-        this.logButton.x = ms.offset.x + this.x + this.width / 2 - this.logButton.width / 2;
-        this.logButton.y = ms.offset.y + this.y + this.height - this.logButton.height;
-        this.logButton.draw(ctx, ms);
         this.input.draw(ctx, ms);
         this.output.draw(ctx, ms);
         if (this.logs.length > 0) {
@@ -448,10 +443,9 @@ var MouseState = /** @class */ (function () {
     return MouseState;
 }());
 var Diagrams = /** @class */ (function () {
-    function Diagrams(canvasId, editNodeCallback, deleteNodeCallback, logNodeCallback) {
+    function Diagrams(canvasId, editNodeCallback, deleteNodeCallback) {
         if (editNodeCallback === void 0) { editNodeCallback = function () { }; }
         if (deleteNodeCallback === void 0) { deleteNodeCallback = function () { }; }
-        if (logNodeCallback === void 0) { logNodeCallback = function () { }; }
         this.shouldTick = true;
         this.nodes = new Map();
         this.connections = new Array();
@@ -462,7 +456,6 @@ var Diagrams = /** @class */ (function () {
         this.newConnection = null;
         this.scale = 1.0;
         this.editNodeCallback = function () { };
-        this.logNodeCallback = function () { };
         this.deleteNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
         if (this.canvas === null) {
@@ -475,7 +468,6 @@ var Diagrams = /** @class */ (function () {
         _diagram = this;
         this.ctx = ctx;
         this.editNodeCallback = editNodeCallback;
-        this.logNodeCallback = logNodeCallback;
         this.deleteNodeCallback = deleteNodeCallback;
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
