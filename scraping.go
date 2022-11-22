@@ -16,6 +16,7 @@ import (
 	"github.com/andybalholm/cascadia"
 	"github.com/antchfx/htmlquery"
 	"github.com/tidwall/gjson"
+	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/net/html"
 	"gorm.io/gorm"
 )
@@ -129,6 +130,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 	case filter.Type == "notify":
 		{
 			notifyFilter(filters, filter, watch, web, debug)
+		}
+	case filter.Type == "lua":
+		{
+			luaFilter(filter)
 		}
 	case filter.Type == "cron":
 		{
@@ -790,4 +795,29 @@ func triggerSchedule(watchID uint, web *Web) {
 
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, watch, false)
+}
+
+func luaFilter(filter *Filter) {
+	L := lua.NewState()
+	defer L.Close()
+
+	inputs := L.CreateTable(10, 0)
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			inputs.Append(lua.LString(result))
+		}
+	}
+	L.SetGlobal("inputs", inputs)
+	outputs := L.CreateTable(10, 0)
+	L.SetGlobal("outputs", outputs)
+	err := L.DoString(filter.Var1)
+	if err != nil {
+		filter.log(err)
+		return
+	}
+	outputs.ForEach(
+		func(key lua.LValue, value lua.LValue) {
+			filter.Results = append(filter.Results, value.String())
+		},
+	)
 }
