@@ -134,7 +134,7 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 		}
 	case filter.Type == "lua":
 		{
-			luaFilter(filter)
+			getFilterResultLua(filter)
 		}
 	case filter.Type == "cron":
 		{
@@ -798,7 +798,7 @@ func triggerSchedule(watchID uint, web *Web) {
 	processFilters(filters, web, watch, false)
 }
 
-func luaFilter(filter *Filter) {
+func getFilterResultLua(filter *Filter) {
 	L := lua.NewState()
 	defer L.Close()
 
