@@ -11,11 +11,12 @@ import (
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"broodjeaap.net/go-watch/notifiers"
 )
 
 var baseHTML = filepath.Join("templates", "base.html")
@@ -29,7 +30,7 @@ type Web struct {
 	urlCache  map[string]string
 	cronWatch map[uint]cron.Entry
 	db        *gorm.DB
-	Bot       *tgbotapi.BotAPI
+	notifiers map[string]notifiers.Notifier
 }
 
 func newWeb() *Web {
@@ -110,33 +111,21 @@ func (web *Web) initCronJobs() {
 }
 
 func (web *Web) initNotifiers() {
-	bot, _ := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
-	bot.Debug = true
-	web.Bot = bot
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-	go web.passiveBot()
-}
+	web.notifiers = make(map[string]notifiers.Notifier, 5)
+	if viper.IsSet("telegram") {
+		telegramBot := notifiers.TelegramNotifier{}
+		telegramBot.Open()
+		web.notifiers["Telegram"] = telegramBot
 
-func (web *Web) passiveBot() {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-	updates := web.Bot.GetUpdatesChan(u)
-
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
-
-			web.Bot.Send(msg)
-		}
 	}
 }
 
-func (web *Web) notify(message string) {
-	msg := tgbotapi.NewMessage(viper.GetInt64("telegram.chat"), message)
-	web.Bot.Send(msg)
+func (web *Web) notify(notifierKey string, message string) {
+	notifier, exists := web.notifiers[notifierKey]
+	if !exists {
+		log.Println("Could not find notifier with key:", notifierKey)
+	}
+	notifier.Message(message)
 }
 
 func (web *Web) run() {
