@@ -1125,3 +1125,95 @@ func TestFilterHigherThan(t *testing.T) {
 		})
 	}
 }
+
+func TestFilterLua(t *testing.T) {
+	passAll := `
+for i,input in pairs(inputs) do
+   	table.insert(outputs, input)
+end`
+	lessThanFour := `
+for i,input in pairs(inputs) do
+	if tonumber(input) < 4 then
+		table.insert(outputs, input)
+	end
+end`
+	concat := `table.insert(outputs, table.concat(inputs, ","))`
+	var tests = []struct {
+		Name  string
+		Input []string
+		Lua   string
+		Want  []string
+	}{
+		{"Pass all", []string{"1", "2", "3", "4", "5"}, passAll, []string{"1", "2", "3", "4", "5"}},
+		{"Less than four", []string{"1", "2", "3", "4", "5"}, lessThanFour, []string{"1", "2", "3"}},
+		{"Concat", []string{"1", "2", "3", "4", "5"}, concat, []string{"1,2,3,4,5"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Name)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Var1: test.Lua,
+				Parents: []*Filter{
+					{
+						Results: test.Input,
+					},
+				},
+			}
+			getFilterResultLua(
+				&filter,
+			)
+			if len(filter.Logs) > 0 {
+				t.Errorf("Lua error: %s", filter.Logs)
+			}
+			log.Println(test.Want)
+			log.Println(filter.Results)
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterLuaLibs(t *testing.T) {
+	regex := `
+	sdfsdfsefs
+local regexp = require("regexp")
+local inspect = require("inspect")
+
+-- regexp.match(regexp, data)
+local result, err = regexp.match("hello", "hello world")
+if err then error(err) end
+if not(result==true) then error("regexp.match()") end`
+	var tests = []struct {
+		Name  string
+		Input []string
+		Lua   string
+		Want  []string
+	}{
+		{"Regex", []string{}, regex, []string{"trudde"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Name)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{
+						Results: test.Input,
+						Var1:    test.Lua,
+					},
+				},
+			}
+			getFilterResultLua(
+				&filter,
+			)
+			if len(filter.Logs) > 0 {
+				t.Errorf("Lua error: %s", filter.Logs)
+			}
+			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
