@@ -30,6 +30,7 @@ var __spread = (this && this.__spread) || function () {
     return ar;
 };
 function onTypeChange(node) {
+    var e_1, _a;
     if (node === void 0) { node = null; }
     var select = document.getElementById("typeInput");
     var type = select.value;
@@ -529,18 +530,62 @@ function onTypeChange(node) {
             break;
         }
         case "lua": {
-            var var1Input = document.createElement("textarea");
-            var1Input.name = "var1";
-            var1Input.id = "var1Input";
-            var1Input.value = var1Value;
-            var1Input.classList.add("form-control");
+            var var1Input_1 = document.createElement("textarea");
+            var1Input_1.name = "var1";
+            var1Input_1.id = "var1Input";
+            var1Input_1.value = var1Value;
+            var1Input_1.classList.add("form-control");
             var1Label.innerHTML = "Template";
-            var1Input.placeholder = "for i,input in pairs(inputs) do\n\ttable.insert(outputs, input)\nend";
+            var1Input_1.placeholder = "for i,input in pairs(inputs) do\n\ttable.insert(outputs, input)\nend";
             if (var1Value == "") {
-                var1Input.value = "for i,input in pairs(inputs) do\n\ttable.insert(outputs, input)\nend";
+                var1Input_1.value = "for i,input in pairs(inputs) do\n\ttable.insert(outputs, input)\nend";
             }
-            var1Input.rows = 10;
-            var1Div.appendChild(var1Input);
+            var1Input_1.rows = 10;
+            var1Div.appendChild(var1Input_1);
+            // dev download link
+            var devCopyA_1 = document.createElement('a');
+            var results = node == null ? [] : node.results;
+            var luaScript_1 = "inputs = {\"" + results.join('","') + "\"}\noutputs = {}\n\n " + var1Input_1.value;
+            devCopyA_1.setAttribute('href', '#');
+            devCopyA_1.classList.add("btn", "btn-primary", "btn-sm");
+            devCopyA_1.innerHTML = "Copy Script";
+            devCopyA_1.onclick = function () {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(luaScript_1);
+                    devCopyA_1.innerHTML = "Script Copied!";
+                }
+                else {
+                    alert("Could not copy script, no secure origin?");
+                }
+            };
+            var1Div.appendChild(devCopyA_1);
+            var luaSnippets = new Map([
+                ["http", "\nlocal http = require(\"http\")\nlocal client = http.client()\n\nlocal request = http.request(\"GET\", \"https://api.ipify.org\")\nlocal result, err = client:do_request(request)\nif err then\n    error(err)\nend\nif not (result.code == 200) then\n    error(\"code\")\nend\n\ntable.insert(outputs, result.body)\n                "],
+                ["strings", "\nlocal strings = require(\"strings\")\nfor i,input in pairs(inputs) do\n    table.insert(outputs, strings.trim_space(input))\nend\n                "],
+                ["filter", "\nfor i,input in pairs(inputs) do\n    number = tonumber(input)\n    if number % 2 == 0 then\n        table.insert(outputs, input)\n    end\nend\n                "],
+            ]);
+            var _loop_1 = function (name_1, snippet) {
+                var link = document.createElement('a');
+                link.setAttribute("href", "#");
+                link.classList.add("btn", "btn-secondary", "btn-sm");
+                link.innerHTML = name_1;
+                link.onclick = function () { var1Input_1.value = snippet; };
+                var1Div.appendChild(link);
+            };
+            try {
+                // add snippets
+                for (var luaSnippets_1 = __values(luaSnippets), luaSnippets_1_1 = luaSnippets_1.next(); !luaSnippets_1_1.done; luaSnippets_1_1 = luaSnippets_1.next()) {
+                    var _b = __read(luaSnippets_1_1.value, 2), name_1 = _b[0], snippet = _b[1];
+                    _loop_1(name_1, snippet);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (luaSnippets_1_1 && !luaSnippets_1_1.done && (_a = luaSnippets_1["return"])) _a.call(luaSnippets_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
@@ -591,7 +636,7 @@ function onMathChange(node) {
     }
 }
 function onConditionChange(node) {
-    var e_1, _a;
+    var e_2, _a;
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
@@ -660,12 +705,12 @@ function onConditionChange(node) {
                     filterSelect.appendChild(nodeOption);
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_2) throw e_2.error; }
             }
             if (var2Value != "") {
                 filterSelect.value = var2Value;
@@ -692,7 +737,7 @@ function onSubmitNewFilter() {
     });
 }
 function editNode(node) {
-    var e_2, _a, e_3, _b;
+    var e_3, _a, e_4, _b;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
@@ -738,12 +783,12 @@ function editNode(node) {
             logBody.appendChild(row);
         }
     }
-    catch (e_2_1) { e_2 = { error: e_2_1 }; }
+    catch (e_3_1) { e_3 = { error: e_3_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_2) throw e_2.error; }
+        finally { if (e_3) throw e_3.error; }
     }
     var filterModalFooter = document.getElementById("filterResultsDiv");
     filterModalFooter.innerHTML = "";
@@ -769,12 +814,12 @@ function editNode(node) {
             filterModalFooter.appendChild(cardDiv);
         }
     }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_3) throw e_3.error; }
+        finally { if (e_4) throw e_4.error; }
     }
     submitButton.onclick = function () { submitEditNode(node); };
 }
@@ -812,7 +857,7 @@ function submitEditNode(node) {
     saveWatchButton.classList.add("btn-danger");
 }
 function saveWatch() {
-    var e_4, _a, e_5, _b;
+    var e_5, _a, e_6, _b;
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -836,12 +881,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+    catch (e_5_1) { e_5 = { error: e_5_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_4) throw e_4.error; }
+        finally { if (e_5) throw e_5.error; }
     }
     var filtersInput = document.getElementById("filtersInput");
     filtersInput.value = JSON.stringify(filters);
@@ -858,12 +903,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+    catch (e_6_1) { e_6 = { error: e_6_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_5) throw e_5.error; }
+        finally { if (e_6) throw e_6.error; }
     }
     var connectionsInput = document.getElementById("connectionsInput");
     connectionsInput.value = JSON.stringify(connections);

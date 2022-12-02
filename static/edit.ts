@@ -539,6 +539,64 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.rows = 10;
             var1Div.appendChild(var1Input);
 
+            // dev download link
+            let devCopyA = document.createElement('a');
+            let results = node == null ? [] : node.results;
+            let luaScript = `inputs = {"${results.join('","')}"}\noutputs = {}\n\n ${var1Input.value}`;
+            devCopyA.setAttribute('href', '#')
+            devCopyA.classList.add("btn", "btn-primary", "btn-sm");
+            devCopyA.innerHTML = "Copy Script";
+            devCopyA.onclick = function() {
+                if (navigator.clipboard){
+                    navigator.clipboard.writeText(luaScript);
+                    devCopyA.innerHTML = "Script Copied!";
+                } else {
+                    alert("Could not copy script, no secure origin?");
+                }
+            }
+            var1Div.appendChild(devCopyA);
+
+            let luaSnippets: Map<string, string> = new Map([
+                ["http", `
+local http = require("http")
+local client = http.client()
+
+local request = http.request("GET", "https://api.ipify.org")
+local result, err = client:do_request(request)
+if err then
+    error(err)
+end
+if not (result.code == 200) then
+    error("code")
+end
+
+table.insert(outputs, result.body)
+                `],
+                ["strings", `
+local strings = require("strings")
+for i,input in pairs(inputs) do
+    table.insert(outputs, strings.trim_space(input))
+end
+                `],
+                ["filter", `
+for i,input in pairs(inputs) do
+    number = tonumber(input)
+    if number % 2 == 0 then
+        table.insert(outputs, input)
+    end
+end
+                `],
+            ]);
+            // add snippets
+            for (let [name, snippet] of luaSnippets) {
+                let link = document.createElement('a');
+                link.setAttribute("href", "#");
+                link.classList.add("btn", "btn-secondary", "btn-sm");
+                link.innerHTML = name;
+                link.onclick = function() {var1Input.value = snippet;};
+                var1Div.appendChild(link)
+            }
+
             let var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
