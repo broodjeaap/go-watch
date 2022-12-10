@@ -1,5 +1,4 @@
 # Todo
-- add logs table to lua filter
 - make generic 'notifier' interface
     - notify filter var2 for specific notifier or 'all'
     - telegram

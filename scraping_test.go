@@ -1217,3 +1217,21 @@ if not(result==true) then error("regexp.match()") end`
 		})
 	}
 }
+
+func TestFilterLuaLogs(t *testing.T) {
+	script := `table.insert(logs, "test")`
+
+	filter := Filter{
+		Var1: script,
+	}
+
+	getFilterResultLua(&filter)
+
+	if len(filter.Logs) == 0 {
+		t.Error("Nothing in logs, expected 'test'")
+	}
+
+	if filter.Logs[0] != "test" {
+		t.Errorf("Unexpected log message: '%s'", filter.Logs[0])
+	}
+}

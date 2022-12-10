@@ -811,8 +811,13 @@ func getFilterResultLua(filter *Filter) {
 		}
 	}
 	L.SetGlobal("inputs", inputs)
+
 	outputs := L.CreateTable(10, 0)
 	L.SetGlobal("outputs", outputs)
+
+	logs := L.CreateTable(10, 0)
+	L.SetGlobal("logs", logs)
+
 	err := L.DoString(filter.Var1)
 	if err != nil {
 		filter.log(err)
@@ -821,6 +826,11 @@ func getFilterResultLua(filter *Filter) {
 	outputs.ForEach(
 		func(key lua.LValue, value lua.LValue) {
 			filter.Results = append(filter.Results, value.String())
+		},
+	)
+	logs.ForEach(
+		func(key lua.LValue, value lua.LValue) {
+			filter.Logs = append(filter.Logs, value.String())
 		},
 	)
 }
