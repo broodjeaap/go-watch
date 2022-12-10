@@ -114,9 +114,9 @@ func (web *Web) initNotifiers() {
 	web.notifiers = make(map[string]notifiers.Notifier, 5)
 	if viper.IsSet("telegram") {
 		telegramBot := notifiers.TelegramNotifier{}
-		telegramBot.Open()
-		web.notifiers["Telegram"] = telegramBot
-
+		if telegramBot.Open() {
+			web.notifiers["Telegram"] = &telegramBot
+		}
 	}
 }
 
@@ -124,6 +124,7 @@ func (web *Web) notify(notifierKey string, message string) {
 	notifier, exists := web.notifiers[notifierKey]
 	if !exists {
 		log.Println("Could not find notifier with key:", notifierKey)
+		return
 	}
 	notifier.Message(message)
 }

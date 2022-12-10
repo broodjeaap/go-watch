@@ -13,7 +13,7 @@ type TelegramNotifier struct {
 	Debug bool
 }
 
-func (telegram TelegramNotifier) Open() bool {
+func (telegram *TelegramNotifier) Open() bool {
 	bot, err := tgbotapi.NewBotAPI(viper.GetString("telegram.token"))
 	if err != nil {
 		log.Println("Could not start Telegram notifier:\n", err)
@@ -25,8 +25,12 @@ func (telegram TelegramNotifier) Open() bool {
 	return true
 }
 
-func (telegram TelegramNotifier) Message(message string) bool {
+func (telegram *TelegramNotifier) Message(message string) bool {
+	log.Println(telegram)
+	log.Println(message)
 	msg := tgbotapi.NewMessage(viper.GetInt64("telegram.chat"), message)
+	log.Println(msg)
+	log.Println(telegram.Bot)
 	_, err := telegram.Bot.Send(msg)
 	if err != nil {
 		log.Println("Could not send Telegram message:\n", err)
@@ -35,6 +39,6 @@ func (telegram TelegramNotifier) Message(message string) bool {
 	return true
 }
 
-func (telegram TelegramNotifier) Close() bool {
+func (telegram *TelegramNotifier) Close() bool {
 	return true
 }
