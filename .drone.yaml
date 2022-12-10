@@ -1,6 +1,6 @@
 kind: pipeline
 type: kubernetes
-name: default
+name: test
 steps:
   - name: test
     image: golang
@@ -12,3 +12,21 @@ trigger:
     - master
   event:
     - push
+---
+kind: pipeline
+type: kubernetes
+name: github-push
+steps:
+- name: push commit
+  image: appleboy/drone-git-push:0.2.0-linux-amd64
+  settings:
+    branch: master
+    remote: git@github.com:broodjeaap/go-watch.git
+    force: true
+    ssh_key:
+      from_secret: id_rsa
+trigger:
+  branch:
+  - master
+  event:
+  - push
