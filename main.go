@@ -121,12 +121,18 @@ func (web *Web) initNotifiers() {
 }
 
 func (web *Web) notify(notifierKey string, message string) {
-	notifier, exists := web.notifiers[notifierKey]
-	if !exists {
-		log.Println("Could not find notifier with key:", notifierKey)
-		return
+	if notifierKey == "All" {
+		for _, notifier := range web.notifiers {
+			notifier.Message(message)
+		}
+	} else {
+		notifier, exists := web.notifiers[notifierKey]
+		if !exists {
+			log.Println("Could not find notifier with key:", notifierKey)
+			return
+		}
+		notifier.Message(message)
 	}
-	notifier.Message(message)
 }
 
 func (web *Web) run() {
@@ -260,6 +266,12 @@ func (web *Web) watchEdit(c *gin.Context) {
 	var values []FilterOutput
 	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
 
+	notifiers := make([]string, 1)
+	notifiers = append(notifiers, "All")
+	for notifier := range web.notifiers {
+		notifiers = append(notifiers, notifier)
+	}
+
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, &watch, true)
 
@@ -268,6 +280,7 @@ func (web *Web) watchEdit(c *gin.Context) {
 		"Filters":     filters,
 		"Connections": connections,
 		"Values":      values,
+		"Notifiers":   notifiers,
 	})
 }
 

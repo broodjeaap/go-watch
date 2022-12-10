@@ -466,14 +466,27 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.placeholder = "{{ .WatchName }} new lowest price: {{ .Price }}!";
             var1Div.appendChild(var1Input);
 
-            let var2Input = document.createElement("input");
+            let var2Input = document.createElement("select");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
-            var2Input.value = var2Value;
             var2Input.classList.add("form-control")
-            var2Input.disabled = true;
-            var2Label.innerHTML = "-";
+            // @ts-ignore
+            for (let notifier of notifiers){
+                if (notifier == ""){
+                    continue;
+                }
+                let option = document.createElement("option");
+                option.value = notifier;
+                option.innerHTML = notifier;
+                var2Input.appendChild(option);
+            }
+            if (var2Value == ""){
+                var2Input.value = "All"
+            } else {
+                var2Input.value = var2Value;
+            }
             var2Div.appendChild(var2Input);
+            var2Label.innerHTML = "Notify";
 
             let var3Input = document.createElement("input");
             var3Input.name = "var3";

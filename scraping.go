@@ -779,7 +779,11 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 	if debug {
 		log.Println(buffer.String())
 	} else {
-		web.notify("Telegram", buffer.String())
+		notifier := filter.Var2
+		if notifier == nil {
+			return
+		}
+		web.notify(*notifier, buffer.String())
 	}
 
 }

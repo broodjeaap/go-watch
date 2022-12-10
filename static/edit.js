@@ -30,7 +30,7 @@ var __spread = (this && this.__spread) || function () {
     return ar;
 };
 function onTypeChange(node) {
-    var e_1, _a;
+    var e_1, _a, e_2, _b;
     if (node === void 0) { node = null; }
     var select = document.getElementById("typeInput");
     var type = select.value;
@@ -472,14 +472,38 @@ function onTypeChange(node) {
             var1Label.innerHTML = "Template";
             var1Input.placeholder = "{{ .WatchName }} new lowest price: {{ .Price }}!";
             var1Div.appendChild(var1Input);
-            var var2Input = document.createElement("input");
+            var var2Input = document.createElement("select");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
-            var2Input.value = var2Value;
             var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Label.innerHTML = "-";
+            try {
+                // @ts-ignore
+                for (var notifiers_1 = __values(notifiers), notifiers_1_1 = notifiers_1.next(); !notifiers_1_1.done; notifiers_1_1 = notifiers_1.next()) {
+                    var notifier = notifiers_1_1.value;
+                    if (notifier == "") {
+                        continue;
+                    }
+                    var option = document.createElement("option");
+                    option.value = notifier;
+                    option.innerHTML = notifier;
+                    var2Input.appendChild(option);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (notifiers_1_1 && !notifiers_1_1.done && (_a = notifiers_1["return"])) _a.call(notifiers_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            if (var2Value == "") {
+                var2Input.value = "All";
+            }
+            else {
+                var2Input.value = var2Value;
+            }
             var2Div.appendChild(var2Input);
+            var2Label.innerHTML = "Notify";
             var var3Input = document.createElement("input");
             var3Input.name = "var3";
             var3Input.id = "var3Input";
@@ -575,16 +599,16 @@ function onTypeChange(node) {
             try {
                 // add snippets
                 for (var luaSnippets_1 = __values(luaSnippets), luaSnippets_1_1 = luaSnippets_1.next(); !luaSnippets_1_1.done; luaSnippets_1_1 = luaSnippets_1.next()) {
-                    var _b = __read(luaSnippets_1_1.value, 2), name_1 = _b[0], snippet = _b[1];
+                    var _c = __read(luaSnippets_1_1.value, 2), name_1 = _c[0], snippet = _c[1];
                     _loop_1(name_1, snippet);
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
-                    if (luaSnippets_1_1 && !luaSnippets_1_1.done && (_a = luaSnippets_1["return"])) _a.call(luaSnippets_1);
+                    if (luaSnippets_1_1 && !luaSnippets_1_1.done && (_b = luaSnippets_1["return"])) _b.call(luaSnippets_1);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_2) throw e_2.error; }
             }
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
@@ -636,7 +660,7 @@ function onMathChange(node) {
     }
 }
 function onConditionChange(node) {
-    var e_2, _a;
+    var e_3, _a;
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
@@ -705,12 +729,12 @@ function onConditionChange(node) {
                     filterSelect.appendChild(nodeOption);
                 }
             }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
                     if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
                 }
-                finally { if (e_2) throw e_2.error; }
+                finally { if (e_3) throw e_3.error; }
             }
             if (var2Value != "") {
                 filterSelect.value = var2Value;
@@ -737,7 +761,7 @@ function onSubmitNewFilter() {
     });
 }
 function editNode(node) {
-    var e_3, _a, e_4, _b;
+    var e_4, _a, e_5, _b;
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
@@ -783,12 +807,12 @@ function editNode(node) {
             logBody.appendChild(row);
         }
     }
-    catch (e_3_1) { e_3 = { error: e_3_1 }; }
+    catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_3) throw e_3.error; }
+        finally { if (e_4) throw e_4.error; }
     }
     var filterModalFooter = document.getElementById("filterResultsDiv");
     filterModalFooter.innerHTML = "";
@@ -814,12 +838,12 @@ function editNode(node) {
             filterModalFooter.appendChild(cardDiv);
         }
     }
-    catch (e_4_1) { e_4 = { error: e_4_1 }; }
+    catch (e_5_1) { e_5 = { error: e_5_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_4) throw e_4.error; }
+        finally { if (e_5) throw e_5.error; }
     }
     submitButton.onclick = function () { submitEditNode(node); };
 }
@@ -857,7 +881,7 @@ function submitEditNode(node) {
     saveWatchButton.classList.add("btn-danger");
 }
 function saveWatch() {
-    var e_5, _a, e_6, _b;
+    var e_6, _a, e_7, _b;
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -881,12 +905,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_5_1) { e_5 = { error: e_5_1 }; }
+    catch (e_6_1) { e_6 = { error: e_6_1 }; }
     finally {
         try {
             if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
         }
-        finally { if (e_5) throw e_5.error; }
+        finally { if (e_6) throw e_6.error; }
     }
     var filtersInput = document.getElementById("filtersInput");
     filtersInput.value = JSON.stringify(filters);
@@ -903,12 +927,12 @@ function saveWatch() {
             });
         }
     }
-    catch (e_6_1) { e_6 = { error: e_6_1 }; }
+    catch (e_7_1) { e_7 = { error: e_7_1 }; }
     finally {
         try {
             if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
         }
-        finally { if (e_6) throw e_6.error; }
+        finally { if (e_7) throw e_7.error; }
     }
     var connectionsInput = document.getElementById("connectionsInput");
     connectionsInput.value = JSON.stringify(connections);
