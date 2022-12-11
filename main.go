@@ -337,7 +337,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 			}
 			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
 			if err != nil {
-				log.Println("Could not start job for Watch: ", filter.WatchID)
+				log.Println("Could not start job for Watch: ", filter.WatchID, err)
 				continue
 			}
 			log.Println("Started CronJob for WatchID", filter.WatchID, "FilterID", filter.ID, "with schedule:", filter.Var1)
