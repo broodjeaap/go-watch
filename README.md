@@ -1,8 +1,13 @@
 # Go Watch
 [![Build Status](https://drone.broodjeaap.net/api/badges/broodjeaap/go-watch/status.svg)](https://drone.broodjeaap.net/broodjeaap/go-watch)
 
-
 A change detection server that can notify through various services written in Go
+
+# Intro
+
+GoWatch works through filters, a filter performs certain operations on the input it recieves.  
+Here is an example of a 'Watch' that calculates the lowest and average price of 4090s on NewEgg and notifies the user if the lowest price changed:  
+![NewEgg 4090](docs/images/newegg_4090.png)
 
 ## type script compilation
 
