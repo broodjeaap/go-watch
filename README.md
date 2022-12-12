@@ -16,7 +16,7 @@ Note that everything, including scheduling/storing/notifying, is a `filter`.
 `NewEgg Fetch` is a [Get URL](#get-url) filter with a 'https://www.newegg.com/p/pl?N=100007709&d=4090&isdeptsrh=1&PageSize=96' value, it's output will be the HTTP response.  
 
 `Select Price` is a [CSS](#css) filter with the value '.item-container .item-action strong[class!="item-buying-choices-price"]' value, it's output will be the html elements containing the prices.  
-An alternative filter type could've been the [XPath](#xpath) filter.
+An [XPath](#xpath) filter could also have been used.  
 
 `Sanitize` is a [Replace](#replace) filter, using a regular expression ('[^0-9]') it removes anything that's not a number.  
 
