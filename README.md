@@ -26,7 +26,7 @@ An [XPath](#xpath) filter could also have been used.
 
 `Store Avg` and `Store Min` are [Store](#store) filters, they store its input values in the database.  
 
-`Diff` is a [Different Then Last](#different-then-last) filter, only passing on the inputs that are different then the last value stored in the database.  
+`Diff` is a [Different Than Last](#different-then-last) filter, only passing on the inputs that are different then the last value stored in the database.  
 
 `Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/Matrix/etc).
 
@@ -36,11 +36,21 @@ An [XPath](#xpath) filter could also have been used.
 
 ## Get URL
 
+## Get URLs
+
 ## CSS
 
 ## XPath
 
+## JSON
+
 ## Replace
+
+## Match
+
+## Substring
+
+## Contains
 
 ## Store
 
@@ -48,13 +58,35 @@ An [XPath](#xpath) filter could also have been used.
 
 ## Math
 
-### Average
+### Sum
 
 ### Minimum
 
+### Maximum
+
+### Average
+
+### Count
+
+### Round
+
 ## Condition
 
-### Different Then Last
+### Different Than Last
+
+### Lower Than Last
+
+### Lowest
+
+### Lower Than
+
+### Higher Than Last
+
+### Highest
+
+### Higher Than
+
+## Lua
 
 ## type script compilation
 
