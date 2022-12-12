@@ -169,6 +169,7 @@ There is also a `logs` table that can be used the same way as the `outputs` tabl
 Much of the functionality that is provided through individual filters in GoWatch can also be done from Lua.  
 The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tree/master/http) lib, whose output can be parsed with the [xmlpath](https://github.com/vadv/gopher-lua-libs/tree/master/xmlpath) or [json](https://github.com/vadv/gopher-lua-libs/tree/master/json) libs and then filtered with a [regular expression](https://github.com/vadv/gopher-lua-libs/tree/master/regexp) or some regular Lua scripting to then finally be turned into a ready to send notification through a [template](https://github.com/vadv/gopher-lua-libs/tree/master/template).  
 
+# Dev
 ## type script compilation
 
 `tsc static/*.ts --lib es2020,dom --watch --downlevelIteration`
