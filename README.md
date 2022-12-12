@@ -76,7 +76,7 @@ Some common examples would be:
 ## Replace
 
 Simple replace filter, supports regular expressions.  
-If the `With` value is empty, it will of course just remove matching text.
+If the `With` value is empty, it will just remove matching text.
 
 ## Match
 
@@ -164,7 +164,7 @@ end
 ```
 
 Both `inputs` and `outputs` are convenience tables provided by GoWatch to make Lua scripting a bit easier.
-There is also a `logs` table that can be used the same way as the `outputs` (`table.insert(logs, 'this will be logged')`) to provide some basic logging.  
+There is also a `logs` table that can be used the same way as the `outputs` table (`table.insert(logs, 'this will be logged')`) to provide some basic logging.  
 
 Much of the functionality that is provided through individual filters in GoWatch can also be done from Lua.  
 The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tree/master/http) lib, whose output can be parsed with the [xmlpath](https://github.com/vadv/gopher-lua-libs/tree/master/xmlpath) or [json](https://github.com/vadv/gopher-lua-libs/tree/master/json) libs and then filtered with a [regular expression](https://github.com/vadv/gopher-lua-libs/tree/master/regexp) or some regular Lua scripting to then finally be turned into a ready to send notification through a [template](https://github.com/vadv/gopher-lua-libs/tree/master/template).  
