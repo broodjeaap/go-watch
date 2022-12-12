@@ -48,12 +48,12 @@ For more detailed instructions you can check its documentation.
 
 Fetches the given URL and outputs the HTTP response.  
 For more complicated requests, POSTing/headers/login, use the [HTTP functionality](https://github.com/vadv/gopher-lua-libs/tree/master/http#client-1) in the Lua filter.  
-During editing, http requests are cached, so not to trigger any DOS protection on your targets.
+During editing, http requests are cached, so not to trigger any DOS protection on your sources.
 
 ## Get URLs
 
 Fetches every URL given as input and outputs every HTTP response.  
-During editing, http requests are cached, so not to trigger any DOS protection on your targets.
+During editing, http requests are cached, so not to trigger any DOS protection on your sources.
 
 ## CSS
 
@@ -62,7 +62,7 @@ The [Cascadia](https://github.com/andybalholm/cascadia) package is used for this
 
 ## XPath
 
-Use an [XPath](https://www.w3schools.com/xml/xpath_intro.asp) to filter your http responses.
+Use an [XPath](https://www.w3schools.com/xml/xpath_intro.asp) to filter your http responses.  
 The [XPath](https://github.com/antchfx/xpath) package is used for this filter, check the docs to see what is and isn't supported.
 
 ## JSON
