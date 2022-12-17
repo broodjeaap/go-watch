@@ -7,8 +7,6 @@
     - twitter?
     - sms?
     - etch?
-- docs
-    - push to github for github page?
 - docker
     - compose with:
         - postgres
