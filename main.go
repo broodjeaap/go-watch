@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
@@ -51,6 +52,7 @@ func (web *Web) init() {
 }
 
 func (web *Web) initDB() {
+	log.Println(viper.GetString("database.dsn"))
 	db, err := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
 	if err != nil {
 		log.Panicln("Could not start DB: ", err)
@@ -78,6 +80,8 @@ func (web *Web) initRouter() {
 
 	web.router.GET("/cache/view", web.cacheView)
 	web.router.POST("/cache/clear", web.cacheClear)
+
+	web.router.SetTrustedProxies(nil)
 }
 
 func (web *Web) initTemplates() {
@@ -466,11 +470,15 @@ func main() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/config")
+
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.SetEnvPrefix("GOWATCH")
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalln("Could not load config file")
+		log.Println("Could not load config file, using env/defaults")
 	}
 
 	web := newWeb()
