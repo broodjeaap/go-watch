@@ -14,7 +14,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
+	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 
 	"broodjeaap.net/go-watch/notifiers"
@@ -52,8 +55,25 @@ func (web *Web) init() {
 }
 
 func (web *Web) initDB() {
-	log.Println(viper.GetString("database.dsn"))
-	db, err := gorm.Open(sqlite.Open(viper.GetString("database.dsn")))
+	dsn := viper.GetString("database.dsn")
+	var db *gorm.DB
+	var err error
+	if strings.HasPrefix(dsn, "sqlserver") {
+		db, err = gorm.Open(sqlserver.Open(dsn))
+		log.Println("Using SQLServer server")
+	} else if strings.HasPrefix(dsn, "postgres") {
+		db, err = gorm.Open(postgres.Open(dsn))
+		log.Println("Using PostgreSQL server")
+	} else if strings.HasPrefix(dsn, "mysql") {
+		db, err = gorm.Open(mysql.Open(dsn))
+		log.Println("Using MySQL server")
+	} else {
+		db, err = gorm.Open(sqlite.Open(dsn))
+		log.Println("Using sqlite server")
+	}
+	if db == nil {
+		log.Panicln("Could not recognize database.dsn: ", dsn)
+	}
 	if err != nil {
 		log.Panicln("Could not start DB: ", err)
 	}
