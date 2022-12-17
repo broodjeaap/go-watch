@@ -11,3 +11,4 @@
     - compose with:
         - postgres
         - mariadb
+- implement embed.FS
