@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: go-watch
+    environment:
+    - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
+    volumes:
+    - /host/path/to/config:/config
+    ports:
+    - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:15
+    environment:
+    - POSTGRES_USER=gorm
+    - POSTGRES_PASSWORD=gorm
+    - POSTGRES_DB=gorm
+    volumes:
+    - /host/path/to/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

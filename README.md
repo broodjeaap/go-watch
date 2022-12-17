@@ -3,6 +3,55 @@
 
 A change detection server that can notify through various services written in Go
 
+# Run
+
+### Docker
+
+Easiest way to get started is with the prebuilt docker image:  
+```
+docker run \
+    -p 8080:8080 \
+    -v /host/path/to/config:/config \
+    ghcr.io/broodjeaap/go-watch:master
+```
+
+This will start GoWatch with a SQLite database, stored in the `/config` directory, which is probably fine for most use cases.  
+
+To use another database, the environment variable `GOWATCH_DATABASE_DSN` can be used, for example with a PostgreSQL database:  
+```
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: go-watch
+    environment:
+    - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
+    volumes:
+    - /host/path/to/config:/config
+    ports:
+    - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:15
+    environment:
+    - POSTGRES_USER=gorm
+    - POSTGRES_PASSWORD=gorm
+    - POSTGRES_DB=gorm
+    volumes:
+    - /host/path/to/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+```
+
 # Intro
 
 GoWatch works through filters, a filter performs operations on the input it recieves.  
