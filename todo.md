@@ -7,8 +7,4 @@
     - twitter?
     - sms?
     - etch?
-- docker
-    - compose with:
-        - postgres
-        - mariadb
 - implement embed.FS
