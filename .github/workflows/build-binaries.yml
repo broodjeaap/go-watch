@@ -15,6 +15,9 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
         goarch: amd64
+        compress_assets: false
+        md5sum: false
+        overwrite: true
   release-linux-arm:
     name: release linux/arm
     runs-on: ubuntu-latest
@@ -25,6 +28,9 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
         goarch: arm
+        compress_assets: false
+        md5sum: false
+        overwrite: true
   release-linux-arm64:
     name: release linux/arm64
     runs-on: ubuntu-latest
@@ -35,6 +41,9 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
         goarch: arm64
+        compress_assets: false
+        md5sum: false
+        overwrite: true
   release-linux-windows:
     name: release windows
     runs-on: ubuntu-latest
@@ -45,3 +54,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: windows
         goarch: amd64
+        compress_assets: false
+        md5sum: false
+        overwrite: true
