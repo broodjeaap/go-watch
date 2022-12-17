@@ -70,7 +70,6 @@ func (web *Web) initRouter() {
 
 	web.router.GET("/watch/view/:id", web.watchView)
 	web.router.GET("/watch/edit/:id", web.watchEdit)
-	web.router.GET("/watch/new", web.watchCreate)
 	web.router.POST("/watch/create", web.watchCreatePost)
 	web.router.POST("/watch/update", web.watchUpdate)
 	web.router.POST("/watch/delete", web.deleteWatch)
@@ -84,7 +83,6 @@ func (web *Web) initRouter() {
 func (web *Web) initTemplates() {
 	web.templates = multitemplate.NewRenderer()
 	web.templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
-	web.templates.AddFromFiles("watchCreate", "templates/base.html", "templates/watch/create.html")
 	web.templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
 	web.templates.AddFromFiles("watchEdit", "templates/base.html", "templates/watch/edit.html")
 
@@ -165,10 +163,6 @@ func (web *Web) index(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "index", watches)
-}
-
-func (web *Web) watchCreate(c *gin.Context) {
-	c.HTML(http.StatusOK, "watchCreate", gin.H{})
 }
 
 func (web *Web) watchCreatePost(c *gin.Context) {

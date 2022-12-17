@@ -1,6 +1,4 @@
 # Todo
-- remove interval input from new watch page
-    - maybe turn new watch into popup with textbox ?
 - make generic 'notifier' interface
     - telegram
     - discord
