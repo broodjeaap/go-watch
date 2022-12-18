@@ -17,7 +17,6 @@ FROM golang:1.19-alpine AS base
 WORKDIR /app
 
 COPY --from=builder /gowatch ./gowatch
-COPY ./ ./
 
 RUN mkdir /config
 ENV GOWATCH_DATABASE_DSN "/config/database.db"
