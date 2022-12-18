@@ -8,5 +8,4 @@
     - sms?
     - etch?
 - implement embed.FS
-- fix new watch filter bug?
 - trusted proxies in conf?

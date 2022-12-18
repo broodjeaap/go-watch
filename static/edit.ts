@@ -754,7 +754,7 @@ function onSubmitNewFilter(){
     let var3Input = document.getElementById("var3Input") as HTMLInputElement;
 
     _diagram.addNode(
-        Math.max(...Array.from(_diagram.nodes.values()).map(n => n.id)) + 1,
+        Math.max(...Array.from(_diagram.nodes.values()).map(n => n.id), 0) + 1,
         _diagram.canvas.width / 2 - _diagram.mouseState.offset.x, 
         _diagram.canvas.height / 2 - _diagram.mouseState.offset.y, 
         name, {
