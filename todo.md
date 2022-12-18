@@ -8,3 +8,5 @@
     - sms?
     - etch?
 - implement embed.FS
+- fix new watch filter bug?
+- login
