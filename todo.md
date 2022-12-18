@@ -7,6 +7,6 @@
     - twitter?
     - sms?
     - etch?
-- implement embed.FS
+- ~~implement embed.FS~~
     - change docker builds
 - trusted proxies in conf?

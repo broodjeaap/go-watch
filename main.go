@@ -1,12 +1,14 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -21,11 +23,12 @@ import (
 	"gorm.io/gorm"
 
 	"broodjeaap.net/go-watch/notifiers"
+
+	_ "embed"
 )
 
-var baseHTML = filepath.Join("templates", "base.html")
-var indexHTML = filepath.Join("templates", "index.html")
-var newWatchHTML = filepath.Join("templates", "newWatch.html")
+//go:embed templates static
+var EMBED_FS embed.FS
 
 type Web struct {
 	router    *gin.Engine
@@ -83,7 +86,11 @@ func (web *Web) initDB() {
 func (web *Web) initRouter() {
 	web.router = gin.Default()
 
-	web.router.Static("/static", "./static")
+	staticFS, err := fs.Sub(EMBED_FS, "static")
+	if err != nil {
+		log.Fatalln("Could not load static embed fs")
+	}
+	web.router.StaticFS("/static", http.FS(staticFS))
 
 	web.initTemplates()
 	web.router.HTMLRender = web.templates
@@ -106,13 +113,20 @@ func (web *Web) initRouter() {
 
 func (web *Web) initTemplates() {
 	web.templates = multitemplate.NewRenderer()
-	web.templates.AddFromFiles("index", "templates/base.html", "templates/index.html")
-	web.templates.AddFromFiles("watchView", "templates/base.html", "templates/watch/view.html")
-	web.templates.AddFromFiles("watchEdit", "templates/base.html", "templates/watch/edit.html")
 
-	web.templates.AddFromFiles("cacheView", "templates/base.html", "templates/cache/view.html")
+	templatesFS, err := fs.Sub(EMBED_FS, "templates")
+	if err != nil {
+		log.Fatalln("Could not load templates embed fs")
+	}
 
-	web.templates.AddFromFiles("500", "templates/base.html", "templates/500.html")
+	web.templates.Add("index", template.Must(template.ParseFS(templatesFS, "base.html", "index.html")))
+
+	web.templates.Add("watchView", template.Must(template.ParseFS(templatesFS, "base.html", "watch/view.html")))
+	web.templates.Add("watchEdit", template.Must(template.ParseFS(templatesFS, "base.html", "watch/edit.html")))
+
+	web.templates.Add("cacheView", template.Must(template.ParseFS(templatesFS, "base.html", "cache/view.html")))
+
+	web.templates.Add("500", template.Must(template.ParseFS(templatesFS, "base.html", "500.html")))
 }
 
 func (web *Web) initCronJobs() {
