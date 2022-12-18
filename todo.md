@@ -8,3 +8,4 @@
     - sms?
     - etch?
 - trusted proxies in conf?
+- only run part of filter tree connected to schedule filter  
