@@ -9,4 +9,4 @@
     - etch?
 - implement embed.FS
 - fix new watch filter bug?
-- login
+- trusted proxies in conf?

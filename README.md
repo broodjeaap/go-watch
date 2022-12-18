@@ -1,11 +1,36 @@
 # Go Watch
 [![Build Status](https://drone.broodjeaap.net/api/badges/broodjeaap/go-watch/status.svg)](https://drone.broodjeaap.net/broodjeaap/go-watch)
 
-A change detection server that can notify through various services written in Go
+A change detection server that can notify through various services, written in Go
+# Intro
 
+GoWatch works through filters, a filter performs operations on the input it recieves.  
+Here is an example of a 'Watch' that calculates the lowest and average price of 4090s on NewEgg and notifies the user if the lowest price changed:  
+![NewEgg 4090](docs/images/newegg_4090.png)  
+
+Note that everything, including scheduling/storing/notifying, is a `filter`.  
+
+`Schedule` is a [cron](#cron) filter with a '@every 15m' value, so this will run every 15 minutes.  
+
+`NewEgg Fetch` is a [Get URL](#get-url) filter with a 'https://www.newegg.com/p/pl?N=100007709&d=4090&isdeptsrh=1&PageSize=96' value, it's output will be the HTTP response.  
+
+`Select Price` is a [CSS](#css) filter with the value '.item-container .item-action strong[class!="item-buying-choices-price"]' value, it's output will be the html elements containing the prices.  
+An [XPath](#xpath) filter could also have been used.  
+
+`Sanitize` is a [Replace](#replace) filter, using a regular expression ('[^0-9]') it removes anything that's not a number.  
+
+`Avg` is an [Average](#average) filter, it calculates the average value of its inputs.  
+
+`Min` is a [Minimum](#minimum) filter, it calculates the minimum value of its inputs.  
+
+`Store Avg` and `Store Min` are [Store](#store) filters, they store its input values in the database.  
+
+`Diff` is a [Different Than Last](#different-then-last) filter, only passing on the inputs that are different then the last value stored in the database.  
+
+`Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/Matrix/etc).
 # Run
 
-### Docker
+## Docker
 
 Easiest way to get started is with the prebuilt docker image:  
 ```
@@ -52,32 +77,58 @@ services:
       retries: 5
 ```
 
-# Intro
+### Authentication
 
-GoWatch works through filters, a filter performs operations on the input it recieves.  
-Here is an example of a 'Watch' that calculates the lowest and average price of 4090s on NewEgg and notifies the user if the lowest price changed:  
-![NewEgg 4090](docs/images/newegg_4090.png)  
+Go-Watch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
+```
+version: "3"
 
-Note that everything, including scheduling/storing/notifying, is a `filter`.  
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: go-watch
+    environment:
+    - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
+    volumes:
+    - /host/path/to/config:/config
+    ports:
+    - "8181:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+    - "traefik.http.routers.gowatch.rule=Host(`192.168.178.254`)"
+    - "traefik.http.routers.gowatch.middlewares=test-auth"
+  db:
+    image: postgres:15
+    environment:
+    - POSTGRES_USER=gorm
+    - POSTGRES_PASSWORD=gorm
+    - POSTGRES_DB=gorm
+    volumes:
+    - /host/path/to/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+    - proxy
+  proxy:
+    image: traefik:v2.9.6
+    command: --providers.docker
+    labels:
+    - "traefik.http.middlewares.test-auth.basicauth.users=broodjeaap:$$2y$$10$$aUvoh7HNdt5tvf8PYMKaaOyCLD3Uel03JtEIPxFEBklJE62VX4rD6"
+    ports:
+    - "8080:80"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+```
 
-`Schedule` is a [cron](#cron) filter with a '@every 15m' value, so this will run every 15 minutes.  
-
-`NewEgg Fetch` is a [Get URL](#get-url) filter with a 'https://www.newegg.com/p/pl?N=100007709&d=4090&isdeptsrh=1&PageSize=96' value, it's output will be the HTTP response.  
-
-`Select Price` is a [CSS](#css) filter with the value '.item-container .item-action strong[class!="item-buying-choices-price"]' value, it's output will be the html elements containing the prices.  
-An [XPath](#xpath) filter could also have been used.  
-
-`Sanitize` is a [Replace](#replace) filter, using a regular expression ('[^0-9]') it removes anything that's not a number.  
-
-`Avg` is an [Average](#average) filter, it calculates the average value of its inputs.  
-
-`Min` is a [Minimum](#minimum) filter, it calculates the minimum value of its inputs.  
-
-`Store Avg` and `Store Min` are [Store](#store) filters, they store its input values in the database.  
-
-`Diff` is a [Different Than Last](#different-then-last) filter, only passing on the inputs that are different then the last value stored in the database.  
-
-`Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/Matrix/etc).
+Change the `Host` label to the correct ip/hostname and generate a user/password string with [htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html) for the `basicauth.users` label, note that the `$` character is escaped with `$$`
 
 # Filters
 
