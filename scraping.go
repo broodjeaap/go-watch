@@ -22,13 +22,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
+func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *uint) {
 	allFilters := filters
 	processedMap := make(map[uint]bool, len(filters))
+	if scheduleID != nil {
+		processedMap[*scheduleID] = true
+	}
 
 	// collect 'store' filters so we can process them separately  at the end
 	storeFilters := make([]Filter, 5)
-	for len(filters) > 0 {
+	processedAFilter := true
+	for len(filters) > 0 && processedAFilter {
+		processedAFilter = false
 		filter := &filters[0]
 		filters = filters[1:]
 		if filter.Type == "store" {
@@ -36,9 +41,13 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
 			processedMap[filter.ID] = true
 			continue
 		}
+
+		if len(filter.Parents) == 0 && !debug {
+			continue
+		}
 		var allParentsProcessed = true
 		for _, parent := range filter.Parents {
-			if _, contains := processedMap[parent.ID]; !contains && parent.Type != "cron" {
+			if _, contains := processedMap[parent.ID]; !contains {
 				allParentsProcessed = false
 				break
 			}
@@ -49,6 +58,7 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool) {
 		}
 		getFilterResult(allFilters, filter, watch, web, debug)
 		processedMap[filter.ID] = true
+		processedAFilter = true
 	}
 
 	// process the store filters last
@@ -788,7 +798,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 
 }
 
-func triggerSchedule(watchID uint, web *Web) {
+func triggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 	var watch *Watch
 	web.db.Model(&Watch{}).First(&watch, watchID)
 
@@ -798,8 +808,10 @@ func triggerSchedule(watchID uint, web *Web) {
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
+	log.Println("Trigger schedule for", watch.ID, ":", *scheduleID)
+
 	buildFilterTree(filters, connections)
-	processFilters(filters, web, watch, false)
+	processFilters(filters, web, watch, false, scheduleID)
 }
 
 func getFilterResultLua(filter *Filter) {

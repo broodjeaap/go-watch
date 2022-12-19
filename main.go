@@ -135,7 +135,7 @@ func (web *Web) initCronJobs() {
 	web.cronWatch = make(map[uint]cron.Entry, len(cronFilters))
 	web.cron = cron.New()
 	for _, cronFilter := range cronFilters {
-		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web) })
+		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
 		if err != nil {
 			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
 			continue
@@ -305,7 +305,7 @@ func (web *Web) watchEdit(c *gin.Context) {
 	}
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, web, &watch, true)
+	processFilters(filters, web, &watch, true, nil)
 
 	c.HTML(http.StatusOK, "watchEdit", gin.H{
 		"Watch":       watch,
@@ -367,7 +367,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 			if filter.Type != "cron" {
 				continue
 			}
-			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
+			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
 			if err != nil {
 				log.Println("Could not start job for Watch: ", filter.WatchID, err)
 				continue
@@ -470,7 +470,7 @@ func (web *Web) importWatch(c *gin.Context) {
 		}
 		for _, filter := range export.Filters {
 			if filter.Type == "cron" {
-				entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web) })
+				entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
 				if err != nil {
 					log.Println("Could not start job for Watch: ", filter.WatchID)
 					continue
