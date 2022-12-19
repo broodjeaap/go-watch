@@ -1255,3 +1255,245 @@ func TestEchoFilter(t *testing.T) {
 		t.Errorf("%s did not match %s", helloWorld, filter1.Results)
 	}
 }
+
+func TestSimpleWatch(t *testing.T) {
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Echo",
+			Type: "echo",
+			Var1: HTML_STRING,
+		},
+		{
+			ID:   1,
+			Name: "XPath",
+			Type: "xpath",
+			Var1: "//td[@class='price']",
+		},
+		{
+			ID:   2,
+			Name: "Replace",
+			Type: "replace",
+			Var1: "[^0-9]",
+		},
+		{
+			ID:   3,
+			Name: "Min",
+			Type: "math",
+			Var1: "min",
+		},
+		{
+			ID:   4,
+			Name: "Max",
+			Type: "math",
+			Var1: "max",
+		},
+	}
+
+	minFilter := &filters[3]
+	maxFilter := &filters[4]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 0,
+			InputID:  1,
+		},
+		{
+			OutputID: 1,
+			InputID:  2,
+		},
+		{
+			OutputID: 2,
+			InputID:  3,
+		},
+		{
+			OutputID: 2,
+			InputID:  4,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+	processFilters(filters, nil, nil, false, nil)
+
+	if !reflect.DeepEqual(minFilter.Results, []string{"100.000000"}) {
+		t.Errorf("%s did not match '100'", minFilter.Results)
+	}
+	if !reflect.DeepEqual(maxFilter.Results, []string{"400.000000"}) {
+		t.Errorf("%s did not match '400'", maxFilter.Results)
+	}
+}
+func TestSimpleIDOrderWatch(t *testing.T) {
+	filters := []Filter{
+		{
+			ID:   7,
+			Name: "Echo",
+			Type: "echo",
+			Var1: HTML_STRING,
+		},
+		{
+			ID:   5,
+			Name: "XPath",
+			Type: "xpath",
+			Var1: "//td[@class='price']",
+		},
+		{
+			ID:   9,
+			Name: "Replace",
+			Type: "replace",
+			Var1: "[^0-9]",
+		},
+		{
+			ID:   15,
+			Name: "Min",
+			Type: "math",
+			Var1: "min",
+		},
+		{
+			ID:   1,
+			Name: "Max",
+			Type: "math",
+			Var1: "max",
+		},
+	}
+
+	minFilter := &filters[3]
+	maxFilter := &filters[4]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 7,
+			InputID:  5,
+		},
+		{
+			OutputID: 5,
+			InputID:  9,
+		},
+		{
+			OutputID: 9,
+			InputID:  15,
+		},
+		{
+			OutputID: 9,
+			InputID:  1,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+	processFilters(filters, nil, nil, false, nil)
+
+	if !reflect.DeepEqual(minFilter.Results, []string{"100.000000"}) {
+		t.Errorf("%s did not match '100'", minFilter.Results)
+	}
+	if !reflect.DeepEqual(maxFilter.Results, []string{"400.000000"}) {
+		t.Errorf("%s did not match '400'", maxFilter.Results)
+	}
+}
+func TestSimpleDebugWatch(t *testing.T) {
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Echo",
+			Type: "echo",
+			Var1: HTML_STRING,
+		},
+		{
+			ID:   1,
+			Name: "XPath",
+			Type: "xpath",
+			Var1: "//td[@class='price']",
+		},
+		{
+			ID:   2,
+			Name: "Replace",
+			Type: "replace",
+			Var1: "[^0-9]",
+		},
+		{
+			ID:   3,
+			Name: "Min",
+			Type: "math",
+			Var1: "min",
+		},
+		{
+			ID:   4,
+			Name: "Max",
+			Type: "math",
+			Var1: "max",
+		},
+	}
+
+	minFilter := &filters[3]
+	maxFilter := &filters[4]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 0,
+			InputID:  1,
+		},
+		{
+			OutputID: 1,
+			InputID:  2,
+		},
+		{
+			OutputID: 2,
+			InputID:  3,
+		},
+		{
+			OutputID: 2,
+			InputID:  4,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+	processFilters(filters, nil, nil, true, nil)
+
+	if !reflect.DeepEqual(minFilter.Results, []string{"100.000000"}) {
+		t.Errorf("%s did not match '100'", minFilter.Results)
+	}
+	if !reflect.DeepEqual(maxFilter.Results, []string{"400.000000"}) {
+		t.Errorf("%s did not match '400'", maxFilter.Results)
+	}
+}
+
+func TestDontAllowMultipleCronOnSingleFilter(t *testing.T) {
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Cron1",
+			Type: "cron",
+			Var1: "@every 1s",
+		},
+		{
+			ID:   1,
+			Name: "Cron2",
+			Type: "cron",
+			Var1: "@every 1s",
+		},
+		{
+			ID:   2,
+			Name: "Filter",
+			Type: "echo",
+			Var1: "-",
+		},
+	}
+
+	filter := &filters[2]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 0,
+			InputID:  2,
+		},
+		{
+			OutputID: 0,
+			InputID:  2,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+	processFilters(filters, nil, nil, false, nil)
+
+	if len(filter.Logs) == 0 {
+		t.Errorf("Expected error message in filter log, found empty log: %s", filter.Logs)
+	}
+}

@@ -11,4 +11,3 @@
 - log things to db for cron runs 
 - comments
 - db prune job
-- add full buildFilterTree/processFilters test
