@@ -35,7 +35,7 @@ type Web struct {
 	templates multitemplate.Renderer
 	cron      *cron.Cron
 	urlCache  map[string]string
-	cronWatch map[uint]cron.Entry
+	cronWatch map[uint]cron.EntryID
 	db        *gorm.DB
 	notifiers map[string]notifiers.Notifier
 }
@@ -132,7 +132,7 @@ func (web *Web) initTemplates() {
 func (web *Web) initCronJobs() {
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron'")
-	web.cronWatch = make(map[uint]cron.Entry, len(cronFilters))
+	web.cronWatch = make(map[uint]cron.EntryID, len(cronFilters))
 	web.cron = cron.New()
 	for _, cronFilter := range cronFilters {
 		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
@@ -141,7 +141,7 @@ func (web *Web) initCronJobs() {
 			continue
 		}
 		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
-		web.cronWatch[cronFilter.ID] = web.cron.Entry(entryID)
+		web.cronWatch[cronFilter.ID] = entryID
 	}
 	web.cron.Start()
 }
@@ -192,11 +192,12 @@ func (web *Web) index(c *gin.Context) {
 	var filters []Filter
 	web.db.Model(&Filter{}).Find(&filters, "type = 'cron'")
 	for _, filter := range filters {
-		entry, exists := web.cronWatch[filter.ID]
+		entryID, exists := web.cronWatch[filter.ID]
 		if !exists {
 			log.Println("No cron entry for filter", filter.ID, filter.Name)
 			continue
 		}
+		entry := web.cron.Entry(entryID)
 		watchMap[filter.WatchID].CronEntry = &entry
 	}
 
@@ -228,9 +229,9 @@ func (web *Web) deleteWatch(c *gin.Context) {
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Find(&cronFilters, "watch_id = ? AND type = 'cron'", id)
 	for _, filter := range cronFilters {
-		entry, exist := web.cronWatch[filter.ID]
+		entryID, exist := web.cronWatch[filter.ID]
 		if exist {
-			web.cron.Remove(entry.ID)
+			web.cron.Remove(entryID)
 			delete(web.cronWatch, filter.ID)
 		}
 	}
@@ -249,11 +250,12 @@ func (web *Web) watchView(c *gin.Context) {
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Find(&cronFilters, "watch_id = ? AND type = 'cron'", id)
 	for _, filter := range cronFilters {
-		entry, exists := web.cronWatch[filter.ID]
+		entryID, exists := web.cronWatch[filter.ID]
 		if !exists {
 			log.Println("Could not find entry for filter", filter.ID, filter.Name)
 			continue
 		}
+		entry := web.cron.Entry(entryID)
 		watch.CronEntry = &entry
 	}
 
@@ -340,9 +342,9 @@ func (web *Web) watchUpdate(c *gin.Context) {
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watch.ID).Find(&cronFilters)
 	for _, filter := range cronFilters {
-		entry, exist := web.cronWatch[filter.ID]
+		entryID, exist := web.cronWatch[filter.ID]
 		if exist {
-			web.cron.Remove(entry.ID)
+			web.cron.Remove(entryID)
 			delete(web.cronWatch, filter.ID)
 		} else {
 			log.Println("Tried removing cron entry but ID not found ", filter.ID)
@@ -373,7 +375,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 				continue
 			}
 			log.Println("Started CronJob for WatchID", filter.WatchID, "FilterID", filter.ID, "with schedule:", filter.Var1)
-			web.cronWatch[filter.ID] = web.cron.Entry(entryID)
+			web.cronWatch[filter.ID] = entryID
 		}
 	}
 
@@ -446,9 +448,9 @@ func (web *Web) importWatch(c *gin.Context) {
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watchID).Find(&cronFilters)
 	for _, filter := range cronFilters {
-		entry, exist := web.cronWatch[filter.ID]
+		entryID, exist := web.cronWatch[filter.ID]
 		if exist {
-			web.cron.Remove(entry.ID)
+			web.cron.Remove(entryID)
 			delete(web.cronWatch, filter.ID)
 		}
 	}
@@ -476,7 +478,7 @@ func (web *Web) importWatch(c *gin.Context) {
 					continue
 				}
 				log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
-				web.cronWatch[filter.ID] = web.cron.Entry(entryID)
+				web.cronWatch[filter.ID] = entryID
 			}
 		}
 	}
