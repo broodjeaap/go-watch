@@ -8,4 +8,5 @@
     - sms?
     - etch?
 - trusted proxies in conf?
-- cron jobs not starting on startup  
+- cron jobs not starting on startup 
+- log things to db for cron runs 
