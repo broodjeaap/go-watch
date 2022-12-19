@@ -23,25 +23,57 @@ import (
 )
 
 func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *uint) {
-	allFilters := filters
 	processedMap := make(map[uint]bool, len(filters))
 	if scheduleID != nil {
 		processedMap[*scheduleID] = true
 	}
 
+	for _, filter := range filters {
+		if scheduleID != nil && filter.ID == *scheduleID {
+			log.Println("Triggered by schedule:", filter.Name)
+		}
+	}
+
+	// check if there are multiple 'cron' filters connected to a single filter
+	// this filter can't be run, only one filter is ever triggered,
+	// the other prevents it from running, allParentsProcessed is always false
+	// just warn the user when this happens and return
+	for i := range filters {
+		filter := &filters[i]
+		cronParentCount := 0
+		for _, parent := range filter.Parents {
+			if parent.Type == "cron" {
+				cronParentCount++
+			}
+		}
+		if cronParentCount > 1 {
+			filter.log("Multiple schedules on the same filter is not supported!")
+			return
+		}
+	}
+
+	currentFilters := make([]*Filter, 0, len(filters))
+	for i := range filters {
+		filter := &filters[i]
+		currentFilters = append(currentFilters, filter)
+	}
+
 	// collect 'store' filters so we can process them separately  at the end
-	storeFilters := make([]Filter, 5)
-	processedAFilter := true
-	for len(filters) > 0 && processedAFilter {
-		processedAFilter = false
-		filter := &filters[0]
-		filters = filters[1:]
+	storeFilters := make([]*Filter, 0)
+
+	for {
+		nextFilters := make([]*Filter, 0, len(currentFilters))
+		for i := range currentFilters {
+			filter := currentFilters[i]
 		if filter.Type == "store" {
-			storeFilters = append(storeFilters, *filter)
+				storeFilters = append(storeFilters, filter)
 			processedMap[filter.ID] = true
 			continue
 		}
-
+			if debug && filter.Type == "cron" {
+				processedMap[filter.ID] = true
+				continue
+			}
 		if len(filter.Parents) == 0 && !debug {
 			continue
 		}
@@ -53,17 +85,21 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 			}
 		}
 		if !allParentsProcessed {
-			filters = append(filters, *filter)
+				nextFilters = append(nextFilters, filter)
 			continue
 		}
-		getFilterResult(allFilters, filter, watch, web, debug)
+			getFilterResult(filters, filter, watch, web, debug)
 		processedMap[filter.ID] = true
-		processedAFilter = true
+		}
+		if len(nextFilters) == 0 {
+			break
+		}
+		currentFilters = nextFilters
 	}
 
 	// process the store filters last
 	for _, storeFilter := range storeFilters {
-		getFilterResult(allFilters, &storeFilter, watch, web, debug)
+		getFilterResult(filters, storeFilter, watch, web, debug)
 	}
 }
 
