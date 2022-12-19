@@ -134,7 +134,8 @@ func (web *Web) initCronJobs() {
 	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron' AND var2 = 'yes'")
 	web.cronWatch = make(map[uint]cron.EntryID, len(cronFilters))
 	web.cron = cron.New()
-	for _, cronFilter := range cronFilters {
+	for i := range cronFilters {
+		cronFilter := &cronFilters[i]
 		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
 		if err != nil {
 			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
@@ -473,7 +474,8 @@ func (web *Web) importWatch(c *gin.Context) {
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
-		for _, filter := range export.Filters {
+		for i := range export.Filters {
+			filter := &export.Filters[i]
 			if filter.Type == "cron" {
 				entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
 				if err != nil {
