@@ -131,7 +131,7 @@ func (web *Web) initTemplates() {
 
 func (web *Web) initCronJobs() {
 	var cronFilters []Filter
-	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron'")
+	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron' AND var2 = 'yes'")
 	web.cronWatch = make(map[uint]cron.EntryID, len(cronFilters))
 	web.cron = cron.New()
 	for _, cronFilter := range cronFilters {
@@ -227,7 +227,7 @@ func (web *Web) deleteWatch(c *gin.Context) {
 	web.db.Delete(&FilterOutput{}, "watch_id = ?", id)
 
 	var cronFilters []Filter
-	web.db.Model(&Filter{}).Find(&cronFilters, "watch_id = ? AND type = 'cron'", id)
+	web.db.Model(&Filter{}).Find(&cronFilters, "watch_id = ? AND type = 'cron' AND var2 = 'yes'", id)
 	for _, filter := range cronFilters {
 		entryID, exist := web.cronWatch[filter.ID]
 		if exist {
@@ -340,7 +340,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 
 	// stop/delete cronjobs running for this watch
 	var cronFilters []Filter
-	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watch.ID).Find(&cronFilters)
+	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron' AND var2 = 'yes'", watch.ID).Find(&cronFilters)
 	for _, filter := range cronFilters {
 		entryID, exist := web.cronWatch[filter.ID]
 		if exist {
@@ -367,6 +367,9 @@ func (web *Web) watchUpdate(c *gin.Context) {
 		for i := range newFilters {
 			filter := &newFilters[i]
 			if filter.Type != "cron" {
+				continue
+			}
+			if *filter.Var2 == "no" {
 				continue
 			}
 			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
