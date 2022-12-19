@@ -76,6 +76,11 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 				getCronDebugResult(filter)
 				continue
 			}
+			if filter.Type == "echo" {
+				getFilterResultEcho(filter)
+				processedMap[filter.ID] = true
+				continue
+			}
 			if len(filter.Parents) == 0 && !debug {
 				continue
 			}
@@ -220,6 +225,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 					getFilterResultConditionHigherThan(filter)
 				}
 			}
+		}
+	case filter.Type == "echo":
+		{
+			getFilterResultEcho(filter)
 		}
 	default:
 		filter.log("getFilterResult called with filter.Type == '", filter.Type, "'")
@@ -894,4 +903,9 @@ func getFilterResultLua(filter *Filter) {
 			filter.Logs = append(filter.Logs, value.String())
 		},
 	)
+}
+
+func getFilterResultEcho(filter *Filter) {
+	log.Println(filter.Var1)
+	filter.Results = append(filter.Results, filter.Var1)
 }

@@ -1235,3 +1235,23 @@ func TestFilterLuaLogs(t *testing.T) {
 		t.Errorf("Unexpected log message: '%s'", filter.Logs[0])
 	}
 }
+
+func TestEchoFilter(t *testing.T) {
+	helloWorld := "Hello World!"
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Echo",
+			Type: "echo",
+			Var1: helloWorld,
+		},
+	}
+	filter1 := &filters[0]
+	connections := []FilterConnection{}
+	buildFilterTree(filters, connections)
+	processFilters(filters, nil, nil, false, nil)
+
+	if !reflect.DeepEqual(filter1.Results, []string{helloWorld}) {
+		t.Errorf("%s did not match %s", helloWorld, filter1.Results)
+	}
+}
