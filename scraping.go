@@ -906,6 +906,5 @@ func getFilterResultLua(filter *Filter) {
 }
 
 func getFilterResultEcho(filter *Filter) {
-	log.Println(filter.Var1)
 	filter.Results = append(filter.Results, filter.Var1)
 }
