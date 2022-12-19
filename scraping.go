@@ -15,6 +15,7 @@ import (
 
 	"github.com/andybalholm/cascadia"
 	"github.com/antchfx/htmlquery"
+	"github.com/robfig/cron/v3"
 	"github.com/tidwall/gjson"
 	lualibs "github.com/vadv/gopher-lua-libs"
 	lua "github.com/yuin/gopher-lua"
@@ -65,31 +66,32 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 		nextFilters := make([]*Filter, 0, len(currentFilters))
 		for i := range currentFilters {
 			filter := currentFilters[i]
-		if filter.Type == "store" {
+			if filter.Type == "store" {
 				storeFilters = append(storeFilters, filter)
-			processedMap[filter.ID] = true
-			continue
-		}
-			if debug && filter.Type == "cron" {
 				processedMap[filter.ID] = true
 				continue
 			}
-		if len(filter.Parents) == 0 && !debug {
-			continue
-		}
-		var allParentsProcessed = true
-		for _, parent := range filter.Parents {
-			if _, contains := processedMap[parent.ID]; !contains {
-				allParentsProcessed = false
-				break
+			if debug && filter.Type == "cron" {
+				processedMap[filter.ID] = true
+				getCronDebugResult(filter)
+				continue
 			}
-		}
-		if !allParentsProcessed {
+			if len(filter.Parents) == 0 && !debug {
+				continue
+			}
+			var allParentsProcessed = true
+			for _, parent := range filter.Parents {
+				if _, contains := processedMap[parent.ID]; !contains {
+					allParentsProcessed = false
+					break
+				}
+			}
+			if !allParentsProcessed {
 				nextFilters = append(nextFilters, filter)
-			continue
-		}
+				continue
+			}
 			getFilterResult(filters, filter, watch, web, debug)
-		processedMap[filter.ID] = true
+			processedMap[filter.ID] = true
 		}
 		if len(nextFilters) == 0 {
 			break
@@ -848,6 +850,13 @@ func triggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, watch, false, scheduleID)
+}
+
+func getCronDebugResult(filter *Filter) {
+	_, err := cron.ParseStandard(filter.Var1)
+	if err != nil {
+		filter.log(err)
+	}
 }
 
 func getFilterResultLua(filter *Filter) {
