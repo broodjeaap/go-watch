@@ -10,4 +10,3 @@
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
-- db prune job

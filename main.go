@@ -144,6 +144,11 @@ func (web *Web) initCronJobs() {
 		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
 		web.cronWatch[cronFilter.ID] = entryID
 	}
+	if viper.IsSet("database.prune") {
+		pruneSchedule := viper.GetString("database.prune")
+		web.cron.AddFunc(pruneSchedule, web.pruneDB)
+		log.Println("Started DB prune cronjob:", pruneSchedule)
+	}
 	web.cron.Start()
 }
 
@@ -154,6 +159,30 @@ func (web *Web) initNotifiers() {
 		if telegramBot.Open() {
 			web.notifiers["Telegram"] = &telegramBot
 		}
+	}
+}
+
+func (web *Web) pruneDB() {
+	log.Println("Starting database pruning")
+	var storeNames []string
+	web.db.Model(&FilterOutput{}).Distinct().Pluck("name", &storeNames)
+	for _, storeName := range storeNames {
+		log.Println("Pruning:", storeName)
+		var values []FilterOutput
+		web.db.Model(&FilterOutput{}).Order("time asc").Find(&values, fmt.Sprintf("name = '%s'", storeName))
+		IDs := make([]uint, 0, len(values))
+		for i := range values {
+			if i > len(values)-3 {
+				break
+			}
+			a := values[i]
+			b := values[i+1]
+			c := values[i+2]
+			if a.Value == b.Value && b.Value == c.Value {
+				IDs = append(IDs, b.ID)
+			}
+		}
+		web.db.Delete(&FilterOutput{}, IDs)
 	}
 }
 
