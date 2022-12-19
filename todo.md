@@ -12,3 +12,4 @@
 - comments
 - db prune job
 - add var1 parsing test for cron jobs
+- add full buildFilterTree/processFilters test
