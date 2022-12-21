@@ -146,7 +146,10 @@ func (web *Web) initCronJobs() {
 	}
 	if viper.IsSet("database.prune") {
 		pruneSchedule := viper.GetString("database.prune")
-		web.cron.AddFunc(pruneSchedule, web.pruneDB)
+		_, err := web.cron.AddFunc(pruneSchedule, web.pruneDB)
+		if err != nil {
+			log.Fatalln("Could not parse database.prune:", pruneSchedule)
+		}
 		log.Println("Started DB prune cronjob:", pruneSchedule)
 	}
 	web.cron.Start()
