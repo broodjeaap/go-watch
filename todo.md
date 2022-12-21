@@ -10,3 +10,14 @@
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
+- set default value for database.dns
+- proper handling of errors in prune schedule
+- add <title>
+- add unique filter
+- provide template/example watches?
+    - Amazon
+    - NewEgg
+    - ebay
+    - walmart
+    - etsy
+    - aliexpress.com 
