@@ -10,7 +10,6 @@
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
-- add unique filter
 - provide template/example watches?
     - Amazon
     - NewEgg

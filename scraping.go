@@ -807,6 +807,21 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 	}
 }
 
+func getFilterResultUnique(filter *Filter) {
+	var valueMap map[string]bool
+	valueMap = make(map[string]bool)
+
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			valueMap[result] = true
+		}
+	}
+
+	for value, _ := range valueMap {
+		filter.Results = append(filter.Results, value)
+	}
+}
+
 func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debug bool) {
 	haveResults := false
 	for _, parent := range filter.Parents {

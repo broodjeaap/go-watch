@@ -1126,6 +1126,48 @@ func TestFilterHigherThan(t *testing.T) {
 	}
 }
 
+func TestFilterUnique(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Want  []string
+	}{
+		{[]string{"1"}, []string{"1"}},
+		{[]string{"1", "2"}, []string{"1", "2"}},
+		{[]string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "1"}, []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}},
+		{[]string{"1", "1"}, []string{"1"}},
+		{[]string{}, []string{}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s", test.Input)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{
+						Results: test.Input,
+					},
+				},
+			}
+			getFilterResultUnique(
+				&filter,
+			)
+			var wantMap map[string]bool
+			wantMap = make(map[string]bool)
+			for _, want := range test.Want {
+				wantMap[want] = true
+			}
+			var resultMap map[string]bool
+			resultMap = make(map[string]bool)
+			for _, result := range filter.Results {
+				resultMap[result] = true
+			}
+			if !reflect.DeepEqual(wantMap, resultMap) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
 func TestFilterLua(t *testing.T) {
 	passAll := `
 for i,input in pairs(inputs) do
