@@ -1,7 +1,9 @@
 # Todo
 - make generic 'notifier' interface
     - ~~telegram~~
+        - readme instructions
     - ~~discord~~
+        - readme instructions
     - matrix
     - email?
     - twitter?
