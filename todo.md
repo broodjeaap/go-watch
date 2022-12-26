@@ -1,7 +1,7 @@
 # Todo
 - make generic 'notifier' interface
-    - telegram
-    - discord
+    - ~~telegram~~
+    - ~~discord~~
     - matrix
     - email?
     - twitter?
