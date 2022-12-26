@@ -160,10 +160,16 @@ func (web *Web) initCronJobs() {
 
 func (web *Web) initNotifiers() {
 	web.notifiers = make(map[string]notifiers.Notifier, 5)
-	if viper.IsSet("telegram") {
+	if viper.IsSet("notifiers.telegram") {
 		telegramBot := notifiers.TelegramNotifier{}
 		if telegramBot.Open() {
 			web.notifiers["Telegram"] = &telegramBot
+		}
+	}
+	if viper.IsSet("notifiers.discord") {
+		discordBot := notifiers.DiscordNotifier{}
+		if discordBot.Open() {
+			web.notifiers["Discord"] = &discordBot
 		}
 	}
 }
