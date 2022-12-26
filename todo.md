@@ -10,7 +10,6 @@
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
-- set default value for database.dns
 - add unique filter
 - provide template/example watches?
     - Amazon
