@@ -61,8 +61,13 @@ func (discord *DiscordNotifier) Open() bool {
 		}
 		log.Println("Authorized discord bot for:", discord.ServerChannel.Name)
 	}
+	discord.Debug = viper.GetBool("notifiers.discord.debug")
+	if discord.Debug {
+		bot.LogLevel = discordgo.LogDebug
+	} else {
+		bot.LogLevel = discordgo.LogInformational
+	}
 	discord.Bot = bot
-	bot.Debug = viper.GetBool("notifiers.discord.debug")
 	return true
 }
 
