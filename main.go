@@ -535,9 +535,8 @@ func (web *Web) cacheView(c *gin.Context) {
 }
 
 func (web *Web) cacheClear(c *gin.Context) {
-	url := c.PostForm("url")
-	delete(web.urlCache, url)
-	c.Redirect(http.StatusSeeOther, "/cache/view")
+	web.urlCache = make(map[string]string, 5)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func (web *Web) exportWatch(c *gin.Context) {

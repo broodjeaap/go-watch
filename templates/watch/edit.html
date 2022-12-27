@@ -44,6 +44,11 @@ GoWatch Edit {{ .Watch.Name }}
             </button>
         </td>
         <td> 
+            <button type="button" id="clearCacheButton" class="btn btn-info btn-sm">
+                Clear Cache
+            </button>
+        </td>
+        <td> 
             <a href="/watch/view/{{ .Watch.ID }}" class="btn btn-outline-secondary btn-sm">
                 View Watch
             </a>
@@ -226,6 +231,5 @@ function canvasInit() {
 document.addEventListener('DOMContentLoaded', canvasInit, false);
 
 var notifiers = {{ .Notifiers }};
-
 </script>
 {{ end }}
