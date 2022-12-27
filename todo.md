@@ -5,7 +5,6 @@
     - ~~discord~~
         - readme instructions
     - ~~email~~
-        - postfix compose example?
     - matrix?
     - twitter?
     - sms?
