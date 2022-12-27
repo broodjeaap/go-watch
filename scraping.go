@@ -72,6 +72,9 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 				continue
 			}
 			if debug && filter.Type == "cron" {
+				if filter.Var2 != nil && *filter.Var2 == "no" {
+					filter.log("Schedule is disabled")
+				}
 				processedMap[filter.ID] = true
 				getCronDebugResult(filter)
 				continue
