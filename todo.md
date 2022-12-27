@@ -15,3 +15,5 @@
     - etsy
     - aliexpress.com
 - add apprise/Shoutrrr ?
+- debug notify to Results?
+- add test for regex replace with group
