@@ -4,7 +4,7 @@
         - readme instructions
     - ~~discord~~
         - readme instructions
-    - email
+    - ~~email~~
         - postfix compose example?
     - matrix?
     - twitter?
