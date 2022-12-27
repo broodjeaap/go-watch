@@ -3,5 +3,9 @@ GoWatch Error
 {{end}}
 
 {{define "content"}}
-<h1>Something went wrong, try again.</h1>
+{{ if .message }}
+    <h1>{{ .message }}</h1>
+{{ else }}
+    <h1>Something went wrong, try again.</h1>
+{{ end }}
 {{end}}
