@@ -586,8 +586,8 @@ var Diagrams = /** @class */ (function () {
         if (this.newConnection != null) {
             if (this.newConnection.input != null) {
                 this.addConnection(this.newConnection.output, this.newConnection.input);
-                this.mouseState.draggingConnection = false;
             }
+            this.mouseState.draggingConnection = false;
         }
         this.newConnection = null;
     };

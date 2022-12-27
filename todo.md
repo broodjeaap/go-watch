@@ -13,5 +13,4 @@
     - ebay
     - walmart
     - etsy
-    - aliexpress.com 
-- start connection, don't connect, cant start new connection bug?
+    - aliexpress.com

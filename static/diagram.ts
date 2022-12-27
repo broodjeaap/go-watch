@@ -255,7 +255,6 @@ class NewConnection extends CanvasObject {
             this.controlPoints.inputX = ms.offset.x + this.input.input.x;
             this.controlPoints.inputY = ms.offset.y + this.input.input.y;
             this.controlPoints.dX = Math.abs(this.controlPoints.outputX - this.controlPoints.inputX);
-
         }
         
         this.controlPoints.cp1x = (this.controlPoints.outputX + this.controlPoints.dX);
@@ -628,8 +627,8 @@ class Diagrams {
         if (this.newConnection != null){
             if (this.newConnection.input != null){
                 this.addConnection(this.newConnection.output, this.newConnection.input);
-                this.mouseState.draggingConnection = false;
             }
+            this.mouseState.draggingConnection = false;
         }
         this.newConnection = null;
     }
