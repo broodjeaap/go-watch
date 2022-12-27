@@ -207,6 +207,8 @@ It uses the [Golang templating language](https://pkg.go.dev/text/template), the 
 So if you have a `Min` filter like in the example, it can be referenced in the template by using `{{ .Min }}`.  
 The name of the watch is also included under `.WatchName`.  
 
+To configure notifiers see the [notifiers](#notifiers) section.
+
 ## Math
 
 ### Sum
@@ -269,6 +271,72 @@ There is also a `logs` table that can be used the same way as the `outputs` tabl
 Much of the functionality that is provided through individual filters in GoWatch can also be done from Lua.  
 The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tree/master/http) lib, whose output can be parsed with the [xmlpath](https://github.com/vadv/gopher-lua-libs/tree/master/xmlpath) or [json](https://github.com/vadv/gopher-lua-libs/tree/master/json) libs and then filtered with a [regular expression](https://github.com/vadv/gopher-lua-libs/tree/master/regexp) or some regular Lua scripting to then finally be turned into a ready to send notification through a [template](https://github.com/vadv/gopher-lua-libs/tree/master/template).  
 
+# Notifiers
+
+## Telegram
+
+Get a bot token from the [@BotFather](https://core.telegram.org/bots/tutorial) and get the [chatID](https://www.alphr.com/find-chat-id-telegram/) of the chat want to send the notifications to.  
+An example config for sending notifications through Telegram:  
+```
+notifiers:
+  telegram:
+    token: "<token>"
+    chat: "<chatID>"
+    debug: false
+database:
+  dsn: "watch.db"
+  prune: "@every 1h"
+```
+
+## Discord
+
+To get a token, userID and/or serverID you first have to enable [Developer Mode and create a new application](https://www.ionos.com/digitalguide/server/know-how/creating-discord-bot/).  
+Then you can right click on your username in any chat to copy your user ID or right click on a server/channel to get the server/channel ID.  
+An example config for sending DM notifications through Discord:  
+```
+notifiers:
+  discord:
+    token: "<token>"
+    userID: "<userID>"
+    debug: false
+database:
+  dsn: "watch.db"
+  prune: "@every 1h"
+```
+
+An example config for sending channel notifications:  
+```
+notifiers:
+  discord:
+    token: "<token>"
+    server:
+      ID: "<serverID>"
+      channel: "<channelID>"
+    debug: false
+database:
+  dsn: "watch.db"
+  prune: "@every 1h"
+```
+
+Both a userID and serverID/channelID is also possible.
+
+## Email
+
+An example config for sending email notifications through a SMTP relay server:  
+```
+notifiers:
+  email:
+    server: "smtp.relay.com"
+    port: "465"
+    from: "from@email.com"
+    user: "apikey"
+    password: "-"
+    to: "to@email.com"
+database:
+  dsn: "watch.db"
+  prune: "@every 1h"
+```
+
 # Dev
 ## type script compilation
 
@@ -282,8 +350,10 @@ The following libaries are used in Go-Watch:
 - [Cascadia](https://pkg.go.dev/github.com/andybalholm/cascadia) for CSS selectors
 - [htmlquery](https://pkg.go.dev/github.com/antchfx/htmlquery) for XPath selectors
 - [validator](https://pkg.go.dev/github.com/go-playground/validator/v10@v10.11.0) for user user input validation
-- [tgbotapi](https://pkg.go.dev/github.com/go-telegram-bot-api/telegram-bot-api/v5@v5.5.1) for Telegram
-- [discordgo](https://pkg.go.dev/github.com/bwmarrin/discordgo) for Discord
+- Notifiers
+  - [tgbotapi](https://pkg.go.dev/github.com/go-telegram-bot-api/telegram-bot-api/v5@v5.5.1) for Telegram
+  - [discordgo](https://pkg.go.dev/github.com/bwmarrin/discordgo) for Discord
+  - [gomail](https://pkg.go.dev/gopkg.in/gomail.v2?utm_source=godoc) for Email
 - [cron](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0) for job scheduling
 - [viper](https://pkg.go.dev/github.com/spf13/viper@v1.12.0) for config management
 - [gjson](https://pkg.go.dev/github.com/tidwall/gjson@v1.14.2) for JSON selectors
