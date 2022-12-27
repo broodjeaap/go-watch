@@ -9,8 +9,8 @@
 - comments
 - ~~provide template/example watches~~
     - Amazon
-    - NewEgg
-    - ebay
+    - ~~NewEgg~~
+    - ~~ebay~~
     - walmart
     - etsy
     - aliexpress.com
