@@ -7,7 +7,7 @@
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
-- provide template/example watches?
+- ~~provide template/example watches~~
     - Amazon
     - NewEgg
     - ebay

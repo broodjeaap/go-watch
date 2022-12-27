@@ -1,0 +1,44 @@
+{{define "title"}}
+GoWatch {{ .Watch.Name }}
+{{end}}
+
+{{define "content"}}
+
+<form action="/watch/create" method="POST">
+    <div class="container">
+        <div class="row g-3 justify-content-center">
+            <div class="col-auto">
+                <div class="form-floating">
+                    <input type="text" class="form-control form-control-lg" width="20" id="watch_name" name="watch_name" placeholder="Watch Name">
+                    <label for="watch_name">Watch Name</label>
+                </div>
+            </div>
+            <div class="col-auto">
+                <span id="submitInline" class="form-text">
+                    <button class="btn btn-primary btn-lg">Create</button>
+                </span>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-5">
+            <div class="row h3 justify-content-center">With Watch Templates:</div>
+            <div class="col-2"> </div>
+            <div class="col-2">
+                {{ range $i, $name := .templates }}
+                <div class="form-check d-flex my-2">
+                    {{ if eq $i 0 }}
+                    <input class="form-check-input" type="radio" name="template" value="{{ $i }}" id="template_{{ $i }}" checked>
+                    {{ else }}
+                    <input class="form-check-input" type="radio" name="template" value="{{ $i }}" id="template_{{ $i }}">
+                    {{ end }}
+                    <label class="form-check-label h5 mx-3" for="template_{{ $i }}">
+                        {{ $name }}
+                    </label>
+                </div>
+                {{ end }}
+            </div>
+            <div class="col-2"> </div>
+        </div>
+    </div>
+</form>
+
+{{end}}

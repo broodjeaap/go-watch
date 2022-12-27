@@ -27,7 +27,7 @@ import (
 	_ "embed"
 )
 
-//go:embed templates static
+//go:embed templates static watchTemplates
 var EMBED_FS embed.FS
 
 type Web struct {
@@ -102,6 +102,7 @@ func (web *Web) initRouter() {
 
 	web.router.GET("/watch/view/:id", web.watchView)
 	web.router.GET("/watch/edit/:id", web.watchEdit)
+	web.router.GET("/watch/create", web.watchCreate)
 	web.router.POST("/watch/create", web.watchCreatePost)
 	web.router.POST("/watch/update", web.watchUpdate)
 	web.router.POST("/watch/delete", web.deleteWatch)
@@ -125,6 +126,7 @@ func (web *Web) initTemplates() {
 	web.templates.Add("index", template.Must(template.ParseFS(templatesFS, "base.html", "index.html")))
 
 	web.templates.Add("watchView", template.Must(template.ParseFS(templatesFS, "base.html", "watch/view.html")))
+	web.templates.Add("watchCreate", template.Must(template.ParseFS(templatesFS, "base.html", "watch/create.html")))
 	web.templates.Add("watchEdit", template.Must(template.ParseFS(templatesFS, "base.html", "watch/edit.html")))
 
 	web.templates.Add("cacheView", template.Must(template.ParseFS(templatesFS, "base.html", "cache/view.html")))
@@ -247,6 +249,23 @@ func (web *Web) index(c *gin.Context) {
 	c.HTML(http.StatusOK, "index", watches)
 }
 
+func (web *Web) watchCreate(c *gin.Context) {
+	templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
+	if err != nil {
+		log.Fatalln("Could not load templates from embed FS")
+	}
+	templates := make([]string, 0, len(templateFiles))
+	templates = append(templates, "None")
+	for _, template := range templateFiles {
+		templateFile := template.Name()
+		templateName := templateFile[:len(templateFile)-len(".json")]
+		templates = append(templates, templateName)
+	}
+	c.HTML(http.StatusOK, "watchCreate", gin.H{
+		"templates": templates,
+	})
+}
+
 func (web *Web) watchCreatePost(c *gin.Context) {
 	var watch Watch
 	errMap, err := bindAndValidateWatch(&watch, c)
@@ -254,7 +273,80 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "500", errMap)
 		return
 	}
+
+	templateID, err := strconv.Atoi(c.PostForm("template"))
+	if err != nil {
+		log.Println(err)
+		templateID = 0
+	}
+
+	if templateID == 0 {
+		web.db.Create(&watch)
+		c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
+		return
+	}
+
+	templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
+	if err != nil {
+		log.Fatalln("Could not load templates from embed FS")
+	}
+
+	if templateID >= len(templateFiles) {
+		log.Println("/watch/create POSTed with", templateID, "but only", len(templateFiles), "templates")
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	template := templateFiles[templateID-1] // -1 because of "None" option
+	templatePath := fmt.Sprintf("watchTemplates/%s", template.Name())
+	jsn, err := EMBED_FS.ReadFile(templatePath)
+	if err != nil {
+		log.Println("Could not read template from embed.FS:", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	export := WatchExport{}
+	if err := json.Unmarshal(jsn, &export); err != nil {
+		log.Println("Could not unmarshel JSON:", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
 	web.db.Create(&watch)
+
+	filterMap := make(map[uint]*Filter)
+	for i := range export.Filters {
+		filter := &export.Filters[i]
+		filterMap[filter.ID] = filter
+		filter.ID = 0
+		filter.WatchID = watch.ID
+	}
+	if len(export.Filters) > 0 {
+		tx := web.db.Create(&export.Filters)
+		if tx.Error != nil {
+			log.Println("Create filters transaction failed:", err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
+	for i := range export.Connections {
+		connection := &export.Connections[i]
+		connection.ID = 0
+		connection.WatchID = watch.ID
+		connection.OutputID = filterMap[connection.OutputID].ID
+		connection.InputID = filterMap[connection.InputID].ID
+	}
+	if len(export.Connections) > 0 {
+		tx := web.db.Create(&export.Connections)
+		if tx.Error != nil {
+			log.Println("Create connections transaction failed:", err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+	}
+
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
 }
 
