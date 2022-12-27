@@ -172,6 +172,12 @@ func (web *Web) initNotifiers() {
 			web.notifiers["Discord"] = &discordBot
 		}
 	}
+	if viper.IsSet("notifiers.email") {
+		emailBot := notifiers.EmailNotifier{}
+		if emailBot.Open() {
+			web.notifiers["Email"] = &emailBot
+		}
+	}
 }
 
 func (web *Web) pruneDB() {
