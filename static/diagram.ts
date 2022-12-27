@@ -104,7 +104,7 @@ class NodeIO extends CanvasObject {
     }
 
     draw(ctx: CanvasRenderingContext2D, ms: MouseState): void {
-        ctx.fillStyle = this.input ? "red" : "blue";
+        ctx.fillStyle = this.input ? "#ED575A" : "#66A7C5";
         ctx.beginPath();
         ctx.arc(ms.offset.x + this.x, ms.offset.y + this.y, this.radius, circleRightRadians, circleTopRadians, this.input);
         ctx.fill();

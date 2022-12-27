@@ -102,7 +102,7 @@ var NodeIO = /** @class */ (function (_super) {
         }
     };
     NodeIO.prototype.draw = function (ctx, ms) {
-        ctx.fillStyle = this.input ? "red" : "blue";
+        ctx.fillStyle = this.input ? "#ED575A" : "#66A7C5";
         ctx.beginPath();
         ctx.arc(ms.offset.x + this.x, ms.offset.y + this.y, this.radius, circleRightRadians, circleTopRadians, this.input);
         ctx.fill();

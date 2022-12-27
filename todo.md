@@ -19,4 +19,4 @@
     - walmart
     - etsy
     - aliexpress.com 
-- softer colors for IO of filter
+- start connection, don't connect, cant start new connection bug?
