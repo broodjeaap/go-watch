@@ -14,3 +14,4 @@
     - walmart
     - etsy
     - aliexpress.com
+-clear cache button on edit page
