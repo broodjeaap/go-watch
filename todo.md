@@ -4,8 +4,9 @@
         - readme instructions
     - ~~discord~~
         - readme instructions
-    - matrix
-    - email?
+    - email
+        - postfix compose example?
+    - matrix?
     - twitter?
     - sms?
     - etch?
@@ -19,3 +20,4 @@
     - walmart
     - etsy
     - aliexpress.com 
+- softer colors for IO of filter
