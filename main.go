@@ -223,11 +223,6 @@ func (web *Web) run() {
 	web.router.Run("0.0.0.0:8080")
 }
 
-type WatchEntry struct {
-	Watch *Watch
-	Entry *cron.Entry
-}
-
 func (web *Web) index(c *gin.Context) {
 	watches := []Watch{}
 	web.db.Find(&watches)
