@@ -14,4 +14,5 @@
     - walmart
     - etsy
     - aliexpress.com
--clear cache button on edit page
+- warning for disabled cron ?
+- clear cache button on edit page
