@@ -1,13 +1,10 @@
 # Todo
 - make generic 'notifier' interface
-    - matrix?
-    - twitter?
-    - sms?
-    - etch?
+    - apprise service
+    - shoutrrr
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
-- add apprise/Shoutrrr ?
 - debug notify to Results?
 - add test for regex replace with group
 - run/fix staticcheck
