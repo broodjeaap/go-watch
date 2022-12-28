@@ -8,6 +8,7 @@
 - log things to db for cron runs 
 - comments
 - ~~provide template/example watches~~
+    - with 'from url' option
     - Amazon
     - ~~NewEgg~~
     - ~~ebay~~
