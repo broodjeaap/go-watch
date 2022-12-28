@@ -5,7 +5,6 @@
 - trusted proxies in conf?
 - log things to db for cron runs 
 - comments
-- debug notify to Results?
 - add test for regex replace with group
 - run/fix staticcheck
 - add browserless support ?
