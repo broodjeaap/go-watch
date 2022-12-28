@@ -180,6 +180,12 @@ func (web *Web) initNotifiers() {
 			web.notifiers["Email"] = &emailBot
 		}
 	}
+	if viper.IsSet("notifiers.shoutrrr") {
+		shoutrrrBot := notifiers.ShoutrrrNotifier{}
+		if shoutrrrBot.Open() {
+			web.notifiers["Shoutrrr"] = &shoutrrrBot
+		}
+	}
 }
 
 func (web *Web) pruneDB() {

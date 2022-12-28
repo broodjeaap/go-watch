@@ -273,6 +273,22 @@ The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tr
 
 # Notifiers
 
+## Shoutrrr
+
+[Shoutrrr](https://containrrr.dev/shoutrrr/v0.5/) can be used to notify many different services, check their docs for a [list](https://containrrr.dev/shoutrrr/v0.5/services/overview/) of which ones.  
+An example config for sending notifications through Shoutrrr:   
+```
+notifiers:
+  shoutrrr:
+    urls:
+    - telegram://<token>@telegram?chats=<channel-1-id>,<chat-2-id>
+    - discord://<token>@<webhookid>
+    - etc...
+database:
+  dsn: "watch.db"
+  prune: "@every 1h"
+```
+
 ## Telegram
 
 Get a bot token from the [@BotFather](https://core.telegram.org/bots/tutorial) and get the [chatID](https://www.alphr.com/find-chat-id-telegram/) of the chat want to send the notifications to.  
@@ -351,6 +367,7 @@ The following libaries are used in Go-Watch:
 - [htmlquery](https://pkg.go.dev/github.com/antchfx/htmlquery) for XPath selectors
 - [validator](https://pkg.go.dev/github.com/go-playground/validator/v10@v10.11.0) for user user input validation
 - Notifiers
+  - [Shoutrrr](https://github.com/containrrr/shoutrrr/) for many different services
   - [tgbotapi](https://pkg.go.dev/github.com/go-telegram-bot-api/telegram-bot-api/v5@v5.5.1) for Telegram
   - [discordgo](https://pkg.go.dev/github.com/bwmarrin/discordgo) for Discord
   - [gomail](https://pkg.go.dev/gopkg.in/gomail.v2?utm_source=godoc) for Email
