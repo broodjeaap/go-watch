@@ -12,8 +12,13 @@
     - ~~NewEgg~~
     - ~~ebay~~
     - walmart
-    - etsy
+    - ~~etsy~~
     - aliexpress.com
 - add apprise/Shoutrrr ?
 - debug notify to Results?
 - add test for regex replace with group
+- run/fix staticcheck
+- replace readme image
+    - better store filter names
+- reorder filters?
+- add browserless support ?
