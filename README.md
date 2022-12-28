@@ -23,11 +23,11 @@ An [XPath](#xpath) filter could also have been used.
 
 `Min` is a [Minimum](#minimum) filter, it calculates the minimum value of its inputs.  
 
-`Store Avg` and `Store Min` are [Store](#store) filters, they store its input values in the database.  
+`Average` and `Minimum` are [Store](#store) filters, they store its input values in the database.  
 
 `Diff` is a [Different Than Last](#different-then-last) filter, only passing on the inputs that are different then the last value stored in the database.  
 
-`Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/Matrix/etc).
+`Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/etc).
 # Run
 
 ## Docker

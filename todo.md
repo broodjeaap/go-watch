@@ -19,7 +19,5 @@
 - debug notify to Results?
 - add test for regex replace with group
 - run/fix staticcheck
-- replace readme image
-    - better store filter names
 - reorder filters?
 - add browserless support ?
