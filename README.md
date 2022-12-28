@@ -273,13 +273,24 @@ The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tr
 
 # Notifiers
 
+The basic form is:  
+```
+notifiers:
+  <notifier-name>:
+    type: "<notifier-type>"
+    other: ""
+    values: ""
+    etc: ""
+```
+See below for possible types.
 ## Shoutrrr
 
 [Shoutrrr](https://containrrr.dev/shoutrrr/v0.5/) can be used to notify many different services, check their docs for a [list](https://containrrr.dev/shoutrrr/v0.5/services/overview/) of which ones.  
 An example config for sending notifications through Shoutrrr:   
 ```
 notifiers:
-  shoutrrr:
+  Shoutrrr-telegram-discord:
+    type: "shoutrrr"
     urls:
     - telegram://<token>@telegram?chats=<channel-1-id>,<chat-2-id>
     - discord://<token>@<webhookid>
@@ -295,7 +306,7 @@ Get a bot token from the [@BotFather](https://core.telegram.org/bots/tutorial) a
 An example config for sending notifications through Telegram:  
 ```
 notifiers:
-  telegram:
+  Telegram:
     token: "<token>"
     chat: "<chatID>"
     debug: false
@@ -311,7 +322,8 @@ Then you can right click on your username in any chat to copy your user ID or ri
 An example config for sending DM notifications through Discord:  
 ```
 notifiers:
-  discord:
+  Discord:
+    type: "discord"
     token: "<token>"
     userID: "<userID>"
     debug: false
@@ -323,7 +335,8 @@ database:
 An example config for sending channel notifications:  
 ```
 notifiers:
-  discord:
+  Discord:
+    type: "discord"
     token: "<token>"
     server:
       ID: "<serverID>"
@@ -341,7 +354,8 @@ Both a userID and serverID/channelID is also possible.
 An example config for sending email notifications through a SMTP relay server:  
 ```
 notifiers:
-  email:
+  Email-to-at-email-com:
+    type: "email"
     server: "smtp.relay.com"
     port: "465"
     from: "from@email.com"
