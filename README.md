@@ -180,7 +180,7 @@ If the `With` value is empty, it will just remove matching text.
 
 ## Match
 
-Matches the inputs to a value, supports regular expressions.
+Searches for the regex, outputs every match.
 
 ## Substring
 
