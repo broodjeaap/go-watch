@@ -1,6 +1,7 @@
 package notifiers
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -17,39 +18,45 @@ type EmailNotifier struct {
 	Debug    bool
 }
 
-func (email *EmailNotifier) Open() bool {
-	if viper.IsSet("notifiers.email.server") {
-		email.Server = viper.GetString("notifiers.email.server")
+func (email *EmailNotifier) Open(configPath string) bool {
+	serverPath := fmt.Sprintf("%s.server", configPath)
+	if viper.IsSet(serverPath) {
+		email.Server = viper.GetString(serverPath)
 	} else {
 		log.Println("Need 'server' var for email notifier")
 		return false
 	}
-	if viper.IsSet("notifiers.email.port") {
-		email.Port = viper.GetInt("notifiers.email.port")
+	portPath := fmt.Sprintf("%s.port", configPath)
+	if viper.IsSet(portPath) {
+		email.Port = viper.GetInt(portPath)
 	} else {
 		log.Println("Need 'port' var for email notifier")
 		return false
 	}
-	if viper.IsSet("notifiers.email.user") {
-		email.User = viper.GetString("notifiers.email.user")
+	userPath := fmt.Sprintf("%s.user", configPath)
+	if viper.IsSet(userPath) {
+		email.User = viper.GetString(userPath)
 	} else {
 		log.Println("Need 'user' var for email notifier")
 		return false
 	}
-	if viper.IsSet("notifiers.email.from") {
-		email.From = viper.GetString("notifiers.email.from")
+	fromPath := fmt.Sprintf("%s.from", configPath)
+	if viper.IsSet(fromPath) {
+		email.From = viper.GetString(fromPath)
 	} else {
 		log.Println("Need 'from' var for email notifier")
 		return false
 	}
-	if viper.IsSet("notifiers.email.to") {
-		email.To = viper.GetString("notifiers.email.to")
+	toPath := fmt.Sprintf("%s.to", configPath)
+	if viper.IsSet(toPath) {
+		email.To = viper.GetString(toPath)
 	} else {
 		log.Println("Need 'to' var for email notifier")
 		return false
 	}
-	if viper.IsSet("notifiers.email.password") {
-		email.Password = viper.GetString("notifiers.email.password")
+	passwordPath := fmt.Sprintf("%s.password", configPath)
+	if viper.IsSet(passwordPath) {
+		email.Password = viper.GetString(passwordPath)
 	} else {
 		log.Println("Need 'password' var for email notifier")
 		return false

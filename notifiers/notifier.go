@@ -1,7 +1,7 @@
 package notifiers
 
 type Notifier interface {
-	Open() bool
+	Open(configPath string) bool
 	Message(message string) bool
 	Close() bool
 }

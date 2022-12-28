@@ -162,28 +162,48 @@ func (web *Web) initCronJobs() {
 
 func (web *Web) initNotifiers() {
 	web.notifiers = make(map[string]notifiers.Notifier, 5)
-	if viper.IsSet("notifiers.telegram") {
-		telegramBot := notifiers.TelegramNotifier{}
-		if telegramBot.Open() {
-			web.notifiers["Telegram"] = &telegramBot
-		}
+	if !viper.IsSet("notifiers") {
+		log.Panicln("No notifiers set!")
+		return
 	}
-	if viper.IsSet("notifiers.discord") {
-		discordBot := notifiers.DiscordNotifier{}
-		if discordBot.Open() {
-			web.notifiers["Discord"] = &discordBot
+	notifiersMap := viper.GetStringMap("notifiers")
+	for name := range notifiersMap {
+		notifierPath := fmt.Sprintf("notifiers.%s", name)
+		notifierMap := viper.GetStringMapString(notifierPath)
+
+		notifierType, exists := notifierMap["type"]
+		if !exists {
+			log.Printf("No 'type' for '%s' notifier!", name)
+			continue
 		}
-	}
-	if viper.IsSet("notifiers.email") {
-		emailBot := notifiers.EmailNotifier{}
-		if emailBot.Open() {
-			web.notifiers["Email"] = &emailBot
+		success := false
+		var notifier notifiers.Notifier
+		switch notifierType {
+		case "telegram":
+			{
+				notifier = &notifiers.TelegramNotifier{}
+				success = notifier.Open(notifierPath)
+				break
+			}
+		case "discord":
+			{
+				notifier = &notifiers.DiscordNotifier{}
+				success = notifier.Open(notifierPath)
+				break
+			}
+		case "email":
+			{
+				notifier = &notifiers.EmailNotifier{}
+				success = notifier.Open(notifierPath)
+			}
+		case "shoutrrr":
+			{
+				notifier = &notifiers.ShoutrrrNotifier{}
+				success = notifier.Open(notifierPath)
+			}
 		}
-	}
-	if viper.IsSet("notifiers.shoutrrr") {
-		shoutrrrBot := notifiers.ShoutrrrNotifier{}
-		if shoutrrrBot.Open() {
-			web.notifiers["Shoutrrr"] = &shoutrrrBot
+		if success {
+			web.notifiers[name] = notifier
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package notifiers
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/containrrr/shoutrrr"
@@ -12,13 +13,14 @@ type ShoutrrrNotifier struct {
 	URLs []string
 }
 
-func (shoutr *ShoutrrrNotifier) Open() bool {
-	log.Println("Shoutrrr version:", shoutrrr.Version())
-	if !viper.IsSet("notifiers.shoutrrr.urls") {
+func (shoutr *ShoutrrrNotifier) Open(configPath string) bool {
+	urlsPath := fmt.Sprintf("%s.urls", configPath)
+	if !viper.IsSet(urlsPath) {
 		log.Println("Need 'urls' for Shoutrrr")
 		return false
 	}
-	shoutr.URLs = viper.GetStringSlice("notifiers.shoutrrr.urls")
+	shoutr.URLs = viper.GetStringSlice(urlsPath)
+	log.Println("Shoutrrr version:", shoutrrr.Version())
 	return true
 }
 

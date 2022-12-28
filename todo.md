@@ -4,4 +4,5 @@
 - comments
 - run/fix staticcheck
 - add browserless support ?
-- refactor notifiers to be a list, with 'type' value?
+- ~~refactor notifiers to be a list, with 'type' value?~~
+    - readme

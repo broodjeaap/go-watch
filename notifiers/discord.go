@@ -1,6 +1,7 @@
 package notifiers
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/bwmarrin/discordgo"
@@ -18,8 +19,10 @@ type DiscordNotifier struct {
 	Debug         bool
 }
 
-func (discord *DiscordNotifier) Open() bool {
-	if !viper.IsSet("notifiers.discord.userID") && !viper.IsSet("notifiers.discord.server") {
+func (discord *DiscordNotifier) Open(configPath string) bool {
+	userIDPath := fmt.Sprintf("%s.userID", configPath)
+	serverPath := fmt.Sprintf("%s.server", configPath)
+	if !viper.IsSet(userIDPath) && !viper.IsSet(serverPath) {
 		log.Println("Net either 'serverID' or 'userID' for Discord")
 		return false
 	}
@@ -28,8 +31,8 @@ func (discord *DiscordNotifier) Open() bool {
 		log.Println("Could not start Discord notifier:\n", err)
 		return false
 	}
-	if viper.IsSet("notifiers.discord.userID") {
-		discord.UserID = viper.GetString("notifiers.discord.userID")
+	if viper.IsSet(userIDPath) {
+		discord.UserID = viper.GetString(userIDPath)
 		channel, err := bot.UserChannelCreate(discord.UserID)
 		if err != nil {
 			log.Println("Could not connect to user channel:", discord.UserID, err)
@@ -38,9 +41,11 @@ func (discord *DiscordNotifier) Open() bool {
 		discord.UserChannel = channel
 		log.Println("Authorized discord bot for:", channel.Recipients)
 	}
-	if viper.IsSet("notifiers.discord.server") {
-		discord.ServerID = viper.GetString("notifiers.discord.server.ID")
-		discord.ChannelID = viper.GetString("notifiers.discord.server.channel")
+	if viper.IsSet(serverPath) {
+		serverIDPath := fmt.Sprintf("%s.server.ID", configPath)
+		serverChannelPath := fmt.Sprintf("%s.server.channel", configPath)
+		discord.ServerID = viper.GetString(serverIDPath)
+		discord.ChannelID = viper.GetString(serverChannelPath)
 		channels, err := bot.GuildChannels(discord.ServerID)
 		if err != nil {
 			log.Println("Could not connect to server channel:", discord.ServerID, err)
@@ -61,7 +66,8 @@ func (discord *DiscordNotifier) Open() bool {
 		}
 		log.Println("Authorized discord bot for:", discord.ServerChannel.Name)
 	}
-	discord.Debug = viper.GetBool("notifiers.discord.debug")
+	debugPath := fmt.Sprintf("%s.debug", configPath)
+	discord.Debug = viper.GetBool(debugPath)
 	if discord.Debug {
 		bot.LogLevel = discordgo.LogDebug
 	} else {
