@@ -280,30 +280,51 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		templateID = 0
 	}
 
-	if templateID == 0 {
+	if templateID == 0 { // empty new watch
 		web.db.Create(&watch)
 		c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
 		return
 	}
 
-	templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
-	if err != nil {
-		log.Fatalln("Could not load templates from embed FS")
-	}
+	var jsn []byte
+	if templateID == -1 { // watch from url template
+		url := c.PostForm("url")
+		if len(url) == 0 {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		resp, err := http.Get(url)
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		jsn = body
+	} else {
+		templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
+		if err != nil {
+			log.Fatalln("Could not load templates from embed FS")
+		}
 
-	if templateID >= len(templateFiles) {
-		log.Println("/watch/create POSTed with", templateID, "but only", len(templateFiles), "templates")
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+		if templateID >= len(templateFiles) {
+			log.Println("/watch/create POSTed with", templateID, "but only", len(templateFiles), "templates")
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
 
-	template := templateFiles[templateID-1] // -1 because of "None" option
-	templatePath := fmt.Sprintf("watchTemplates/%s", template.Name())
-	jsn, err := EMBED_FS.ReadFile(templatePath)
-	if err != nil {
-		log.Println("Could not read template from embed.FS:", err)
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
+		template := templateFiles[templateID-1] // -1 because of "None" option
+		templatePath := fmt.Sprintf("watchTemplates/%s", template.Name())
+		_jsn, err := EMBED_FS.ReadFile(templatePath)
+		if err != nil {
+			log.Println("Could not read template from embed.FS:", err)
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		jsn = _jsn
 	}
 
 	export := WatchExport{}
