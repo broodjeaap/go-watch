@@ -141,29 +141,31 @@ func TestFilterCSS(t *testing.T) {
 func TestFilterReplace(t *testing.T) {
 	var tests = []struct {
 		Input string
-		Query string
+		Var1  string
+		Var2  string
 		Want  string
 	}{
-		{"0123456789", "0", "123456789"},
-		{"0123456789", "9", "012345678"},
-		{"0123456789", "3456", "012789"},
-		{"0123456789_0123456789", "3456", "012789_012789"},
-		{"世界日本語", "世", "界日本語"},
-		{"世界日本語", "語", "世界日本"},
-		{"世界日_世界日_世界日", "界", "世日_世日_世日"},
+		{"0123456789", "0", "", "123456789"},
+		{"0123456789", "9", "", "012345678"},
+		{"0123456789", "3456", "", "012789"},
+		{"0123456789_0123456789", "3456", "", "012789_012789"},
+		{"世界日本語", "世", "", "界日本語"},
+		{"世界日本語", "語", "", "世界日本"},
+		{"世界日_世界日_世界日", "界", "", "世日_世日_世日"},
 		// TODO add replace tests
 		// TODO add regex tests
 		// TODO add regex replace tests
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
+		testname := fmt.Sprintf("%s '%s' '%s'", test.Input, test.Var1, test.Var2)
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Parents: []*Filter{
 					{Results: []string{test.Input}},
 				},
-				Var1: test.Query,
+				Var1: test.Var1,
+				Var2: &test.Var2,
 			}
 			getFilterResultReplace(
 				&filter,
