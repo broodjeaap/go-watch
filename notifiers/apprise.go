@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -85,7 +86,10 @@ func (apprise *AppriseNotifier) Message(message string) bool {
 		log.Println("Could not parse Apprise response:", err)
 		return false
 	}
-	log.Println(string(body))
+	bdy := string(body)
+	if !strings.Contains(bdy, "Notification(s) sent.") {
+		log.Println("Sending notifications failed:", bdy)
+	}
 	return true
 }
 
