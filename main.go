@@ -163,7 +163,7 @@ func (web *Web) initCronJobs() {
 func (web *Web) initNotifiers() {
 	web.notifiers = make(map[string]notifiers.Notifier, 5)
 	if !viper.IsSet("notifiers") {
-		log.Panicln("No notifiers set!")
+		log.Println("No notifiers set!")
 		return
 	}
 	notifiersMap := viper.GetStringMap("notifiers")
@@ -200,6 +200,15 @@ func (web *Web) initNotifiers() {
 			{
 				notifier = &notifiers.ShoutrrrNotifier{}
 				success = notifier.Open(notifierPath)
+			}
+		case "apprise":
+			{
+				notifier = &notifiers.AppriseNotifier{}
+				success = notifier.Open(notifierPath)
+			}
+		default:
+			{
+				log.Println("Did not recognize notifier type:", notifierType)
 			}
 		}
 		if success {

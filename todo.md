@@ -1,6 +1,6 @@
 # Todo
 - make generic 'notifier' interface
-    - apprise service
+    - ~~apprise service~~
         - apprise compose example
 - comments
 - run/fix staticcheck
