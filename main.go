@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -52,11 +53,21 @@ func newWeb() *Web {
 
 func (web *Web) init() {
 	web.urlCache = make(map[string]string, 5)
+	web.validateProxyURL()
 	web.initDB()
-
 	web.initRouter()
 	web.initCronJobs()
 	web.initNotifiers()
+}
+
+func (web *Web) validateProxyURL() {
+	if viper.IsSet("proxy.proxy_url") {
+		_, err := url.Parse(viper.GetString("proxy.proxy_url"))
+		if err != nil {
+			log.Println("Could not parse proxy url, check config")
+			return
+		}
+	}
 }
 
 func (web *Web) initDB() {
