@@ -1,4 +1,5 @@
 # Todo
+- proxy support
 - comments
 - run/fix staticcheck
 - add browserless support ?
