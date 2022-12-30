@@ -1,5 +1,6 @@
 # Todo
 - proxy support
+    - test proxy url at startup
 - comments
 - run/fix staticcheck
 - add browserless support ?
