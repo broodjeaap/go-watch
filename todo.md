@@ -8,3 +8,10 @@
 - file output notifier?
 - show startup warnings on page?
 - try to make docker image smaller
+- add compose templates for:
+    - sqlite
+    - sqlite+apprise
+    - sqlite+apprise+browserless
+    - postgresql
+    - postgresql+apprise
+    - postgresql+apprise+browserless
