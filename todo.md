@@ -1,6 +1,4 @@
 # Todo
-- proxy readme
-    - proxy pool readme
 - comments
 - run/fix staticcheck
 - add browserless support ?

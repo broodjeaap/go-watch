@@ -80,6 +80,53 @@ services:
       retries: 5
 ```
 
+### Proxy
+
+Go-Watch has some basic proxy support, using the config we can point Go-Watch to a proxy server:  
+```
+proxy:
+  proxy_url: http://proxy.com:1234
+```
+
+When using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used:  
+```
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: go-watch
+    environment:
+    - HTTP_PROXY=http://proxy.com:1234
+    - HTTPS_PROXY=http://proxy.com:1234
+```
+#### Proxy pools
+
+Proxy 'pools' are not directly supported by Go-Watch, but can still be set up by using a proxy, for example with [Squid](http://www.squid-cache.org/):  
+```
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: go-watch
+    environment:
+    - HTTP_PROXY=http://squid_proxy:3128
+    - HTTPS_PROXY=http://squid_proxy:3128
+  squid_proxy:
+    image: sameersbn/squid:latest
+    volumes:
+    - /path/to/squid.conf:/etc/squid/squid.conf
+```
+
+And in the `squid.conf` the proxy pool would be defined like this:  
+```
+cache_peer proxy1.com parent 3128 0 round-robin no-query
+cache_peer proxy2.com parent 3128 0 round-robin no-query
+```
+
 ### Authentication
 
 Go-Watch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
