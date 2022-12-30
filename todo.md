@@ -12,4 +12,3 @@
     - postgresql+apprise
     - postgresql+apprise+browserless
 - organize docs?
-- replace 'build' keys in compose snippets in readme with direct link

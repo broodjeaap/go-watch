@@ -51,10 +51,7 @@ version: "3"
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: base
+    image: ghcr.io/broodjeaap/go-watch:master
     container_name: go-watch
     environment:
     - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
@@ -92,10 +89,7 @@ When using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment vari
 ```
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: base
+    image: ghcr.io/broodjeaap/go-watch:master
     container_name: go-watch
     environment:
     - HTTP_PROXY=http://proxy.com:1234
@@ -107,10 +101,7 @@ Proxy 'pools' are not directly supported by Go-Watch, but can still be set up by
 ```
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: base
+    image: ghcr.io/broodjeaap/go-watch:master
     container_name: go-watch
     environment:
     - HTTP_PROXY=http://squid_proxy:3128
@@ -135,10 +126,7 @@ version: "3"
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: base
+    image: ghcr.io/broodjeaap/go-watch:master
     container_name: go-watch
     environment:
     - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
