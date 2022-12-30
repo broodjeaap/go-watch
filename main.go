@@ -195,16 +195,19 @@ func (web *Web) initNotifiers() {
 			{
 				notifier = &notifiers.EmailNotifier{}
 				success = notifier.Open(notifierPath)
+				break
 			}
 		case "shoutrrr":
 			{
 				notifier = &notifiers.ShoutrrrNotifier{}
 				success = notifier.Open(notifierPath)
+				break
 			}
 		case "apprise":
 			{
 				notifier = &notifiers.AppriseNotifier{}
 				success = notifier.Open(notifierPath)
+				break
 			}
 		default:
 			{
