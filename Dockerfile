@@ -12,7 +12,7 @@ COPY . ./
 RUN GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /gowatch
 
 
-FROM golang:1.19-alpine AS base
+FROM alpine AS base
 
 WORKDIR /app
 

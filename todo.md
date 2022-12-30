@@ -3,7 +3,8 @@
 - run/fix staticcheck
 - add browserless support ?
 - show startup warnings on page?
-- try to make docker image smaller
+- ~~try to make docker image smaller~~
+    - test if things still work
 - add compose templates for:
     - sqlite
     - sqlite+apprise
