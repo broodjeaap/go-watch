@@ -1,6 +1,6 @@
 # Todo
-- proxy support
-    - test proxy url at startup
+- proxy readme
+    - proxy pool readme
 - comments
 - run/fix staticcheck
 - add browserless support ?
@@ -13,3 +13,4 @@
     - postgresql
     - postgresql+apprise
     - postgresql+apprise+browserless
+- organize docs?
