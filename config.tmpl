@@ -32,6 +32,9 @@ notifiers:
     user: "<user>"
     password: "<password>"
     to: "to@email.com"
+  File:
+    type: "file"
+    path: /config/notifications.log
 database:
   dsn: "/config/watch.db" # for docker usage
   prune: "@every 1h"

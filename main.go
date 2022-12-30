@@ -211,6 +211,12 @@ func (web *Web) initNotifiers() {
 				success = notifier.Open(notifierPath)
 				break
 			}
+		case "file":
+			{
+				notifier = &notifiers.FileNotifier{}
+				success = notifier.Open(notifierPath)
+				break
+			}
 		default:
 			{
 				log.Println("Did not recognize notifier type:", notifierType)
