@@ -3,12 +3,14 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -27,7 +29,7 @@ import (
 	_ "embed"
 )
 
-//go:embed templates static watchTemplates
+//go:embed templates static watchTemplates config.tmpl
 var EMBED_FS embed.FS
 
 type Web struct {
@@ -700,6 +702,31 @@ func (web *Web) importWatch(c *gin.Context) {
 }
 
 func main() {
+	writeConfFlag := flag.String("writeConfig", "-", "Path to write template config to")
+	var printConfigFlag bool
+	flag.BoolVar(&printConfigFlag, "printConfig", false, "Print the template config to stdout")
+	flag.Parse()
+
+	if *writeConfFlag != "-" {
+		conf, err := EMBED_FS.ReadFile("config.tmpl")
+		if err != nil {
+			log.Fatalln("Could not read config.tmpl")
+		}
+		os.WriteFile(*writeConfFlag, conf, 0666)
+		log.Println("Wrote template config to:", *writeConfFlag)
+		return
+	}
+
+	if printConfigFlag {
+		conf, err := EMBED_FS.ReadFile("config.tmpl")
+		if err != nil {
+			log.Fatalln("Could not read config.tmpl")
+		}
+		log.SetFlags(0)
+		log.Println(string(conf))
+		return
+	}
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")

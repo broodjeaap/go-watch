@@ -1,0 +1,37 @@
+notifiers:
+  Apprise: # See: https://github.com/caronc/apprise-api#api-details
+    type: "apprise"
+    url: "http://apprise/notify"
+    title: "GoWatch notification through Apprise"
+    mtype: "info"  # Note 'mtype' to avoid conflict with 'type'
+    format: "text"
+    urls:
+    - "tgram://<bot_token>/<chat_id>/"
+    - "discord://<WebhookID>/<WebhookToken>/"
+  Shoutrrr: # See: https://containrrr.dev/shoutrrr/v0.5/services/overview/
+    type: "shoutrrr"
+    urls: 
+    - "telegram://<token>@telegram?chats=<channel-1-id>,<chat-2-id>"
+  Telegram:
+    token: "<token>" # See: https://core.telegram.org/bots#how-do-i-create-a-bot
+    chat: "<chatID>" # See: https://www.alphr.com/find-chat-id-telegram/
+    debug: false
+  Discord:
+    type: "discord"
+    token: "<token>" # See: https://www.writebots.com/discord-bot-token/
+    userID: "<userID>" # See: https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-
+    server:
+      ID: "<serverID>"
+      channel: "<channelID>"
+    debug: false
+  Email:
+    type: "email"
+    server: "smtp.relay.com"
+    port: "465"
+    from: "from@email.com"
+    user: "<user>"
+    password: "<password>"
+    to: "to@email.com"
+database:
+  dsn: "./watch.db"
+  prune: "@every 1h"

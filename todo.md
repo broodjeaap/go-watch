@@ -8,4 +8,3 @@
 - file output notifier?
 - show startup warnings on page?
 - try to make docker image smaller
-- add config template output param
