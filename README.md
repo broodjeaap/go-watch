@@ -32,17 +32,20 @@ An [XPath](#xpath) filter could also have been used.
 
 ## Docker
 
-Easiest way to get started is with the prebuilt docker image:  
+Easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:master`, first get a config template:  
+`docker run --rm ghcr.io/broodjeaap/go-watch:master -printConfig 2> config.yaml`  
+
+After modifying the config to fit your needs, start the docker container
 ```
 docker run \
     -p 8080:8080 \
-    -v /host/path/to/config:/config \
+    -v $PWD/:/config \
     ghcr.io/broodjeaap/go-watch:master
 ```
 
 This will start GoWatch with a SQLite database, stored in the `/config` directory, which is probably fine for most use cases.  
 
-To use another database, the environment variable `GOWATCH_DATABASE_DSN` can be used, for example with a PostgreSQL database:  
+To use another database, the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable can be used, for example with a PostgreSQL database:  
 ```
 version: "3"
 
