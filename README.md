@@ -303,6 +303,39 @@ database:
   prune: "@every 1h"
 ```
 
+## Apprise
+
+[Apprise](https://github.com/caronc/apprise) can also be used to send notifications, it supports many different services/protocols, but it requires access to an [Apprise API](https://github.com/caronc/apprise-api).  
+Luckily there is a [docker image](https://hub.docker.com/r/caronc/apprise) available that we can add to our compose:  
+```
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/broodjeaap/go-watch:master
+    container_name: go-watch
+    volumes:
+    - /host/path/to/:/config
+    ports:
+    - "8080:8080"
+  apprise:
+    image: caronc/apprise:latest
+```
+
+And the notifier config:  
+```
+notifiers:
+  apprise:
+    type: "apprise"
+    url: "http://apprise:8000/notify"
+    urls:
+    - "tgram://<bot_token>/<chat_id>/"
+    - "discord://<WebhookID>/<WebhookToken>/"
+database:
+  dsn: "watch.db"
+  prune: "@every 1h"
+```
+
 ## Telegram
 
 Get a bot token from the [@BotFather](https://core.telegram.org/bots/tutorial) and get the [chatID](https://www.alphr.com/find-chat-id-telegram/) of the chat want to send the notifications to.  
