@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: base
+    container_name: go-watch
+    environment:
+    - HTTP_PROXY=http://squid_proxy:3128
+    - HTTPS_PROXY=http://squid_proxy:3128
+    ports:
+    - "8080:8080"
+  squid_proxy:
+    image: sameersbn/squid:latest
+    volumes:
+    - ./squid-1.conf:/etc/squid/squid.conf
+  squid_proxy1:
+    image: sameersbn/squid:latest
+    volumes:
+    - ./squid-2.conf:/etc/squid/squid.conf
+  squid_proxy2:
+    image: sameersbn/squid:latest
+    volumes:
+    - ./squid-2.conf:/etc/squid/squid.conf
