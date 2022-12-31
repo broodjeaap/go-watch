@@ -72,7 +72,7 @@ func (apprise *AppriseNotifier) Message(message string) bool {
 	}
 	jsn, err := json.Marshal(data)
 	if err != nil {
-		log.Panicln("Could not create JSON post data:", err)
+		log.Println("Could not create JSON post data:", err)
 		return false
 	}
 
