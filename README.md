@@ -32,15 +32,15 @@ An [XPath](#xpath) filter could also have been used.
 
 ## Docker
 
-Easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:master`, first get a config template:  
-`docker run --rm ghcr.io/broodjeaap/go-watch:master -printConfig 2> config.yaml`  
+Easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:latest`, first get a config template:  
+`docker run --rm ghcr.io/broodjeaap/go-watch:latest -printConfig 2> config.yaml`  
 
 After modifying the config to fit your needs, start the docker container
 ```
 docker run \
     -p 8080:8080 \
     -v $PWD/:/config \
-    ghcr.io/broodjeaap/go-watch:master
+    ghcr.io/broodjeaap/go-watch:latest
 ```
 
 This will start GoWatch with a SQLite database, stored in the `/config` directory, which is probably fine for most use cases.  
@@ -51,7 +51,7 @@ version: "3"
 
 services:
   app:
-    image: ghcr.io/broodjeaap/go-watch:master
+    image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     environment:
     - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
@@ -89,7 +89,7 @@ When using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment vari
 ```
 services:
   app:
-    image: ghcr.io/broodjeaap/go-watch:master
+    image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     environment:
     - HTTP_PROXY=http://proxy.com:1234
@@ -101,7 +101,7 @@ Proxy 'pools' are not directly supported by GoWatch, but can still be set up by 
 ```
 services:
   app:
-    image: ghcr.io/broodjeaap/go-watch:master
+    image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     environment:
     - HTTP_PROXY=http://squid_proxy:3128
@@ -134,7 +134,7 @@ version: "3"
 
 services:
   app:
-    image: ghcr.io/broodjeaap/go-watch:master
+    image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     environment:
     - GOWATCH_BROWSERLESS_URL=http://browserless:3000/content
@@ -156,7 +156,7 @@ version: "3"
 
 services:
   app:
-    image: ghcr.io/broodjeaap/go-watch:master
+    image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     environment:
     - GOWATCH_DATABASE_DSN=postgres://gorm:gorm@db:5432/gorm
@@ -377,7 +377,7 @@ version: "3"
 
 services:
   app:
-    image: ghcr.io/broodjeaap/go-watch:master
+    image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     volumes:
     - /host/path/to/:/config
