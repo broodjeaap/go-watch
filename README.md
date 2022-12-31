@@ -1,4 +1,4 @@
-# Go Watch
+# GoWatch
 [![Build Status](https://drone.broodjeaap.net/api/badges/broodjeaap/go-watch/status.svg)](https://drone.broodjeaap.net/broodjeaap/go-watch)
 
 A change detection server that can notify through various services, written in Go
@@ -79,7 +79,7 @@ services:
 
 ### Proxy
 
-Go-Watch has some basic proxy support, using the config we can point Go-Watch to a proxy server:  
+GoWatch has some basic proxy support, using the config we can point GoWatch to a proxy server:  
 ```
 proxy:
   proxy_url: http://proxy.com:1234
@@ -97,7 +97,7 @@ services:
 ```
 #### Proxy pools
 
-Proxy 'pools' are not directly supported by Go-Watch, but can still be set up by using a proxy, for example with [Squid](http://www.squid-cache.org/):  
+Proxy 'pools' are not directly supported by GoWatch, but can still be set up by using a proxy, for example with [Squid](http://www.squid-cache.org/):  
 ```
 services:
   app:
@@ -121,7 +121,7 @@ cache_peer proxy2.com parent 3128 0 round-robin no-query
 ### Browserless
 
 Some websites don't send all content on the first request, it's added later through javascript, Amazon does this for example.  
-To still be able to watch products from these websites, Go-Watch supports [Browserless](https://www.browserless.io/).  
+To still be able to watch products from these websites, GoWatch supports [Browserless](https://www.browserless.io/).  
 The Browserless URL can be added to the config:  
 ```
 browserless:
@@ -150,7 +150,7 @@ Note that the proxy environment variables can be added to the Browserless contai
 
 ### Authentication
 
-Go-Watch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
+GoWatch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
 ```
 version: "3"
 

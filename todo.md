@@ -9,4 +9,3 @@
     - postgresql+apprise+browserless
 - organize docs?
 - disable gin debug
-- readme gowatch/go-watch ?
