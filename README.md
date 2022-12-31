@@ -115,7 +115,7 @@ services:
 And in the `squid.conf` the proxy pool would be defined like this:  
 ```
 cache_peer proxy1.com parent 3128 0 round-robin no-query
-cache_peer proxy2.com parent 3128 0 round-robin no-query
+cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 ```
 
 ### Browserless
