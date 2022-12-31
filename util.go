@@ -12,21 +12,6 @@ func bindAndValidateWatch(watch *Watch, c *gin.Context) (map[string]string, erro
 	return validate(err), err
 }
 
-func bindAndValidateFilter(filter *Filter, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(filter)
-	return validate(err), err
-}
-
-func bindAndValidateGroupUpdate(group *FilterGroupUpdate, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(group)
-	return validate(err), err
-}
-
-func bindAndValidateFilterUpdate(filter *FilterUpdate, c *gin.Context) (map[string]string, error) {
-	err := c.ShouldBind(filter)
-	return validate(err), err
-}
-
 func prettyError(fieldError validator.FieldError) string {
 	switch fieldError.Tag() {
 	case "required":

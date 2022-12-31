@@ -30,10 +30,6 @@ type Filter struct {
 	Logs     []string  `gorm:"-:all"`
 }
 
-func (filter *Filter) logf(format string, v ...any) {
-	filter.Logs = append(filter.Logs, html.EscapeString(fmt.Sprintf(format, v...)))
-}
-
 func (filter *Filter) log(v ...any) {
 	filter.Logs = append(filter.Logs, html.EscapeString(fmt.Sprint(v...)))
 }

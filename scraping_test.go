@@ -59,7 +59,7 @@ func TestFilterXPath(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s", test.Query)
+		testname := test.Query
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Parents: []*Filter{
@@ -89,7 +89,7 @@ func TestFilterJSON(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s", test.Query)
+		testname := test.Query
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Parents: []*Filter{
@@ -120,7 +120,7 @@ func TestFilterCSS(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s", test.Query)
+		testname := test.Query
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Parents: []*Filter{
@@ -208,7 +208,7 @@ func TestFilterMatch(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s", test.Query)
+		testname := test.Query
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Parents: []*Filter{
@@ -1170,13 +1170,11 @@ func TestFilterUnique(t *testing.T) {
 			getFilterResultUnique(
 				&filter,
 			)
-			var wantMap map[string]bool
-			wantMap = make(map[string]bool)
+			wantMap := make(map[string]bool)
 			for _, want := range test.Want {
 				wantMap[want] = true
 			}
-			var resultMap map[string]bool
-			resultMap = make(map[string]bool)
+			resultMap := make(map[string]bool)
 			for _, result := range filter.Results {
 				resultMap[result] = true
 			}
@@ -1211,7 +1209,7 @@ end`
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s", test.Name)
+		testname := test.Name
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Var1: test.Lua,
@@ -1256,7 +1254,7 @@ if not(result==true) then error("regexp.match()") end`
 	}
 
 	for _, test := range tests {
-		testname := fmt.Sprintf("%s", test.Name)
+		testname := test.Name
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
 				Parents: []*Filter{

@@ -412,9 +412,7 @@ func getFilterResultMatch(filter *Filter) {
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			for _, str := range r.FindAllString(result, -1) {
-				filter.Results = append(filter.Results, str)
-			}
+			filter.Results = append(filter.Results, r.FindAllString(result, -1)...)
 		}
 	}
 }
@@ -702,16 +700,14 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 	var previousOutputs []FilterOutput
 	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Find(&previousOutputs)
 	lowest := math.MaxFloat64
-	if previousOutputs != nil {
-		for _, previousOutput := range previousOutputs {
-			number, err := strconv.ParseFloat(previousOutput.Value, 64)
-			if err != nil {
-				filter.log("Could not convert result to number: '", previousOutput.Value, "'")
-				continue
-			}
-			if number < lowest {
-				lowest = number
-			}
+	for _, previousOutput := range previousOutputs {
+		number, err := strconv.ParseFloat(previousOutput.Value, 64)
+		if err != nil {
+			filter.log("Could not convert result to number: '", previousOutput.Value, "'")
+			continue
+		}
+		if number < lowest {
+			lowest = number
 		}
 	}
 
@@ -856,8 +852,7 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 }
 
 func getFilterResultUnique(filter *Filter) {
-	var valueMap map[string]bool
-	valueMap = make(map[string]bool)
+	valueMap := make(map[string]bool)
 
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -865,7 +860,7 @@ func getFilterResultUnique(filter *Filter) {
 		}
 	}
 
-	for value, _ := range valueMap {
+	for value := range valueMap {
 		filter.Results = append(filter.Results, value)
 	}
 }

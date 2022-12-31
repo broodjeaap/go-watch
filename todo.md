@@ -1,6 +1,5 @@
 # Todo
 - comments
-- run/fix staticcheck
 - add compose templates for:
     - sqlite
     - sqlite+apprise

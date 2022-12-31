@@ -26,8 +26,6 @@ import (
 	"gorm.io/gorm"
 
 	"broodjeaap.net/go-watch/notifiers"
-
-	_ "embed"
 )
 
 //go:embed templates static watchTemplates config.tmpl
@@ -497,7 +495,7 @@ func (web *Web) watchView(c *gin.Context) {
 
 	colorMap := make(map[string]int, len(names))
 	index := 0
-	for name, _ := range names {
+	for name := range names {
 		colorMap[name] = index % 16 // only 16 colors
 		index += 1
 	}
