@@ -146,6 +146,8 @@ services:
     image: browserless/chrome:latest
 ```
 
+Note that the proxy environment variables can be added to the Browserless container to still allow for proxying.
+
 ### Authentication
 
 Go-Watch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
