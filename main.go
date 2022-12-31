@@ -34,18 +34,20 @@ import (
 var EMBED_FS embed.FS
 
 type Web struct {
-	router    *gin.Engine
-	templates multitemplate.Renderer
-	cron      *cron.Cron
-	urlCache  map[string]string
-	cronWatch map[uint]cron.EntryID
-	db        *gorm.DB
-	notifiers map[string]notifiers.Notifier
+	router          *gin.Engine
+	templates       multitemplate.Renderer
+	cron            *cron.Cron
+	urlCache        map[string]string
+	cronWatch       map[uint]cron.EntryID
+	db              *gorm.DB
+	notifiers       map[string]notifiers.Notifier
+	startupWarnings []string
 }
 
 func newWeb() *Web {
 	web := &Web{
-		urlCache: make(map[string]string, 5),
+		urlCache:        make(map[string]string, 5),
+		startupWarnings: make([]string, 0, 10),
 	}
 	web.init()
 	return web
@@ -60,11 +62,17 @@ func (web *Web) init() {
 	web.initNotifiers()
 }
 
+func (web *Web) startupWarning(m ...any) {
+	warning := fmt.Sprint(m...)
+	log.Println(warning)
+	web.startupWarnings = append(web.startupWarnings, warning)
+}
+
 func (web *Web) validateProxyURL() {
 	if viper.IsSet("proxy.proxy_url") {
 		_, err := url.Parse(viper.GetString("proxy.proxy_url"))
 		if err != nil {
-			log.Println("Could not parse proxy url, check config")
+			web.startupWarning("Could not parse proxy url, check config")
 			return
 		}
 	}
@@ -156,7 +164,7 @@ func (web *Web) initCronJobs() {
 		cronFilter := &cronFilters[i]
 		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
 		if err != nil {
-			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
+			web.startupWarning("Could not start job for Watch: ", cronFilter.WatchID)
 			continue
 		}
 		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
@@ -166,7 +174,7 @@ func (web *Web) initCronJobs() {
 		pruneSchedule := viper.GetString("database.prune")
 		_, err := web.cron.AddFunc(pruneSchedule, web.pruneDB)
 		if err != nil {
-			log.Fatalln("Could not parse database.prune:", pruneSchedule)
+			web.startupWarning("Could not parse database.prune:", err)
 		}
 		log.Println("Started DB prune cronjob:", pruneSchedule)
 	}
@@ -176,7 +184,7 @@ func (web *Web) initCronJobs() {
 func (web *Web) initNotifiers() {
 	web.notifiers = make(map[string]notifiers.Notifier, 5)
 	if !viper.IsSet("notifiers") {
-		log.Println("No notifiers set!")
+		web.startupWarning("No notifiers set!")
 		return
 	}
 	notifiersMap := viper.GetStringMap("notifiers")
@@ -186,7 +194,7 @@ func (web *Web) initNotifiers() {
 
 		notifierType, exists := notifierMap["type"]
 		if !exists {
-			log.Printf("No 'type' for '%s' notifier!", name)
+			web.startupWarning(fmt.Sprintf("No 'type' for '%s' notifier!", name))
 			continue
 		}
 		success := false
@@ -230,11 +238,13 @@ func (web *Web) initNotifiers() {
 			}
 		default:
 			{
-				log.Println("Did not recognize notifier type:", notifierType)
+				web.startupWarning("Did not recognize notifier type:", notifierType)
 			}
 		}
 		if success {
 			web.notifiers[name] = notifier
+		} else {
+			web.startupWarning("Could not add notifier:", name)
 		}
 	}
 }
@@ -303,7 +313,10 @@ func (web *Web) index(c *gin.Context) {
 		watchMap[filter.WatchID].CronEntry = &entry
 	}
 
-	c.HTML(http.StatusOK, "index", watches)
+	c.HTML(http.StatusOK, "index", gin.H{
+		"watches":  watches,
+		"warnings": web.startupWarnings,
+	})
 }
 
 func (web *Web) watchCreate(c *gin.Context) {

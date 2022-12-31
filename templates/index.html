@@ -3,6 +3,18 @@ GoWatch
 {{end}}
 
 {{define "content"}}
+{{ if .warnings }}
+    <div class="h3 text-center text-danger" id="logHeader">Startup Warnings</div>
+    <table class="table table-striped table-hover">
+        <tbody>
+            {{ range .warnings }}
+            <tr>
+                <td class="h5 text-center text-danger">{{ . }}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+{{ end }}
 <table class="table table-striped table-hover">
     <thead class="table-dark">
         <tr>
@@ -14,7 +26,7 @@ GoWatch
         </tr>
     </thead>
     <tbody>
-        {{ range . }}
+        {{ range .watches }}
         <tr class="pointer" onclick="window.location='/watch/view/{{ .ID }}'">
             <td class="h3">{{ .Name }}</td>
             {{ if .CronEntry }}

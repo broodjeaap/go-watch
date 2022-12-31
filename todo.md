@@ -1,7 +1,6 @@
 # Todo
 - comments
 - run/fix staticcheck
-- show startup warnings on page?
 - add compose templates for:
     - sqlite
     - sqlite+apprise
