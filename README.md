@@ -121,8 +121,7 @@ cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 ### Browserless
 
 Some websites don't send all content on the first request, it's added later through javascript, Amazon does this for example.  
-To still be able to watch products from these websites, GoWatch supports [Browserless](https://www.browserless.io/).  
-The Browserless URL can be added to the config:  
+To still be able to watch products from these websites, GoWatch supports [Browserless](https://www.browserless.io/), the Browserless URL can be added to the config:  
 ```
 browserless:
   url: http://your.browserless:3000/content
