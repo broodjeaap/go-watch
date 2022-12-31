@@ -1,8 +1,6 @@
 # Todo
 - comments
 - run/fix staticcheck
-- ~~add browserless support~~
-    - readme
 - show startup warnings on page?
 - add compose templates for:
     - sqlite
@@ -13,3 +11,4 @@
     - postgresql+apprise+browserless
 - organize docs?
 - disable gin debug
+- readme gowatch/go-watch ?

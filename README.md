@@ -118,6 +118,34 @@ cache_peer proxy1.com parent 3128 0 round-robin no-query
 cache_peer proxy2.com parent 3128 0 round-robin no-query
 ```
 
+### Browserless
+
+Some websites don't send all content on the first request, it's added later through javascript, Amazon does this for example.  
+To still be able to watch products from these websites, Go-Watch supports [Browserless](https://www.browserless.io/).  
+The Browserless URL can be added to the config:  
+```
+browserless:
+  url: http://your.browserless:3000/content
+```
+
+Or as an environment variable, for example in a docker-compose:  
+```
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/broodjeaap/go-watch:master
+    container_name: go-watch
+    environment:
+    - GOWATCH_BROWSERLESS_URL=http://browserless:3000/content
+    volumes:
+    - /host/path/to/config:/config
+    ports:
+    - "8080:8080"
+  browserless:
+    image: browserless/chrome:latest
+```
+
 ### Authentication
 
 Go-Watch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
