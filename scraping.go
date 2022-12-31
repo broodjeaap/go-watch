@@ -247,30 +247,10 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, debug bool) 
 		filter.Results = append(filter.Results, val)
 		return
 	}
-
-	var httpClient *http.Client
-	if viper.IsSet("proxy.proxy_url") {
-		proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
-		if err != nil {
-			log.Println("Could not parse proxy url, check config")
-			filter.log("Could not parse proxy url, check config")
-			return
-		}
-		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
-	} else {
-		httpClient = &http.Client{}
-	}
-	resp, err := httpClient.Get(fetchURL)
+	str, err := getURLContent(filter, fetchURL)
 	if err != nil {
-		filter.log("Could not fetch url: ", fetchURL, " - ", err)
 		return
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		filter.log("Could not fetch url: ", fetchURL, " - ", err)
-		return
-	}
-	str := string(body)
 	filter.Results = append(filter.Results, str)
 	if debug {
 		urlCache[fetchURL] = str
@@ -287,35 +267,42 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 				continue
 			}
 
-			var httpClient *http.Client
-			if viper.IsSet("proxy.proxy_url") {
-				proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
-				if err != nil {
-					log.Println("Could not parse proxy url, check config")
-					filter.log("Could not parse proxy url, check config")
-					return
-				}
-				httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
-			} else {
-				httpClient = &http.Client{}
-			}
-			resp, err := httpClient.Get(fetchURL)
+			str, err := getURLContent(filter, fetchURL)
 			if err != nil {
-				filter.log("Could not fetch url: ", fetchURL, " - ", err)
 				continue
 			}
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				filter.log("Could not fetch url: ", fetchURL, " - ", err)
-				continue
-			}
-			str := string(body)
 			filter.Results = append(filter.Results, str)
 			if debug {
 				urlCache[fetchURL] = str
 			}
 		}
 	}
+}
+
+func getURLContent(filter *Filter, fetchURL string) (string, error) {
+	var httpClient *http.Client
+	if viper.IsSet("proxy.proxy_url") {
+		proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
+		if err != nil {
+			log.Println("Could not parse proxy url, check config")
+			filter.log("Could not parse proxy url, check config")
+			return "", err
+		}
+		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+	} else {
+		httpClient = &http.Client{}
+	}
+	resp, err := httpClient.Get(fetchURL)
+	if err != nil {
+		filter.log("Could not fetch url: ", fetchURL, " - ", err)
+		return "", err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		filter.log("Could not fetch url: ", fetchURL, " - ", err)
+		return "", err
+	}
+	return string(body), nil
 }
 
 func getFilterResultXPath(filter *Filter) {
