@@ -3,8 +3,6 @@
 - run/fix staticcheck
 - add browserless support ?
 - show startup warnings on page?
-- ~~try to make docker image smaller~~
-    - test if things still work
 - add compose templates for:
     - sqlite
     - sqlite+apprise
@@ -13,3 +11,4 @@
     - postgresql+apprise
     - postgresql+apprise+browserless
 - organize docs?
+- disable gin debug
