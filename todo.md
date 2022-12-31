@@ -1,7 +1,8 @@
 # Todo
 - comments
 - run/fix staticcheck
-- add browserless support ?
+- ~~add browserless support~~
+    - readme
 - show startup warnings on page?
 - add compose templates for:
     - sqlite

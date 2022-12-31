@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -280,28 +281,59 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 }
 
 func getURLContent(filter *Filter, fetchURL string) (string, error) {
-	var httpClient *http.Client
-	if viper.IsSet("proxy.proxy_url") {
-		proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
+	var body []byte
+	if viper.IsSet("browserless.url") {
+		browserlessURL := viper.GetString("browserless.url")
+		data := struct {
+			URL string `json:"url"`
+		}{
+			URL: fetchURL,
+		}
+		jsn, err := json.Marshal(data)
 		if err != nil {
-			log.Println("Could not parse proxy url, check config")
-			filter.log("Could not parse proxy url, check config")
+			log.Println("Could not marshal url:", err)
+			filter.log("Could not marshal url:", err)
 			return "", err
 		}
-		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+		resp, err := http.Post(browserlessURL, "application/json", bytes.NewBuffer(jsn))
+		if err != nil {
+			log.Println("Could not get browserless response content:", err)
+			filter.log("Could not get browserless response content:", err)
+			return "", err
+		}
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("Could not fetch url through browserless: ", fetchURL, " - ", err)
+			filter.log("Could not fetch url through browserless: ", fetchURL, " - ", err)
+			return "", err
+		}
 	} else {
-		httpClient = &http.Client{}
+		var httpClient *http.Client
+		if viper.IsSet("proxy.proxy_url") {
+			proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
+			if err != nil {
+				log.Println("Could not parse proxy url, check config")
+				filter.log("Could not parse proxy url, check config")
+				return "", err
+			}
+			httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
+		} else {
+			httpClient = &http.Client{}
+		}
+		resp, err := httpClient.Get(fetchURL)
+		if err != nil {
+			log.Println("Could not fetch url: ", fetchURL, " - ", err)
+			filter.log("Could not fetch url: ", fetchURL, " - ", err)
+			return "", err
+		}
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("Could not fetch url: ", fetchURL, " - ", err)
+			filter.log("Could not fetch url: ", fetchURL, " - ", err)
+			return "", err
+		}
 	}
-	resp, err := httpClient.Get(fetchURL)
-	if err != nil {
-		filter.log("Could not fetch url: ", fetchURL, " - ", err)
-		return "", err
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		filter.log("Could not fetch url: ", fetchURL, " - ", err)
-		return "", err
-	}
+
 	return string(body), nil
 }
 
