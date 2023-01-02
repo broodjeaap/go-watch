@@ -10,3 +10,8 @@
 - add kube yaml example?
 - organize docs?
 - disable gin debug
+- add favicon
+- notifiers overview page
+    - with test for notifier
+    - last success/error message
+- db prune readme
