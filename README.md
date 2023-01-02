@@ -81,6 +81,15 @@ services:
       retries: 5
 ```
 
+#### Pruning
+
+An automatic database prune job that removed repeating values can be scheduled by adding a cron schedule to the config:  
+```
+database:
+  dsn: "/config/watch.db"
+  prune: "@every 1h"
+```
+
 ### Proxy
 
 GoWatch has some basic proxy support, using the config we can point GoWatch to a proxy server:  

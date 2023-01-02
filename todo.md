@@ -11,4 +11,3 @@
 - organize docs?
 - disable gin debug
 - add favicon
-- db prune readme
