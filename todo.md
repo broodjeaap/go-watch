@@ -9,4 +9,3 @@
     - postgresql+apprise+browserless
 - add kube yaml example?
 - organize docs?
-- move clearCacheButton to edit.ts
