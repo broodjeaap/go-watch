@@ -1,0 +1,27 @@
+{{define "title"}}
+GoWatch
+{{end}}
+
+{{define "content"}}
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Test</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range $name, $notifier := . }}
+        <tr>
+            <td class="h3">{{ $name }}</td>
+            <td>
+                <form action="/notifiers/test" method="post">
+                    <input type="hidden" name="notifier_name" value="{{ $name }}">
+                    <input type="submit" class="btn btn-primary" value="Test">
+                </form>
+            </td>
+        </tr>
+        {{ end }}
+    </tbody>
+</table>
+{{end}}

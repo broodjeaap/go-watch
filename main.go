@@ -131,6 +131,9 @@ func (web *Web) initRouter() {
 	web.router.GET("/cache/view", web.cacheView)
 	web.router.POST("/cache/clear", web.cacheClear)
 
+	web.router.GET("/notifiers/view", web.notifiersView)
+	web.router.POST("/notifiers/test", web.notifiersTest)
+
 	web.router.SetTrustedProxies(nil)
 }
 
@@ -149,6 +152,8 @@ func (web *Web) initTemplates() {
 	web.templates.Add("watchEdit", template.Must(template.ParseFS(templatesFS, "base.html", "watch/edit.html")))
 
 	web.templates.Add("cacheView", template.Must(template.ParseFS(templatesFS, "base.html", "cache/view.html")))
+
+	web.templates.Add("notifiersView", template.Must(template.ParseFS(templatesFS, "base.html", "notifiers.html")))
 
 	web.templates.Add("500", template.Must(template.ParseFS(templatesFS, "base.html", "500.html")))
 }
@@ -315,6 +320,21 @@ func (web *Web) index(c *gin.Context) {
 		"watches":  watches,
 		"warnings": web.startupWarnings,
 	})
+}
+
+func (web *Web) notifiersView(c *gin.Context) {
+	c.HTML(http.StatusOK, "notifiersView", web.notifiers)
+}
+
+func (web *Web) notifiersTest(c *gin.Context) {
+	notifierName := c.PostForm("notifier_name")
+	notifier, exists := web.notifiers[notifierName]
+	if !exists {
+		c.Redirect(http.StatusSeeOther, "/notifiers/view")
+		return
+	}
+	notifier.Message("GoWatch Test")
+	c.Redirect(http.StatusSeeOther, "/notifiers/view")
 }
 
 func (web *Web) watchCreate(c *gin.Context) {
