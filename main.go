@@ -116,6 +116,7 @@ func (web *Web) initRouter() {
 		log.Fatalln("Could not load static embed fs")
 	}
 	web.router.StaticFS("/static", http.FS(staticFS))
+	web.router.StaticFileFS("/favicon.ico", "favicon.ico", http.FS(staticFS))
 
 	web.initTemplates()
 	web.router.HTMLRender = web.templates
