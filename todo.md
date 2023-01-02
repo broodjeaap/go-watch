@@ -10,3 +10,4 @@
 - add kube yaml example?
 - organize docs?
 - add favicon
+- move clearCacheButton to edit.ts
