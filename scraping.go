@@ -34,7 +34,7 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 
 	for _, filter := range filters {
 		if scheduleID != nil && filter.ID == *scheduleID {
-			log.Println("Triggered by schedule:", filter.Name)
+			log.Println(fmt.Sprintf("Scheduled Watch for '%s', triggered by schedule '%s'", watch.Name, filter.Name))
 		}
 	}
 
@@ -912,8 +912,6 @@ func triggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
-
-	log.Println("Trigger schedule for", watch.ID, ":", *scheduleID)
 
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, watch, false, scheduleID)
