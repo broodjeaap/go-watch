@@ -53,6 +53,9 @@ func newWeb() *Web {
 
 func (web *Web) init() {
 	web.urlCache = make(map[string]string, 5)
+	if !viper.GetBool("gin.debug") {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	web.validateProxyURL()
 	web.initDB()
 	web.initRouter()

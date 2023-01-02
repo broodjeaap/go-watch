@@ -9,5 +9,4 @@
     - postgresql+apprise+browserless
 - add kube yaml example?
 - organize docs?
-- disable gin debug
 - add favicon
