@@ -35,6 +35,9 @@ An [XPath](#xpath) filter could also have been used.
 Easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:latest`, first get a config template:  
 `docker run --rm ghcr.io/broodjeaap/go-watch:latest -printConfig 2> config.yaml`  
 
+Or:  
+`docker run --rm -v $PWD:/config ghcr.io/broodjeaap/go-watch:latest -writeConfig /config/config.yaml`
+
 After modifying the config to fit your needs, start the docker container
 ```
 docker run \
