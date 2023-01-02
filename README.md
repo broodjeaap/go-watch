@@ -45,10 +45,11 @@ docker run \
     -v $PWD/:/config \
     ghcr.io/broodjeaap/go-watch:latest
 ```
+### Database
 
-This will start GoWatch with a SQLite database, stored in the `/config` directory, which is probably fine for most use cases.  
+By default, GoWatch will use an SQLite database, stored in the `/config` directory for the docker image, which is probably fine for most use cases.  
 
-To use another database, the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable can be used, for example with a PostgreSQL database:  
+But you can use another database by chaning the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
 ```
 version: "3"
 
