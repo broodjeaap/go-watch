@@ -7,5 +7,6 @@
     - postgresql
     - postgresql+apprise
     - postgresql+apprise+browserless
+- add kube yaml example?
 - organize docs?
 - disable gin debug
