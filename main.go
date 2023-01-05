@@ -263,7 +263,10 @@ func (web *Web) pruneDB() {
 	for _, storeName := range storeNames {
 		log.Println("Pruning:", storeName)
 		var values []FilterOutput
-		web.db.Model(&FilterOutput{}).Order("time asc").Find(&values, fmt.Sprintf("name = '%s'", storeName))
+		tx := web.db.Model(&FilterOutput{}).Order("time asc").Find(&values, fmt.Sprintf("name = '%s'", storeName))
+		if tx.Error != nil {
+			continue
+		}
 		IDs := make([]uint, 0, len(values))
 		for i := range values {
 			if i > len(values)-3 {
@@ -382,6 +385,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 	if templateID == -1 { // watch from url template
 		url := c.PostForm("url")
 		if len(url) == 0 {
+
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
