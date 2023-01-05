@@ -30,6 +30,10 @@ An [XPath](#xpath) filter could also have been used.
 `Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/etc).
 # Run
 
+## Binary
+
+Download 
+
 ## Docker
 
 Easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:latest`, first get a config template:  
@@ -49,7 +53,7 @@ docker run \
 
 By default, GoWatch will use an SQLite database, stored in the `/config` directory for the docker image, which is probably fine for most use cases.  
 
-But you can use another database by chaning the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
+But you can use another database by changing the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
 ```
 version: "3"
 
@@ -83,7 +87,7 @@ services:
 
 #### Pruning
 
-An automatic database prune job that removed repeating values can be scheduled by adding a cron schedule to the config:  
+An automatic database prune job that removes repeating values can be scheduled by adding a cron schedule to the config:  
 ```
 database:
   dsn: "/config/watch.db"
