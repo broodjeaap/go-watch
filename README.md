@@ -152,6 +152,8 @@ cache_peer proxy1.com parent 3128 0 round-robin no-query
 cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 ```
 
+An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squid-1.conf).
+
 ### Browserless
 
 Some websites don't send all content on the first request, it's added later through javascript, Amazon does this for example.  
