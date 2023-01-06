@@ -279,7 +279,9 @@ func (web *Web) pruneDB() {
 				IDs = append(IDs, b.ID)
 			}
 		}
-		web.db.Delete(&FilterOutput{}, IDs)
+		if len(IDs) > 0 {
+			web.db.Delete(&FilterOutput{}, IDs)
+		}
 	}
 }
 
