@@ -32,7 +32,24 @@ An [XPath](#xpath) filter could also have been used.
 
 ## Binary
 
-Download 
+Download the binary for your platform from the [releases page](https://github.com/broodjeaap/go-watch/releases), for example for Linux:  
+`wget https://github.com/broodjeaap/go-watch/releases/download/1.0/go-watch-1.0-linux-amd64 -O ./gowatch`
+
+And make it executable:  
+`chmod +x ./gowatch`
+
+Download the config template:  
+`wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/config.tmpl -O ./config.yaml`
+
+Or use the binary to generate it:  
+```
+./gowatch -printConfig 2> config.yaml
+# or 
+./gowatch -writeConfig config.yaml
+```
+
+And modify it to fit your needs, then simply run:  
+`./gowatch`
 
 ## Docker
 
