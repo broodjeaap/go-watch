@@ -434,7 +434,21 @@ database:
   prune: "@every 1h"
 ```
 
-# Dev
+# Build/Development
+
+For local development, clone this repository:  
+`git clone https://github.com/broodjeaap/go-watch`
+
+And build the binary:  
+`go build -o ./gowatch`
+
+Or:  
+`go run .`
+
+Or if you have [Air](https://github.com/cosmtrek/air) set up, just:
+`air`
+
+And 
 ## type script compilation
 
 `tsc static/*.ts --lib es2020,dom --watch --downlevelIteration`
