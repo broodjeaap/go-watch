@@ -6,7 +6,7 @@ A change detection server that can notify through various services, written in G
 
 GoWatch works through filters, a filter performs operations on the input it recieves.  
 Here is an example of a 'Watch' that calculates the lowest and average price of 4090s on NewEgg and notifies the user if the lowest price changed:  
-![NewEgg 4090](docs/images/newegg_4090.png)  
+![NewEgg 4090](images/newegg_4090.png)  
 
 Note that everything, including scheduling/storing/notifying, is a `filter`.  
 
