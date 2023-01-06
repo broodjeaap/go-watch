@@ -1,11 +1,3 @@
 # Todo
 - comments
-- add compose templates for:
-    - sqlite
-    - sqlite+apprise
-    - sqlite+apprise+browserless
-    - postgresql
-    - postgresql+apprise
-    - postgresql+apprise+browserless
 - add kube yaml example?
-- organize docs?

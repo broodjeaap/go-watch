@@ -231,6 +231,12 @@ services:
 
 Change the `Host` label to the correct ip/hostname and generate a user/password string with [htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html) for the `basicauth.users` label, note that the `$` character is escaped with `$$`
 
+### Compose templates
+
+There are a few docker-compose templates in the [docs/compose](docs/compose/) directory that can downloaded and used as starting points.  
+For example, if you want to set up GoWatch with Browserless, Apprise and a PostgreSQL database backend:  
+`wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/docs/compose/apprise-browserless-postgresql.yml -O ./docker-compose.yml`
+
 # Filters
 
 GoWatch comes with many filters that should, hopefully, be enough to allow for most use cases.  
