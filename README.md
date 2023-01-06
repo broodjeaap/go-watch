@@ -456,7 +456,6 @@ Or:
 Or if you have [Air](https://github.com/cosmtrek/air) set up, just:
 `air`
 
-And 
 ## type script compilation
 
 `tsc static/*.ts --lib es2020,dom --watch --downlevelIteration`
