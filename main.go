@@ -207,24 +207,6 @@ func (web *Web) initNotifiers() {
 		success := false
 		var notifier notifiers.Notifier
 		switch notifierType {
-		case "telegram":
-			{
-				notifier = &notifiers.TelegramNotifier{}
-				success = notifier.Open(notifierPath)
-				break
-			}
-		case "discord":
-			{
-				notifier = &notifiers.DiscordNotifier{}
-				success = notifier.Open(notifierPath)
-				break
-			}
-		case "email":
-			{
-				notifier = &notifiers.EmailNotifier{}
-				success = notifier.Open(notifierPath)
-				break
-			}
 		case "shoutrrr":
 			{
 				notifier = &notifiers.ShoutrrrNotifier{}
