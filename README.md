@@ -53,7 +53,7 @@ And modify it to fit your needs, then simply run:
 
 ## Docker
 
-Easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:latest`, first get a config template:  
+Probably the easiest way to get started is with the prebuilt docker image `ghcr.io/broodjeaap/go-watch:latest`, first get a config template:  
 `docker run --rm ghcr.io/broodjeaap/go-watch:latest -printConfig 2> config.yaml`  
 
 Or:  
