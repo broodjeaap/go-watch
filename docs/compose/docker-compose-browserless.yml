@@ -10,7 +10,7 @@ services:
     environment:
     - GOWATCH_BROWSERLESS_URL=http://browserless:3000/content
     volumes:
-    - /home/david/tmp/:/config
+    - /host/path/to/config:/config
     ports:
     - "8080:8080"
   apprise:

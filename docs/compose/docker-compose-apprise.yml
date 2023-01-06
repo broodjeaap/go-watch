@@ -8,7 +8,7 @@ services:
       target: base
     container_name: go-watch
     volumes:
-    - /home/david/tmp/:/config
+    - /host/path/to/config:/config
     ports:
     - "8080:8080"
   apprise:
