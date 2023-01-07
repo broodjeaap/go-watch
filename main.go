@@ -240,12 +240,11 @@ func (web *Web) initNotifiers() {
 
 func (web *Web) pruneDB() {
 	log.Println("Starting database pruning")
-	var storeNames []string
-	web.db.Model(&FilterOutput{}).Distinct().Pluck("name", &storeNames)
-	for _, storeName := range storeNames {
-		log.Println("Pruning:", storeName)
+	var storeFilters []Filter
+	web.db.Model(&FilterOutput{}).Distinct("watch_id", "name").Find(&storeFilters)
+	for _, storeFilter := range storeFilters {
 		var values []FilterOutput
-		tx := web.db.Model(&FilterOutput{}).Order("time asc").Find(&values, fmt.Sprintf("name = '%s'", storeName))
+		tx := web.db.Model(&FilterOutput{}).Order("time asc").Find(&values, fmt.Sprintf("watch_id = %d AND name = '%s'", storeFilter.WatchID, storeFilter.Name))
 		if tx.Error != nil {
 			continue
 		}
@@ -262,7 +261,10 @@ func (web *Web) pruneDB() {
 			}
 		}
 		if len(IDs) > 0 {
+			log.Println("Pruned: ", storeFilter.WatchID, "-", storeFilter.Name, "removed", len(IDs), "values")
 			web.db.Delete(&FilterOutput{}, IDs)
+		} else {
+			log.Println("Nothing to prune for", storeFilter.WatchID, "-", storeFilter.Name)
 		}
 	}
 }

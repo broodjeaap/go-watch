@@ -638,7 +638,7 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 		return
 	}
 
-	filterOutputs := make([]FilterOutput, 1)
+	filterOutputs := make([]FilterOutput, 0, 1)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			filterOutputs = append(filterOutputs, FilterOutput{
