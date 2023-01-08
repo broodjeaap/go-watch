@@ -10,7 +10,7 @@ Here is an example of a 'Watch' that calculates the lowest and average price of 
 
 Note that everything, including scheduling/storing/notifying, is a `filter`.  
 
-`Schedule` is a [cron](#cron) filter with a '@every 15m' value, so this will run every 15 minutes.  
+`Schedule` is a [cron](#cron) filter with a '@every 15m' value, this will run every 15 minutes.  
 
 `NewEgg Fetch` is a [Get URL](#get-url) filter with a 'https://www.newegg.com/p/pl?N=100007709&d=4090&isdeptsrh=1&PageSize=96' value, it's output will be the HTTP response.  
 
@@ -68,9 +68,9 @@ docker run \
 ```
 ### Database
 
-By default, GoWatch will use an SQLite database, stored in the `/config` directory for the docker image, which is probably fine for most use cases.  
+By default, GoWatch will use an SQLite database, stored in the `/config` directory for the docker image.  
 
-But you can use another database by changing the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
+You can use another database by changing the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
 ```
 version: "3"
 
@@ -104,7 +104,7 @@ services:
 
 #### Pruning
 
-An automatic database prune job that removes repeating values can be scheduled by adding a cron schedule to the config:  
+An automatic database prune job that removes repeating values, this can be scheduled by adding a cron schedule to the config:  
 ```
 database:
   dsn: "/config/watch.db"
@@ -113,13 +113,12 @@ database:
 
 ### Proxy
 
-GoWatch has some basic proxy support, using the config we can point GoWatch to a proxy server:  
+The config can be used to proxy HTTP/HTTPS requests through a proxy:  
 ```
 proxy:
   proxy_url: http://proxy.com:1234
 ```
-
-When using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used:  
+This will not work for requests made through Lua filters, but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
 ```
 services:
   app:
@@ -131,7 +130,7 @@ services:
 ```
 #### Proxy pools
 
-Proxy 'pools' are not directly supported by GoWatch, but can still be set up by using a proxy, for example with [Squid](http://www.squid-cache.org/):  
+Proxy 'pools' can be created by configuring the proxy that GoWatch points to, for example with [Squid](http://www.squid-cache.org/):  
 ```
 services:
   app:
@@ -146,7 +145,7 @@ services:
     - /path/to/squid.conf:/etc/squid/squid.conf
 ```
 
-And in the `squid.conf` the proxy pool would be defined like this:  
+And in the `squid.conf` the proxy pool would be defined with [cache_peer](http://www.squid-cache.org/Doc/config/cache_peer/)s like this:  
 ```
 cache_peer proxy1.com parent 3128 0 round-robin no-query
 cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
@@ -156,7 +155,7 @@ An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squ
 
 ### Browserless
 
-Some websites don't send all content on the first request, it's added later through javascript, Amazon does this for example.  
+Some websites (Amazon for example) don't send all content on the first request, it's added later through javascript.  
 To still be able to watch products from these websites, GoWatch supports [Browserless](https://www.browserless.io/), the Browserless URL can be added to the config:  
 ```
 browserless:
@@ -241,17 +240,17 @@ For example, if you want to set up GoWatch with Browserless, Apprise and a Postg
 
 # Filters
 
-GoWatch comes with many filters that should, hopefully, be enough to allow for most use cases.  
+GoWatch comes with many filters that cover most typical use cases.  
 
 ## Cron
 
 The `cron` filter is used to schedule when your watch will run.  
-It uses the [cron](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0#section-readme) package to schedule go routines, some common examples would be:  
+It uses the [cron](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0#section-readme) package to schedule Go routines, some common examples would be:  
 - `@every 15m`: will trigger every 15 minutes starting on server start.
 - `@hourly`: will trigger every beginning of hour.
 - `30 * * * *`: will trigger every hour on the half hour.  
 
-For more detailed instructions you can check its documentation.
+More detailed instructions can be found in its documentation.
 
 ## Get URL
 
@@ -303,11 +302,12 @@ For the input string 'Hello World!':
 
 ## Contains
 
-Inputs pass if they contain the given value, basically same as Match but more basic.
+Inputs pass if they contain the given value.
 
 ## Store
 
-Stores each input value in the database under its own name, should probably limit this to single inputs (after Minimum/Maximum/Average filters).
+Stores each input value in the database under its own name.  
+It's recommended to do this after reducing inputs to a single value (Minimum/Maximum/Average/etc).
 
 ## Notify
 
@@ -411,7 +411,7 @@ database:
 
 ## Apprise
 
-[Apprise](https://github.com/caronc/apprise) can also be used to send notifications, it supports many different services/protocols, but it requires access to an [Apprise API](https://github.com/caronc/apprise-api).  
+[Apprise](https://github.com/caronc/apprise) is another option to send notifications, it supports many different services/protocols, but it requires access to an [Apprise API](https://github.com/caronc/apprise-api).  
 Luckily there is a [docker image](https://hub.docker.com/r/caronc/apprise) available that we can add to our compose:  
 ```
 version: "3"
