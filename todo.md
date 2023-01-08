@@ -1,3 +1,11 @@
 # Todo
 - comments
 - add kube yaml example?
+- lua snippets
+    - basic auth
+    - post
+    - browserless?
+    - xpath
+    - json
+- add index to docs/compose to fix link in pages
+- safe escape {{ }} for pages
