@@ -432,16 +432,6 @@ The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tr
 
 # Notifiers
 
-The basic form is:  
-```
-notifiers:
-  <notifier-name>:
-    type: "<notifier-type>"
-    other: ""
-    values: ""
-    etc: ""
-```
-See below for possible types.
 ## Shoutrrr
 
 [Shoutrrr](https://containrrr.dev/shoutrrr/v0.5/) can be used to notify many different services, check their docs for a [list](https://containrrr.dev/shoutrrr/v0.5/services/overview/) of which ones.  
