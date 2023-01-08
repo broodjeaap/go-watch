@@ -493,7 +493,7 @@ And build the binary:
 Or:  
 `go run .`
 
-Or if you have [Air](https://github.com/cosmtrek/air) set up, just:
+Or if you have [Air](https://github.com/cosmtrek/air) set up, just:  
 `air`
 
 ## type script compilation
