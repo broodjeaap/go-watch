@@ -7,13 +7,14 @@ A change detection server that can notify through various services, written in G
 - [Run](#run)
   - [Binary](#binary)
   - [Docker](#docker)
-    - [Database](#database)
-      - [Pruning](#pruning)
-    - [Proxy](#proxy)
-      - [Proxy Pools](#proxy-pools)
-    - [Browserless](#browserless)
-    - [Authentication](#Authentication)
     - [Compose Templates](#compose-templates)
+- [Config](#config)
+  - [Database](#database)
+    - [Pruning](#pruning)
+  - [Proxy](#proxy)
+  - [Proxy Pools](#proxy-pools)
+  - [Browserless](#browserless)
+  - [Authentication](#Authentication)
 - [Filters](#filters)
   - [Cron](#cron)
   - [Get URL](#get-url)
@@ -114,7 +115,14 @@ docker run \
     -v $PWD/:/config \
     ghcr.io/broodjeaap/go-watch:latest
 ```
-### Database
+### Compose templates
+
+There are a few docker-compose templates in the [docs/compose](docs/compose/) directory that can downloaded and used as starting points.  
+For example, if you want to set up GoWatch with Browserless, Apprise and a PostgreSQL database backend:  
+`wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/docs/compose/apprise-browserless-postgresql.yml -O ./docker-compose.yml`
+
+# Config
+## Database
 
 By default, GoWatch will use an SQLite database, stored in the `/config` directory for the docker image.  
 
@@ -150,7 +158,7 @@ services:
       retries: 5
 ```
 
-#### Pruning
+### Pruning
 
 An automatic database prune job that removes repeating values, this can be scheduled by adding a cron schedule to the config:  
 ```
@@ -159,7 +167,7 @@ database:
   prune: "@every 1h"
 ```
 
-### Proxy
+## Proxy
 
 The config can be used to proxy HTTP/HTTPS requests through a proxy:  
 ```
@@ -176,7 +184,7 @@ services:
     - HTTP_PROXY=http://proxy.com:1234
     - HTTPS_PROXY=http://proxy.com:1234
 ```
-#### Proxy pools
+## Proxy pools
 
 Proxy 'pools' can be created by configuring the proxy that GoWatch points to, for example with [Squid](http://www.squid-cache.org/):  
 ```
@@ -201,7 +209,7 @@ cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 
 An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squid-1.conf).
 
-### Browserless
+## Browserless
 
 Some websites (Amazon for example) don't send all content on the first request, it's added later through javascript.  
 To still be able to watch products from these websites, GoWatch supports [Browserless](https://www.browserless.io/), the Browserless URL can be added to the config:  
@@ -230,7 +238,7 @@ services:
 
 Note that the proxy environment variables can be added to the Browserless container to still allow for proxying.
 
-### Authentication
+## Authentication
 
 GoWatch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
 ```
@@ -279,12 +287,6 @@ services:
 ```
 
 Change the `Host` label to the correct ip/hostname and generate a user/password string with [htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html) for the `basicauth.users` label, note that the `$` character is escaped with `$$`
-
-### Compose templates
-
-There are a few docker-compose templates in the [docs/compose](docs/compose/) directory that can downloaded and used as starting points.  
-For example, if you want to set up GoWatch with Browserless, Apprise and a PostgreSQL database backend:  
-`wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/docs/compose/apprise-browserless-postgresql.yml -O ./docker-compose.yml`
 
 # Filters
 
