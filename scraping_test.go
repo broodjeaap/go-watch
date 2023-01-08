@@ -1225,8 +1225,6 @@ end`
 			if len(filter.Logs) > 0 {
 				t.Errorf("Lua error: %s", filter.Logs)
 			}
-			log.Println(test.Want)
-			log.Println(filter.Results)
 			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
