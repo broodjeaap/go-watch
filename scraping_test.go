@@ -870,9 +870,9 @@ func TestFilterLowerThan(t *testing.T) {
 				Parents: []*Filter{
 					{
 						Results: test.Input,
-						Var2:    &test.Threshold,
 					},
 				},
+				Var2: &test.Threshold,
 			}
 			getFilterResultConditionLowerThan(
 				&filter,
@@ -1131,11 +1131,11 @@ func TestFilterHigherThan(t *testing.T) {
 				Parents: []*Filter{
 					{
 						Results: test.Input,
-						Var2:    &test.Threshold,
 					},
 				},
+				Var2: &test.Threshold,
 			}
-			getFilterResultConditionLowerThan(
+			getFilterResultConditionHigherThan(
 				&filter,
 			)
 			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
@@ -1234,7 +1234,6 @@ end`
 
 func TestFilterLuaLibs(t *testing.T) {
 	regex := `
-	sdfsdfsefs
 local regexp = require("regexp")
 local inspect = require("inspect")
 
@@ -1509,6 +1508,136 @@ func TestSimpleDebugWatch(t *testing.T) {
 	}
 	if !reflect.DeepEqual(maxFilter.Results, []string{"400.000000"}) {
 		t.Errorf("%s did not match '400'", maxFilter.Results)
+	}
+}
+
+func TestSimpleTriggeredWatch(t *testing.T) {
+	db := getTestDB()
+	watch := Watch{
+		Name: "Test",
+	}
+	db.Create(&watch)
+	filters := []Filter{
+		{
+			WatchID: watch.ID,
+			Name:    "Schedule",
+			Type:    "cron",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Echo",
+			Type:    "echo",
+			Var1:    HTML_STRING,
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "XPath",
+			Type:    "xpath",
+			Var1:    "//td[@class='price']",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Replace",
+			Type:    "replace",
+			Var1:    "[^0-9]",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Min",
+			Type:    "math",
+			Var1:    "min",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Minimum",
+			Type:    "store",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Max",
+			Type:    "math",
+			Var1:    "max",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Maximum",
+			Type:    "store",
+		},
+	}
+	db.Create(&filters)
+	scheduleFilter := &filters[0]
+	echoFilter := &filters[1]
+	xpathFilter := &filters[2]
+	replaceFilter := &filters[3]
+	minFilter := &filters[4]
+	storeMinFilter := &filters[5]
+	maxFilter := &filters[6]
+	storeMaxFilter := &filters[7]
+
+	log.Println(scheduleFilter)
+
+	connections := []FilterConnection{
+		{
+			WatchID:  watch.ID,
+			OutputID: scheduleFilter.ID,
+			InputID:  echoFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: echoFilter.ID,
+			InputID:  xpathFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: xpathFilter.ID,
+			InputID:  replaceFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: replaceFilter.ID,
+			InputID:  minFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: minFilter.ID,
+			InputID:  storeMinFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: replaceFilter.ID,
+			InputID:  maxFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: maxFilter.ID,
+			InputID:  storeMaxFilter.ID,
+		},
+	}
+	db.Create(&connections)
+
+	log.Println(connections[0])
+
+	triggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	var filterOutputs []FilterOutput
+	db.Model(&FilterOutput{}).Find(&filterOutputs, fmt.Sprintf("watch_id = %d", watch.ID))
+
+	for _, filterOutput := range filterOutputs {
+		if filterOutput.Name == "Maximum" {
+			if filterOutput.Value != "400.000000" {
+				t.Errorf("Minimum filter value 400.000000 != %s", filterOutput.Value)
+			}
+		} else if filterOutput.Name == "Minimum" {
+			if filterOutput.Value != "100.000000" {
+				t.Errorf("Minimum filter value 100.000000 != %s", filterOutput.Value)
+			}
+		} else {
+			t.Errorf("Unknown filter name: %s", filterOutput.Name)
+		}
+	}
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
 	}
 }
 

@@ -649,7 +649,9 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 			})
 		}
 	}
-	db.Create(&filterOutputs)
+	if len(filterOutputs) > 0 {
+		db.Create(&filterOutputs)
+	}
 }
 
 func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
@@ -790,7 +792,7 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 	var previousOutputs []FilterOutput
 	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Find(&previousOutputs)
-	highest := math.MaxFloat64
+	highest := -math.MaxFloat64
 	if previousOutputs != nil {
 		for _, previousOutput := range previousOutputs {
 			number, err := strconv.ParseFloat(previousOutput.Value, 64)
@@ -802,7 +804,6 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 				highest = number
 			}
 		}
-		return
 	}
 
 	for _, parent := range filter.Parents {
