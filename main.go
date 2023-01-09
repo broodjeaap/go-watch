@@ -392,7 +392,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 			log.Fatalln("Could not load templates from embed FS")
 		}
 
-		if templateID >= len(templateFiles) {
+		if templateID > len(templateFiles) {
 			log.Println("/watch/create POSTed with", templateID, "but only", len(templateFiles), "templates")
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
