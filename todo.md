@@ -9,6 +9,5 @@
     - json
 - add index to docs/compose to fix link in pages
 - safe escape {{ }} for pages
-- add display of non numerical data
 - xpath/css innerthtml option?
 - fix css/js source maps

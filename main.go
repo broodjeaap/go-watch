@@ -499,13 +499,24 @@ func (web *Web) watchView(c *gin.Context) {
 
 	var values []FilterOutput
 	web.db.Model(&FilterOutput{}).Order("time asc").Where("watch_id = ?", watch.ID).Find(&values)
-
-	valueMap := make(map[string][]FilterOutput, len(values))
+	numericalMap := make(map[string][]*FilterOutput, len(values))
+	categoricalMap := make(map[string][]*FilterOutput, len(values))
 	names := make(map[string]bool, 5)
-	for _, value := range values {
+	for i := range values {
+		value := &values[i]
 		names[value.Name] = true
-		valueMap[value.Name] = append(valueMap[value.Name], value)
+		_, err := strconv.ParseFloat(value.Value, 64)
+		if err == nil {
+			numericalMap[value.Name] = append(numericalMap[value.Name], value)
+			log.Println(value)
+		} else {
+			// probably very inefficient to prepend, but want newest values at the top
+			categoricalMap[value.Name] = append([]*FilterOutput{value}, categoricalMap[value.Name]...)
+			log.Println(value)
+		}
 	}
+
+	// reverse categoricalMap slice
 
 	colorMap := make(map[string]int, len(names))
 	index := 0
@@ -514,12 +525,11 @@ func (web *Web) watchView(c *gin.Context) {
 		index += 1
 	}
 
-	//data := make([]map[string]string, len(valueMap))
-
 	c.HTML(http.StatusOK, "watchView", gin.H{
-		"Watch":    watch,
-		"ValueMap": valueMap,
-		"colorMap": colorMap,
+		"Watch":          watch,
+		"numericalMap":   numericalMap,
+		"categoricalMap": categoricalMap,
+		"colorMap":       colorMap,
 	})
 }
 

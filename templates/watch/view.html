@@ -32,14 +32,49 @@ GoWatch {{ .Watch.Name }}
           </div>
     </div>
 </div>
+{{ if .numericalMap }}
+    <canvas id="chartCanvas">
 
-<canvas id="chartCanvas">
+    </canvas>
+{{ end }}
 
-</canvas>
+{{ if .categoricalMap }}
+    <ul class="nav nav-tabs" id="categoricalTab" role="tablist">
+        {{ range $name, $values := .categoricalMap }}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="{{ $name }}-tab" data-bs-toggle="tab" data-bs-target="#{{ $name }}-tab-pane" type="button" role="tab" aria-controls="{{ $name }}-tab-pane" aria-selected="true">{{ $name }}</button>
+            </li>
+        {{ end }}
+    </ul>
+    <div class="tab-content" id="categoricalTabContent">
+        {{ range $name, $values := .categoricalMap }}
+            <div class="tab-pane fade show active" id="{{ $name }}-tab-pane" role="tabpanel" aria-labelledby="{{ $name }}-tab" tabindex="0">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range $value := $values }}
+                            <tr>
+                                <td>{{ $value.Time.Format "2006-01-02 15:04:05" }}</td>
+                                <td>{{ $value.Value }}</td>
+                            </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        {{ end }}
+    </div>
+{{ end }}
+  
+
 {{end}}
 
-
 {{ define "scripts"}}
+{{ if .numericalMap }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@^2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@^1"></script>
@@ -69,7 +104,7 @@ GoWatch {{ .Watch.Name }}
             type: 'line',
             data: {
                 datasets:[
-                    {{ range $name, $values := .ValueMap }}
+                    {{ range $name, $values := .numericalMap }}
                     {
                         label: {{ $name }},
                         fill: false,
@@ -96,4 +131,5 @@ GoWatch {{ .Watch.Name }}
     }
     document.addEventListener('DOMContentLoaded', canvasInit, false);
 </script>
+{{ end }}
 {{ end }}
