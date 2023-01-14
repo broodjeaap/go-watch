@@ -117,7 +117,7 @@ docker run \
 ```
 ### Compose templates
 
-There are a few docker-compose templates in the [docs/compose](docs/compose/) directory that can downloaded and used as starting points.  
+There are a few docker-compose templates in the [docs/compose](https://github.com/broodjeaap/go-watch/tree/master/docs/compose) directory that can downloaded and used as starting points.  
 For example, if you want to set up GoWatch with Browserless, Apprise and a PostgreSQL database backend:  
 `wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/docs/compose/apprise-browserless-postgresql.yml -O ./docker-compose.yml`
 
