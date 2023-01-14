@@ -18,7 +18,7 @@ const HTML_STRING = `<html>
 </head>
 <body>
 	<table class="product-table" id="product-table">
-		<caption>product-table-caption</caption>
+		<caption class="h3" id="table-caption" data="data">product-table-caption</caption>
 		<thead>
 			<tr>
 				<th>Name</th>
@@ -46,12 +46,14 @@ const JSON_STRING = `{
 	]
 }`
 
-func TestFilterXPath(t *testing.T) {
+func TestFilterXPathNode(t *testing.T) {
+	var2 := "node"
 	var tests = []struct {
 		Query string
 		Want  []string
 	}{
 		{"//title", []string{"<title>title</title>"}},
+		{"//table[@id='product-table']/caption", []string{`<caption class="h3" id="table-caption" data="data">product-table-caption</caption>`}},
 		{"//table[@id='product-table']//tr//td[last()]", []string{`<td class="price">100</td>`, `<td class="price">200</td>`, `<td class="price">300</td>`, `<td class="price">400</td>`}},
 		{"//td[@class='price']", []string{`<td class="price">100</td>`, `<td class="price">200</td>`, `<td class="price">300</td>`, `<td class="price">400</td>`}},
 		{"//table[@id='product-table']//tr//td[2]", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
@@ -66,11 +68,80 @@ func TestFilterXPath(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
+				Var2: &var2,
 			}
 			getFilterResultXPath(
 				&filter,
 			)
 			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterXPathInnerHTML(t *testing.T) {
+	var2 := "inner"
+	var tests = []struct {
+		Query string
+		Want  []string
+	}{
+		{"//title", []string{"title"}},
+		{"//table[@id='product-table']/caption", []string{`product-table-caption`}},
+		{"//table[@id='product-table']//tr//td[last()]", []string{`100`, `200`, `300`, `400`}},
+		{"//td[@class='price']", []string{`100`, `200`, `300`, `400`}},
+		{"//table[@id='product-table']//tr//td[2]", []string{`10`, `20`, `30`, `40`}},
+		{"//td[@class='stock']", []string{`10`, `20`, `30`, `40`}},
+	}
+
+	for _, test := range tests {
+		testname := test.Query
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: []string{HTML_STRING}},
+				},
+				Var1: test.Query,
+				Var2: &var2,
+			}
+			getFilterResultXPath(
+				&filter,
+			)
+			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterXPathAttributes(t *testing.T) {
+	var2 := "attr"
+	var tests = []struct {
+		Query string
+		Want  []string
+	}{
+		{"//title", []string{}},
+		{"//table[@id='product-table']/caption", []string{`class="h3"`, `id="table-caption"`, `data="data"`}},
+		{"//table[@id='product-table']//tr//td[last()]", []string{`class="price"`, `class="price"`, `class="price"`, `class="price"`}},
+		{"//td[@class='price']", []string{`class="price"`, `class="price"`, `class="price"`, `class="price"`}},
+		{"//table[@id='product-table']//tr//td[2]", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
+		{"//td[@class='stock']", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
+	}
+
+	for _, test := range tests {
+		testname := test.Query
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: []string{HTML_STRING}},
+				},
+				Var1: test.Query,
+				Var2: &var2,
+			}
+			getFilterResultXPath(
+				&filter,
+			)
+			if len(test.Want) != 0 && len(filter.Results) != 0 && !reflect.DeepEqual(test.Want, filter.Results) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -107,7 +178,8 @@ func TestFilterJSON(t *testing.T) {
 	}
 }
 
-func TestFilterCSS(t *testing.T) {
+func TestFilterCSSNode(t *testing.T) {
+	var2 := "node"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -127,11 +199,79 @@ func TestFilterCSS(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
+				Var2: &var2,
 			}
 			getFilterResultCSS(
 				&filter,
 			)
 			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterCSSInnerHTML(t *testing.T) {
+	var2 := "inner"
+	var tests = []struct {
+		Query string
+		Want  []string
+	}{
+		{"title", []string{"title"}},
+		{".product-table tr td:last-child", []string{`100`, `200`, `300`, `400`}},
+		{".price", []string{`100`, `200`, `300`, `400`}},
+		{".product-table tr td:nth-child(2)", []string{`10`, `20`, `30`, `40`}},
+		{".stock", []string{`10`, `20`, `30`, `40`}},
+	}
+
+	for _, test := range tests {
+		testname := test.Query
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: []string{HTML_STRING}},
+				},
+				Var1: test.Query,
+				Var2: &var2,
+			}
+			getFilterResultCSS(
+				&filter,
+			)
+			if !reflect.DeepEqual(test.Want, filter.Results) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterCSSAttributes(t *testing.T) {
+	var2 := "attr"
+	var tests = []struct {
+		Query string
+		Want  []string
+	}{
+		{"title", []string{}},
+		{"#table-caption", []string{`class="h3"`, `id="table-caption"`, `data="data"`}},
+		{".product-table tr td:last-child", []string{`class="price"`, `class="price"`, `class="price"`, `class="price"`}},
+		{".price", []string{`class="price"`, `class="price"`, `class="price"`, `class="price"`}},
+		{".product-table tr td:nth-child(2)", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
+		{".stock", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
+	}
+
+	for _, test := range tests {
+		testname := test.Query
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: []string{HTML_STRING}},
+				},
+				Var1: test.Query,
+				Var2: &var2,
+			}
+			getFilterResultCSS(
+				&filter,
+			)
+			if len(test.Want) != 0 && len(filter.Results) != 0 && !reflect.DeepEqual(test.Want, filter.Results) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
