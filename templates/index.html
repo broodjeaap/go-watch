@@ -21,6 +21,7 @@ GoWatch
             <th>Name</th>
             <th>Last Run</th>
             <th>Next Run</th>
+            <th>Last Value</th>
             <th>Edit</th>
             <th>Delete</th>
         </tr>
@@ -36,6 +37,9 @@ GoWatch
             {{ else }}
                 <td class="h3" colspan="2">No schedule (Add cron filter)</td>
             {{ end }}
+            <td class="h3">
+                {{ .LastValue }}
+            </td>
             <td>
                 <a href="/watch/edit/{{ .ID }}" class="btn btn-success">Edit</a>
             </td>

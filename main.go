@@ -309,6 +309,30 @@ func (web *Web) index(c *gin.Context) {
 		watchMap[filter.WatchID].CronEntry = &entry
 	}
 
+	// get the last value stored, also doesn't really work with multiple values but meh again
+	rows, err := web.db.Table("watches").
+		Select("watches.id, max(filter_outputs.time) as time, filter_outputs.value").
+		Joins("left join filter_outputs on filter_outputs.watch_id = watches.id").
+		Order("filter_outputs.name").
+		Group("watches.id").
+		Rows()
+
+	if err != nil {
+		log.Println(err)
+	} else {
+		for rows.Next() {
+			var watchID uint
+			var _time string
+			var value string
+			err := rows.Scan(&watchID, &_time, &value)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			watchMap[watchID].LastValue = value
+		}
+	}
+
 	c.HTML(http.StatusOK, "index", gin.H{
 		"watches":  watches,
 		"warnings": web.startupWarnings,
