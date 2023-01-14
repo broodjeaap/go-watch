@@ -126,6 +126,7 @@ func TestFilterXPathAttributes(t *testing.T) {
 		{"//td[@class='price']", []string{`class="price"`, `class="price"`, `class="price"`, `class="price"`}},
 		{"//table[@id='product-table']//tr//td[2]", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
 		{"//td[@class='stock']", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
+		{"//*[@class='does-not-exists']", []string{}},
 	}
 
 	for _, test := range tests {
@@ -256,6 +257,7 @@ func TestFilterCSSAttributes(t *testing.T) {
 		{".price", []string{`class="price"`, `class="price"`, `class="price"`, `class="price"`}},
 		{".product-table tr td:nth-child(2)", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
 		{".stock", []string{`class="stock"`, `class="stock"`, `class="stock"`, `class="stock"`}},
+		{".does-not-exists", []string{}},
 	}
 
 	for _, test := range tests {
