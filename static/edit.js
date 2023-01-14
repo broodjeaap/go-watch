@@ -626,13 +626,13 @@ function onTypeChange(node) {
             }
             var1Input_1.rows = 10;
             var1Div.appendChild(var1Input_1);
-            // dev download link
+            // dev copy link
             var devCopyA_1 = document.createElement('a');
             var results = node == null ? [] : node.results;
             var luaScript_1 = "inputs = {\"" + results.join('","') + "\"}\noutputs = {}\n\n " + var1Input_1.value;
             devCopyA_1.setAttribute('href', '#');
             devCopyA_1.classList.add("btn", "btn-primary", "btn-sm");
-            devCopyA_1.innerHTML = "Copy Script";
+            devCopyA_1.innerHTML = "Copy script with inputs";
             devCopyA_1.onclick = function () {
                 if (navigator.clipboard) {
                     navigator.clipboard.writeText(luaScript_1);
@@ -644,17 +644,28 @@ function onTypeChange(node) {
             };
             var1Div.appendChild(devCopyA_1);
             var luaSnippets = new Map([
-                ["http", "\nlocal http = require(\"http\")\nlocal client = http.client()\n\nlocal request = http.request(\"GET\", \"https://api.ipify.org\")\nlocal result, err = client:do_request(request)\nif err then\n    error(err)\nend\nif not (result.code == 200) then\n    error(\"code\")\nend\n\ntable.insert(outputs, result.body)\n                "],
-                ["strings", "\nlocal strings = require(\"strings\")\nfor i,input in pairs(inputs) do\n    table.insert(outputs, strings.trim_space(input))\nend\n                "],
-                ["filter", "\nfor i,input in pairs(inputs) do\n    number = tonumber(input)\n    if number % 2 == 0 then\n        table.insert(outputs, input)\n    end\nend\n                "],
+                ["HTTP GET", "local http = require(\"http\")\nlocal client = http.client()\n\nlocal request = http.request(\"GET\", \"https://api.ipify.org\")\nlocal result, err = client:do_request(request)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\nif not (result.code == 200) then\n    table.insert(logs, err)\n    error(err)\nend\n\ntable.insert(outputs, result.body)\n                "],
+                ["HTTP POST", "local http = require(\"http\")\nlocal client = http.client()\n\nlocal request = http.request(\"POST\", \"http://httpbin.org/post\", \"{}\")\nlocal result, err = client:do_request(request)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\nif not (result.code == 200) then\n    table.insert(logs, err)\n    error(err)\nend\n\ntable.insert(outputs, result.body)\n                "],
+                ["HTTP Auth", "local http = require(\"http\")\nlocal client = http.client()\n\nlocal request = http.request(\"GET\", \"http://httpbin.org/basic-auth/gowatch/gowatch123\")\nrequest:set_basic_auth(\"gowatch\", \"gowatch123\")\nlocal result, err = client:do_request(request)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\nif not (result.code == 200) then\n    table.insert(logs, err)\n    error(err)\nend\n\ntable.insert(outputs, result.body)\n                "],
+                ["HTTP Bearer", "local http = require(\"http\")\nlocal client = http.client()\n\nlocal request = http.request(\"GET\", \"http://httpbin.org/bearer\")\nlocal token = \"gowatch123\"\nrequest:header_set(\"Authorization\", \"Bearer \" .. token)\nlocal result, err = client:do_request(request)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\nif not (result.code == 200) then\n    table.insert(logs, err)\n    error(err)\nend\n\ntable.insert(outputs, result.body)\n                "],
+                ["HTTP Proxy", "local http = require(\"http\")\nlocal client = http.client({ proxy = \"http://login:password@hostname.com\" })\n\nlocal request = http.request(\"GET\", \"https://api.ipify.org\")\nlocal result, err = client:do_request(request)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\nif not (result.code == 200) then\n    table.insert(logs, err)\n    error(err)\nend\n\ntable.insert(outputs, result.body)\n                "],
+                ["HTTP Browserless", "local http = require(\"http\")\nlocal client = http.client()\n\n# note \" for keys/values\nlocal data = '{\"url\": \"https://api.ipify.org\"}'\nlocal request = http.request(\"POST\", \"http://browserless:3000/content\", data)\nrequest:header_set(\"Content-Type\", \"application/json\")\nlocal result, err = client:do_request(request)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\nif not (result.code == 200) then\n    table.insert(logs, \"Response != 200 - \" .. result.code)\nend\n\ntable.insert(outputs, result.body)        \n                "],
+                ["XPath", "local xmlpath = require(\"xmlpath\")\n\nlocal query = \"//td[@class='price']\"\nlocal query, err = xmlpath.compile(query)\nif err then\n    table.insert(logs, err)\n    error(err)\nend\n\nfor i,input in pairs(inputs) do\n    local node, err = xmlpath.load(input)\n    if err then\n        table.insert(logs, err)\n        error(err)\n    end\n    local iter = query:iter(node)\n    for k, v in pairs(iter) do\n        table.insert(outputs, v:string())\n    end\nend\n                "],
+                ["strings", "local strings = require(\"strings\")\nfor i,input in pairs(inputs) do\n    table.insert(outputs, strings.trim_space(input))\nend\n                "],
+                ["filter", "for i,input in pairs(inputs) do\n    number = tonumber(input)\n    if number % 2 == 0 then\n        table.insert(outputs, input)\n    end\nend\n                "],
             ]);
+            var snippetDiv = document.createElement("div");
+            snippetDiv.classList.add("d-flex", "flex-wrap");
             var _loop_1 = function (name_1, snippet) {
                 var link = document.createElement('a');
                 link.setAttribute("href", "#");
-                link.classList.add("btn", "btn-secondary", "btn-sm");
+                link.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
                 link.innerHTML = name_1;
                 link.onclick = function () { var1Input_1.value = snippet; };
-                var1Div.appendChild(link);
+                snippetDiv.appendChild(link);
+                var gap = document.createElement("div");
+                gap.classList.add("m-1", "xs");
+                snippetDiv.appendChild(gap);
             };
             try {
                 // add snippets
@@ -670,6 +681,7 @@ function onTypeChange(node) {
                 }
                 finally { if (e_2) throw e_2.error; }
             }
+            var1Div.appendChild(snippetDiv);
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";

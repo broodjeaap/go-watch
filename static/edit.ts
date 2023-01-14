@@ -612,13 +612,13 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.rows = 10;
             var1Div.appendChild(var1Input);
 
-            // dev download link
+            // dev copy link
             let devCopyA = document.createElement('a');
             let results = node == null ? [] : node.results;
             let luaScript = `inputs = {"${results.join('","')}"}\noutputs = {}\n\n ${var1Input.value}`;
             devCopyA.setAttribute('href', '#')
             devCopyA.classList.add("btn", "btn-primary", "btn-sm");
-            devCopyA.innerHTML = "Copy Script";
+            devCopyA.innerHTML = "Copy script with inputs";
             devCopyA.onclick = function() {
                 if (navigator.clipboard){
                     navigator.clipboard.writeText(luaScript);
@@ -630,29 +630,134 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Div.appendChild(devCopyA);
 
             let luaSnippets: Map<string, string> = new Map([
-                ["http", `
-local http = require("http")
+                ["HTTP GET", `local http = require("http")
 local client = http.client()
 
 local request = http.request("GET", "https://api.ipify.org")
 local result, err = client:do_request(request)
 if err then
+    table.insert(logs, err)
     error(err)
 end
 if not (result.code == 200) then
-    error("code")
+    table.insert(logs, err)
+    error(err)
 end
 
 table.insert(outputs, result.body)
                 `],
-                ["strings", `
-local strings = require("strings")
+                ["HTTP POST", `local http = require("http")
+local client = http.client()
+
+local request = http.request("POST", "http://httpbin.org/post", "{}")
+local result, err = client:do_request(request)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+if not (result.code == 200) then
+    table.insert(logs, err)
+    error(err)
+end
+
+table.insert(outputs, result.body)
+                `],
+                ["HTTP Auth", `local http = require("http")
+local client = http.client()
+
+local request = http.request("GET", "http://httpbin.org/basic-auth/gowatch/gowatch123")
+request:set_basic_auth("gowatch", "gowatch123")
+local result, err = client:do_request(request)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+if not (result.code == 200) then
+    table.insert(logs, err)
+    error(err)
+end
+
+table.insert(outputs, result.body)
+                `],
+                ["HTTP Bearer", `local http = require("http")
+local client = http.client()
+
+local request = http.request("GET", "http://httpbin.org/bearer")
+local token = "gowatch123"
+request:header_set("Authorization", "Bearer " .. token)
+local result, err = client:do_request(request)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+if not (result.code == 200) then
+    table.insert(logs, err)
+    error(err)
+end
+
+table.insert(outputs, result.body)
+                `],
+                ["HTTP Proxy", `local http = require("http")
+local client = http.client({ proxy = "http://login:password@hostname.com" })
+
+local request = http.request("GET", "https://api.ipify.org")
+local result, err = client:do_request(request)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+if not (result.code == 200) then
+    table.insert(logs, err)
+    error(err)
+end
+
+table.insert(outputs, result.body)
+                `],
+                ["HTTP Browserless", `local http = require("http")
+local client = http.client()
+
+# note " for keys/values
+local data = '{"url": "https://api.ipify.org"}'
+local request = http.request("POST", "http://browserless:3000/content", data)
+request:header_set("Content-Type", "application/json")
+local result, err = client:do_request(request)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+if not (result.code == 200) then
+    table.insert(logs, "Response != 200 - " .. result.code)
+end
+
+table.insert(outputs, result.body)        
+                `],
+                ["XPath", `local xmlpath = require("xmlpath")
+
+local query = "//td[@class='price']"
+local query, err = xmlpath.compile(query)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+
+for i,input in pairs(inputs) do
+    local node, err = xmlpath.load(input)
+    if err then
+        table.insert(logs, err)
+        error(err)
+    end
+    local iter = query:iter(node)
+    for k, v in pairs(iter) do
+        table.insert(outputs, v:string())
+    end
+end
+                `],
+                ["strings", `local strings = require("strings")
 for i,input in pairs(inputs) do
     table.insert(outputs, strings.trim_space(input))
 end
                 `],
-                ["filter", `
-for i,input in pairs(inputs) do
+                ["filter", `for i,input in pairs(inputs) do
     number = tonumber(input)
     if number % 2 == 0 then
         table.insert(outputs, input)
@@ -660,15 +765,22 @@ for i,input in pairs(inputs) do
 end
                 `],
             ]);
+            let snippetDiv = document.createElement("div");
+            snippetDiv.classList.add("d-flex", "flex-wrap")
             // add snippets
             for (let [name, snippet] of luaSnippets) {
                 let link = document.createElement('a');
                 link.setAttribute("href", "#");
-                link.classList.add("btn", "btn-secondary", "btn-sm");
+                link.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
                 link.innerHTML = name;
                 link.onclick = function() {var1Input.value = snippet;};
-                var1Div.appendChild(link)
+                snippetDiv.appendChild(link)
+
+                let gap = document.createElement("div");
+                gap.classList.add("m-1", "xs");
+                snippetDiv.appendChild(gap);
             }
+            var1Div.appendChild(snippetDiv);
 
             let var2Input = document.createElement("input");
             var2Input.name = "var2";
