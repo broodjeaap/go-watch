@@ -379,9 +379,9 @@ func getFilterResultXPath(filter *Filter) {
 					}
 				default:
 					{
-				var b bytes.Buffer
-				html.Render(&b, node)
-				filter.Results = append(filter.Results, html.UnescapeString(b.String()))
+						var b bytes.Buffer
+						html.Render(&b, node)
+						filter.Results = append(filter.Results, html.UnescapeString(b.String()))
 						break
 					}
 				}
@@ -446,9 +446,9 @@ func getFilterResultCSS(filter *Filter) {
 					}
 				default:
 					{
-				var b bytes.Buffer
-				html.Render(&b, node)
-				filter.Results = append(filter.Results, html.UnescapeString(b.String()))
+						var b bytes.Buffer
+						html.Render(&b, node)
+						filter.Results = append(filter.Results, html.UnescapeString(b.String()))
 						break
 					}
 				}
@@ -514,6 +514,11 @@ func getFilterResultSubstring(filter *Filter) {
 					} else if from < 0 {
 						from = len(asRunes) + from
 					}
+					if from < 0 {
+						filter.log("Out of bounds:", from_to)
+						continue
+					}
+
 					toStr := from_to[1]
 					var hasTo bool = true
 					if toStr == "" {
@@ -527,8 +532,15 @@ func getFilterResultSubstring(filter *Filter) {
 					} else if to < 0 {
 						to = len(asRunes) + to
 					}
+					if to < 0 {
+						filter.log("Out of bounds:", from_to)
+						continue
+					}
 					if hasFrom && hasTo {
-						sb.WriteString(string(asRunes[from:to]))
+						_, err := sb.WriteString(string(asRunes[from:to]))
+						if err != nil {
+							filter.log("Could not substring: ", err)
+						}
 					} else if hasFrom {
 						sb.WriteString(string(asRunes[from:]))
 					} else if hasTo {

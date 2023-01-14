@@ -277,6 +277,34 @@ func TestFilterSubstring(t *testing.T) {
 	}
 }
 
+func TestFilterSubstringOutOfBounds(t *testing.T) {
+	var tests = []struct {
+		Input string
+		Query string
+	}{
+		{"01234", ":-6"},
+		{"01234", "-6:"},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: []string{test.Input}},
+				},
+				Var1: test.Query,
+			}
+			getFilterResultSubstring(
+				&filter,
+			)
+			if len(filter.Logs) == 0 {
+				t.Errorf("No log message, expected one for OoB")
+			}
+		})
+	}
+}
+
 func TestFilterContains(t *testing.T) {
 	var tests = []struct {
 		Input  []string

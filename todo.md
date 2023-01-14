@@ -14,5 +14,3 @@
     - ~~attributes~~
     - ~~node~~
     - tests for all of it
-- substring out of range?
-    - test it
