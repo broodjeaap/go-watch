@@ -9,8 +9,3 @@
     - json
 - add index to docs/compose to fix link in pages
 - safe escape {{ }} for pages
-- ~~xpath/css innerthtml option?~~
-    - ~~inner~~
-    - ~~attributes~~
-    - ~~node~~
-    - tests for all of it
