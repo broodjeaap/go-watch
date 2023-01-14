@@ -123,15 +123,30 @@ function onTypeChange(node) {
             var1Label.innerHTML = "XPath";
             var1Input.placeholder = "//a[@class='price]";
             var1Div.appendChild(var1Input);
-            var var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Input.placeholder = "";
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
+            var select_1 = document.createElement("select");
+            select_1.name = "var2";
+            select_1.id = "var2Input";
+            select_1.classList.add("form-control");
+            var innerHTML = document.createElement("option");
+            innerHTML.value = "inner";
+            innerHTML.innerHTML = "innerHTML";
+            select_1.appendChild(innerHTML);
+            var attributes = document.createElement("option");
+            attributes.value = "attr";
+            attributes.innerHTML = "Attributes";
+            select_1.appendChild(attributes);
+            var node_1 = document.createElement("option");
+            node_1.value = "node";
+            node_1.innerHTML = "Node";
+            select_1.appendChild(node_1);
+            var2Div.appendChild(select_1);
+            var2Label.innerHTML = "Select";
+            if (var2Value == "") {
+                select_1.value = "inner";
+            }
+            else {
+                select_1.value = var2Value;
+            }
             var var3Input = document.createElement("input");
             var3Input.name = "var3";
             var3Input.id = "var3Input";
@@ -179,14 +194,30 @@ function onTypeChange(node) {
             var1Label.innerHTML = "Selector";
             var1Input.placeholder = ".price";
             var1Div.appendChild(var1Input);
-            var var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
+            var select_2 = document.createElement("select");
+            select_2.name = "var2";
+            select_2.id = "var2Input";
+            select_2.classList.add("form-control");
+            var innerHTML = document.createElement("option");
+            innerHTML.value = "inner";
+            innerHTML.innerHTML = "innerHTML";
+            select_2.appendChild(innerHTML);
+            var attributes = document.createElement("option");
+            attributes.value = "attr";
+            attributes.innerHTML = "Attributes";
+            select_2.appendChild(attributes);
+            var node_2 = document.createElement("option");
+            node_2.value = "node";
+            node_2.innerHTML = "Node";
+            select_2.appendChild(node_2);
+            var2Div.appendChild(select_2);
+            var2Label.innerHTML = "Select";
+            if (var2Value == "") {
+                select_2.value = "inner";
+            }
+            else {
+                select_2.value = var2Value;
+            }
             var var3Input = document.createElement("input");
             var3Input.name = "var3";
             var3Input.id = "var3Input";
@@ -748,13 +779,13 @@ function onConditionChange(node) {
             filterSelect.classList.add("form-control");
             try {
                 for (var _b = __values(_diagram.nodes.values()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var node_1 = _c.value;
-                    if (node_1.type != "store") {
+                    var node_3 = _c.value;
+                    if (node_3.type != "store") {
                         continue;
                     }
                     var nodeOption = document.createElement("option");
-                    nodeOption.value = node_1.label;
-                    nodeOption.innerHTML = node_1.label;
+                    nodeOption.value = node_3.label;
+                    nodeOption.innerHTML = node_3.label;
                     filterSelect.appendChild(nodeOption);
                 }
             }

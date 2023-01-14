@@ -100,15 +100,29 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.placeholder = "//a[@class='price]";
             var1Div.appendChild(var1Input);
 
-            let var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control")
-            var2Input.disabled = true;
-            var2Input.placeholder = "";
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
+            let select = document.createElement("select");
+            select.name = "var2";
+            select.id = "var2Input";
+            select.classList.add("form-control");
+            let innerHTML = document.createElement("option");
+            innerHTML.value = "inner"
+            innerHTML.innerHTML = "innerHTML";
+            select.appendChild(innerHTML);
+            let attributes = document.createElement("option");
+            attributes.value = "attr"
+            attributes.innerHTML = "Attributes";
+            select.appendChild(attributes);
+            let node = document.createElement("option");
+            node.value = "node"
+            node.innerHTML = "Node";
+            select.appendChild(node);
+            var2Div.appendChild(select);
+            var2Label.innerHTML = "Select";
+            if (var2Value == ""){
+                select.value = "inner";
+            } else {
+                select.value = var2Value;
+            }
 
             let var3Input = document.createElement("input");
             var3Input.name = "var3";
@@ -160,14 +174,29 @@ function onTypeChange(node: DiagramNode | null = null){
             var1Input.placeholder = ".price";
             var1Div.appendChild(var1Input);
 
-            let var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control")
-            var2Input.disabled = true;
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
+            let select = document.createElement("select");
+            select.name = "var2";
+            select.id = "var2Input";
+            select.classList.add("form-control");
+            let innerHTML = document.createElement("option");
+            innerHTML.value = "inner"
+            innerHTML.innerHTML = "innerHTML";
+            select.appendChild(innerHTML);
+            let attributes = document.createElement("option");
+            attributes.value = "attr"
+            attributes.innerHTML = "Attributes";
+            select.appendChild(attributes);
+            let node = document.createElement("option");
+            node.value = "node"
+            node.innerHTML = "Node";
+            select.appendChild(node);
+            var2Div.appendChild(select);
+            var2Label.innerHTML = "Select";
+            if (var2Value == ""){
+                select.value = "inner";
+            } else {
+                select.value = var2Value;
+            }
 
             let var3Input = document.createElement("input");
             var3Input.name = "var3";

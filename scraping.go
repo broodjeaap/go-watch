@@ -338,6 +338,10 @@ func getURLContent(filter *Filter, fetchURL string) (string, error) {
 }
 
 func getFilterResultXPath(filter *Filter) {
+	selectType := "node"
+	if filter.Var2 != nil {
+		selectType = *filter.Var2
+	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			doc, err := htmlquery.Parse(strings.NewReader(result))
@@ -347,9 +351,40 @@ func getFilterResultXPath(filter *Filter) {
 			}
 			nodes, _ := htmlquery.QueryAll(doc, filter.Var1)
 			for _, node := range nodes {
+				switch selectType {
+				case "inner":
+					{
+						// if the child is a text node, theres nothing else (?), so just append that
+						if node.FirstChild != nil && node.FirstChild.Type == html.TextNode {
+							filter.Results = append(filter.Results, html.UnescapeString(node.FirstChild.Data))
+							continue
+						}
+						// else, theres more nodes, turn them all into a string and add that as a result
+						var result bytes.Buffer
+						for child := node.FirstChild; child != nil; child = child.NextSibling {
+							var b bytes.Buffer
+							html.Render(&b, node)
+							result.WriteString(b.String())
+						}
+						filter.Results = append(filter.Results, html.UnescapeString(result.String()))
+						break
+					}
+				case "attr":
+					{
+						for _, attr := range node.Attr {
+							result := fmt.Sprintf("%s=\"%s\"", attr.Key, attr.Val)
+							filter.Results = append(filter.Results, html.UnescapeString(result))
+						}
+						break
+					}
+				default:
+					{
 				var b bytes.Buffer
 				html.Render(&b, node)
 				filter.Results = append(filter.Results, html.UnescapeString(b.String()))
+						break
+					}
+				}
 			}
 		}
 	}
@@ -366,6 +401,10 @@ func getFilterResultJSON(filter *Filter) {
 }
 
 func getFilterResultCSS(filter *Filter) {
+	selectType := "node"
+	if filter.Var2 != nil {
+		selectType = *filter.Var2
+	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			doc, err := html.Parse(strings.NewReader(result))
@@ -379,9 +418,40 @@ func getFilterResultCSS(filter *Filter) {
 				continue
 			}
 			for _, node := range cascadia.QueryAll(doc, sel) {
+				switch selectType {
+				case "inner":
+					{
+						// if the child is a text node, theres nothing else (?), so just append that
+						if node.FirstChild != nil && node.FirstChild.Type == html.TextNode {
+							filter.Results = append(filter.Results, html.UnescapeString(node.FirstChild.Data))
+							continue
+						}
+						// else, theres more nodes, turn them all into a string and add that as a result
+						var result bytes.Buffer
+						for child := node.FirstChild; child != nil; child = child.NextSibling {
+							var b bytes.Buffer
+							html.Render(&b, node)
+							result.WriteString(b.String())
+						}
+						filter.Results = append(filter.Results, html.UnescapeString(result.String()))
+						break
+					}
+				case "attr":
+					{
+						for _, attr := range node.Attr {
+							result := fmt.Sprintf("%s=\"%s\"", attr.Key, attr.Val)
+							filter.Results = append(filter.Results, html.UnescapeString(result))
+						}
+						break
+					}
+				default:
+					{
 				var b bytes.Buffer
 				html.Render(&b, node)
 				filter.Results = append(filter.Results, html.UnescapeString(b.String()))
+						break
+					}
+				}
 			}
 		}
 	}
