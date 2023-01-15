@@ -34,6 +34,8 @@ const HTML_STRING = `<html>
 		</tbody>
 	</table>
 </body>
+<div id="empty-div"></div>
+<div id="multiple-children-div"><div id="first-child"></div><div id="second-child"></div></div>
 </html>`
 
 const JSON_STRING = `{
@@ -45,6 +47,10 @@ const JSON_STRING = `{
 		{"name": "product4", "stock": 40, "price": 400}
 	]
 }`
+
+func DeepEqualStringSlice(a []string, b []string) bool {
+	return len(a) == len(b) && (len(a) == 0 || reflect.DeepEqual(a, b))
+}
 
 func TestFilterXPathNode(t *testing.T) {
 	var2 := "node"
@@ -58,6 +64,9 @@ func TestFilterXPathNode(t *testing.T) {
 		{"//td[@class='price']", []string{`<td class="price">100</td>`, `<td class="price">200</td>`, `<td class="price">300</td>`, `<td class="price">400</td>`}},
 		{"//table[@id='product-table']//tr//td[2]", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
 		{"//td[@class='stock']", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
+		{"//div[@id='empty-div']", []string{`<div id="empty-div"></div>`}},
+		{"//div[@id='multiple-children-div']", []string{`<div id="multiple-children-div"><div id="first-child"></div><div id="second-child"></div></div>`}},
+		{"//div[@id='does-not-exist']", []string{}},
 	}
 
 	for _, test := range tests {
@@ -73,7 +82,7 @@ func TestFilterXPathNode(t *testing.T) {
 			getFilterResultXPath(
 				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -92,6 +101,8 @@ func TestFilterXPathInnerHTML(t *testing.T) {
 		{"//td[@class='price']", []string{`100`, `200`, `300`, `400`}},
 		{"//table[@id='product-table']//tr//td[2]", []string{`10`, `20`, `30`, `40`}},
 		{"//td[@class='stock']", []string{`10`, `20`, `30`, `40`}},
+		{"//div[@id='empty-div']", []string{}},
+		{"//div[@id='multiple-children-div']", []string{`<div id="first-child"></div><div id="second-child"></div>`}},
 	}
 
 	for _, test := range tests {
@@ -107,7 +118,7 @@ func TestFilterXPathInnerHTML(t *testing.T) {
 			getFilterResultXPath(
 				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -142,7 +153,7 @@ func TestFilterXPathAttributes(t *testing.T) {
 			getFilterResultXPath(
 				&filter,
 			)
-			if len(test.Want) != 0 && len(filter.Results) != 0 && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -158,6 +169,7 @@ func TestFilterJSON(t *testing.T) {
 		{"products.#.name", []string{"product1", "product2", "product3", "product4"}},
 		{"products.#.stock", []string{"10", "20", "30", "40"}},
 		{"products.#.price", []string{"100", "200", "300", "400"}},
+		{"does.not.exist", []string{}},
 	}
 
 	for _, test := range tests {
@@ -172,7 +184,7 @@ func TestFilterJSON(t *testing.T) {
 			getFilterResultJSON(
 				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -190,6 +202,8 @@ func TestFilterCSSNode(t *testing.T) {
 		{".price", []string{`<td class="price">100</td>`, `<td class="price">200</td>`, `<td class="price">300</td>`, `<td class="price">400</td>`}},
 		{".product-table tr td:nth-child(2)", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
 		{".stock", []string{`<td class="stock">10</td>`, `<td class="stock">20</td>`, `<td class="stock">30</td>`, `<td class="stock">40</td>`}},
+		{"#empty-div", []string{`<div id="empty-div"></div>`}},
+		{"#multiple-children-div", []string{`<div id="multiple-children-div"><div id="first-child"></div><div id="second-child"></div></div>`}},
 	}
 
 	for _, test := range tests {
@@ -205,7 +219,7 @@ func TestFilterCSSNode(t *testing.T) {
 			getFilterResultCSS(
 				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -223,6 +237,8 @@ func TestFilterCSSInnerHTML(t *testing.T) {
 		{".price", []string{`100`, `200`, `300`, `400`}},
 		{".product-table tr td:nth-child(2)", []string{`10`, `20`, `30`, `40`}},
 		{".stock", []string{`10`, `20`, `30`, `40`}},
+		{"#empty-div]", []string{}},
+		{"#multiple-children-div", []string{`<div id="first-child"></div><div id="second-child"></div>`}},
 	}
 
 	for _, test := range tests {
@@ -238,7 +254,7 @@ func TestFilterCSSInnerHTML(t *testing.T) {
 			getFilterResultCSS(
 				&filter,
 			)
-			if !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -273,7 +289,7 @@ func TestFilterCSSAttributes(t *testing.T) {
 			getFilterResultCSS(
 				&filter,
 			)
-			if len(test.Want) != 0 && len(filter.Results) != 0 && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -305,7 +321,7 @@ func TestFilterReplace(t *testing.T) {
 		{"世界日本語", "語", "日", "世界日本日"},
 		{"世界日_世界日_世界日", "界", "語", "世語日_世語日_世語日"},
 
-		// regex tests
+		// regex remove tests
 		{"0123456789", "0[0-9]{2}", "", "3456789"},
 		{"0123456789", "[0-9]{2}9", "", "0123456"},
 		{"0123456789", "[0-9]+", "", ""},
@@ -347,6 +363,7 @@ func TestFilterMatch(t *testing.T) {
 		{"0123456789", "[0-9]{3}", []string{"012", "345", "678"}},
 		{"世界日本語", "日本", []string{"日本"}},
 		{"世界日本語_世界日本語_世界日本語", "日本", []string{"日本", "日本", "日本"}},
+		{"", "日本", []string{}},
 	}
 
 	for _, test := range tests {
@@ -361,8 +378,7 @@ func TestFilterMatch(t *testing.T) {
 			getFilterResultMatch(
 				&filter,
 			)
-			// len() thing cuz filterResults == nil and test.Want == [], same thing but not really...
-			if !(len(filter.Results) == 0 && len(test.Want) == 0) && !reflect.DeepEqual(filter.Results, test.Want) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -473,7 +489,7 @@ func TestFilterContains(t *testing.T) {
 			getFilterResultContains(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -503,7 +519,7 @@ func TestFilterSum(t *testing.T) {
 			getFilterResultSum(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -536,7 +552,7 @@ func TestFilterMin(t *testing.T) {
 			getFilterResultMin(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -569,7 +585,7 @@ func TestFilterMax(t *testing.T) {
 			getFilterResultMax(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -602,7 +618,7 @@ func TestFilterAverage(t *testing.T) {
 			getFilterResultAverage(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -634,7 +650,7 @@ func TestFilterCount(t *testing.T) {
 			getFilterResultCount(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -672,7 +688,7 @@ func TestFilterRound(t *testing.T) {
 			getFilterResultRound(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -782,7 +798,7 @@ func TestConditionDiff(t *testing.T) {
 				&filter,
 				db,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -826,28 +842,9 @@ func TestConditionLowerLast(t *testing.T) {
 		{
 			[]FilterOutput{
 				{
-					WatchID: 1,
+					WatchID: 2,
 					Name:    testName,
 					Value:   "A",
-				},
-			},
-			1,
-			[]string{"1"},
-			[]string{"1"},
-		},
-		{
-			[]FilterOutput{
-				{
-					WatchID: 2,
-					Name:    testName,
-					Value:   "3",
-					Time:    time1,
-				},
-				{
-					WatchID: 2,
-					Name:    testName,
-					Value:   "2",
-					Time:    time2,
 				},
 			},
 			2,
@@ -859,29 +856,48 @@ func TestConditionLowerLast(t *testing.T) {
 				{
 					WatchID: 3,
 					Name:    testName,
-					Value:   "1",
+					Value:   "3",
+					Time:    time1,
+				},
+				{
+					WatchID: 3,
+					Name:    testName,
+					Value:   "2",
+					Time:    time2,
 				},
 			},
 			3,
-			[]string{"2"},
-			[]string{},
+			[]string{"1"},
+			[]string{"1"},
 		},
 		{
 			[]FilterOutput{
 				{
 					WatchID: 4,
 					Name:    testName,
+					Value:   "1",
+				},
+			},
+			4,
+			[]string{"2"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 5,
+					Name:    testName,
 					Value:   "3",
 					Time:    time1,
 				},
 				{
-					WatchID: 4,
+					WatchID: 5,
 					Name:    testName,
 					Value:   "1",
 					Time:    time2,
 				},
 			},
-			4,
+			5,
 			[]string{"2"},
 			[]string{},
 		},
@@ -902,7 +918,7 @@ func TestConditionLowerLast(t *testing.T) {
 				&filter,
 				db,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1009,7 +1025,7 @@ func TestConditionLowest(t *testing.T) {
 				&filter,
 				db,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1029,8 +1045,8 @@ func TestFilterLowerThan(t *testing.T) {
 		{[]string{"1"}, "2", []string{"1"}},
 		{[]string{"2"}, "1", []string{}},
 		{[]string{"1"}, "1", []string{}},
-		{[]string{"2", "3", "4"}, "1", []string{"1"}},
-		{[]string{"A", "3", "4"}, "2", []string{"2"}},
+		{[]string{"2", "3", "4"}, "3", []string{"2"}},
+		{[]string{"A", "3", "4"}, "2", []string{}},
 	}
 
 	for _, test := range tests {
@@ -1047,7 +1063,7 @@ func TestFilterLowerThan(t *testing.T) {
 			getFilterResultConditionLowerThan(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1078,6 +1094,7 @@ func TestConditionHigherLast(t *testing.T) {
 					WatchID: 1,
 					Name:    testName,
 					Value:   "1",
+					Time:    time1,
 				},
 			},
 			1,
@@ -1087,62 +1104,62 @@ func TestConditionHigherLast(t *testing.T) {
 		{
 			[]FilterOutput{
 				{
-					WatchID: 1,
+					WatchID: 2,
 					Name:    testName,
 					Value:   "A",
 				},
 			},
-			1,
-			[]string{"1"},
-			[]string{"1"},
-		},
-		{
-			[]FilterOutput{
-				{
-					WatchID: 2,
-					Name:    testName,
-					Value:   "3",
-					Time:    time1,
-				},
-				{
-					WatchID: 2,
-					Name:    testName,
-					Value:   "2",
-					Time:    time2,
-				},
-			},
 			2,
-			[]string{"3"},
-			[]string{"3"},
+			[]string{"1"},
+			[]string{"1"},
 		},
 		{
 			[]FilterOutput{
 				{
 					WatchID: 3,
 					Name:    testName,
+					Value:   "3",
+					Time:    time1,
+				},
+				{
+					WatchID: 3,
+					Name:    testName,
 					Value:   "2",
+					Time:    time2,
 				},
 			},
 			3,
-			[]string{"1"},
-			[]string{},
+			[]string{"3"},
+			[]string{"3"},
 		},
 		{
 			[]FilterOutput{
 				{
 					WatchID: 4,
 					Name:    testName,
+					Value:   "2",
+				},
+			},
+			4,
+			[]string{"1"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 5,
+					Name:    testName,
 					Value:   "1",
 					Time:    time1,
 				},
 				{
-					WatchID: 4,
+					WatchID: 5,
 					Name:    testName,
 					Value:   "3",
 					Time:    time2,
 				},
 			},
-			4,
+			5,
 			[]string{"2"},
 			[]string{},
 		},
@@ -1163,7 +1180,7 @@ func TestConditionHigherLast(t *testing.T) {
 				&filter,
 				db,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1198,34 +1215,22 @@ func TestConditionHighest(t *testing.T) {
 		{
 			[]FilterOutput{
 				{
-					WatchID: 1,
+					WatchID: 2,
 					Name:    testName,
 					Value:   "A",
 				},
 			},
-			1,
+			2,
 			[]string{"1"},
 			[]string{"1"},
 		},
 		{
 			[]FilterOutput{
 				{
-					WatchID: 2,
+					WatchID: 3,
 					Name:    testName,
 					Value:   "1",
 				},
-				{
-					WatchID: 2,
-					Name:    testName,
-					Value:   "2",
-				},
-			},
-			2,
-			[]string{"3"},
-			[]string{"3"},
-		},
-		{
-			[]FilterOutput{
 				{
 					WatchID: 3,
 					Name:    testName,
@@ -1233,23 +1238,35 @@ func TestConditionHighest(t *testing.T) {
 				},
 			},
 			3,
-			[]string{"1"},
-			[]string{},
+			[]string{"3"},
+			[]string{"3"},
 		},
 		{
 			[]FilterOutput{
 				{
 					WatchID: 4,
 					Name:    testName,
+					Value:   "2",
+				},
+			},
+			4,
+			[]string{"1"},
+			[]string{},
+		},
+		{
+			[]FilterOutput{
+				{
+					WatchID: 5,
+					Name:    testName,
 					Value:   "1",
 				},
 				{
-					WatchID: 4,
+					WatchID: 5,
 					Name:    testName,
 					Value:   "3",
 				},
 			},
-			4,
+			5,
 			[]string{"2"},
 			[]string{},
 		},
@@ -1270,7 +1287,7 @@ func TestConditionHighest(t *testing.T) {
 				&filter,
 				db,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1290,8 +1307,8 @@ func TestFilterHigherThan(t *testing.T) {
 		{[]string{"2"}, "1", []string{"2"}},
 		{[]string{"1"}, "2", []string{}},
 		{[]string{"1"}, "1", []string{}},
-		{[]string{"1", "2", "3"}, "4", []string{"4"}},
-		{[]string{"1", "2", "3", "A"}, "4", []string{"4"}},
+		{[]string{"1", "2", "3"}, "1", []string{"2", "3"}},
+		{[]string{"1", "2", "3", "A"}, "4", []string{}},
 	}
 
 	for _, test := range tests {
@@ -1308,7 +1325,7 @@ func TestFilterHigherThan(t *testing.T) {
 			getFilterResultConditionHigherThan(
 				&filter,
 			)
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1395,7 +1412,7 @@ end`
 			if len(filter.Logs) > 0 {
 				t.Errorf("Lua error: %s", filter.Logs)
 			}
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1409,25 +1426,27 @@ local inspect = require("inspect")
 
 -- regexp.match(regexp, data)
 local result, err = regexp.match("hello", "hello world")
+table.insert(logs, err)
 if err then error(err) end
-if not(result==true) then error("regexp.match()") end`
+if not(result==true) then error("regexp.match()") end
+table.insert(outputs, result)`
 	var tests = []struct {
 		Name  string
 		Input []string
 		Lua   string
 		Want  []string
 	}{
-		{"Regex", []string{}, regex, []string{"trudde"}},
+		{"Regex", []string{}, regex, []string{"true"}},
 	}
 
 	for _, test := range tests {
 		testname := test.Name
 		t.Run(testname, func(t *testing.T) {
 			filter := Filter{
+				Var1: test.Lua,
 				Parents: []*Filter{
 					{
 						Results: test.Input,
-						Var1:    test.Lua,
 					},
 				},
 			}
@@ -1437,7 +1456,7 @@ if not(result==true) then error("regexp.match()") end`
 			if len(filter.Logs) > 0 {
 				t.Errorf("Lua error: %s", filter.Logs)
 			}
-			if (filter.Results != nil && test.Want != nil) && !reflect.DeepEqual(test.Want, filter.Results) {
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
 				t.Errorf("Got %s, want %s", filter.Results, test.Want)
 			}
 		})
@@ -1477,7 +1496,7 @@ func TestEchoFilter(t *testing.T) {
 	buildFilterTree(filters, connections)
 	processFilters(filters, nil, nil, false, nil)
 
-	if !reflect.DeepEqual(filter1.Results, []string{helloWorld}) {
+	if !DeepEqualStringSlice(filter1.Results, []string{helloWorld}) {
 		t.Errorf("%s did not match %s", helloWorld, filter1.Results)
 	}
 }
