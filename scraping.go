@@ -749,16 +749,15 @@ func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
+	lastValue, lastValueErr := strconv.ParseFloat(previousOutput.Value, 64)
+	if lastValueErr != nil {
+		filter.log("Could not convert previous value to number all will pass: '", previousOutput.Value, "'")
+	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			if previousOutput.WatchID == 0 {
 				filter.Results = append(filter.Results, result)
 			} else {
-				lastValue, err := strconv.ParseFloat(previousOutput.Value, 64)
-				if err != nil {
-					filter.log("Could not convert previous value to number: '", previousOutput.Value, "'")
-					continue
-				}
 				number, err := strconv.ParseFloat(result, 64)
 				if err != nil {
 					if len(result) > 50 {
@@ -768,7 +767,7 @@ func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 					}
 					continue
 				}
-				if number < lastValue {
+				if lastValueErr != nil || number < lastValue {
 					filter.Results = append(filter.Results, result)
 				}
 			}
@@ -783,7 +782,6 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 	for _, previousOutput := range previousOutputs {
 		number, err := strconv.ParseFloat(previousOutput.Value, 64)
 		if err != nil {
-			filter.log("Could not convert result to number: '", previousOutput.Value, "'")
 			continue
 		}
 		if number < lowest {
@@ -840,16 +838,15 @@ func getFilterResultConditionLowerThan(filter *Filter) {
 func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
+	lastValue, lastValueErr := strconv.ParseFloat(previousOutput.Value, 64)
+	if lastValueErr != nil {
+		filter.log("Could not convert previous value to number all will pass: '", previousOutput.Value, "'")
+	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			if previousOutput.WatchID == 0 {
 				filter.Results = append(filter.Results, result)
 			} else {
-				lastValue, err := strconv.ParseFloat(previousOutput.Value, 64)
-				if err != nil {
-					filter.log("Could not convert previous value to number: '", previousOutput.Value, "'")
-					continue
-				}
 				number, err := strconv.ParseFloat(result, 64)
 				if err != nil {
 					if len(result) > 50 {
@@ -859,7 +856,7 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 					}
 					continue
 				}
-				if number > lastValue {
+				if lastValueErr != nil || number > lastValue {
 					filter.Results = append(filter.Results, result)
 				}
 			}
@@ -875,7 +872,6 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 		for _, previousOutput := range previousOutputs {
 			number, err := strconv.ParseFloat(previousOutput.Value, 64)
 			if err != nil {
-				filter.log("Could not convert result to number: '", previousOutput.Value, "'")
 				continue
 			}
 			if number > highest {
