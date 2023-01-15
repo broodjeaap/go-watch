@@ -354,16 +354,14 @@ func getFilterResultXPath(filter *Filter) {
 				switch selectType {
 				case "inner":
 					{
-						// if the child is a text node, theres nothing else (?), so just append that
-						if node.FirstChild != nil && node.FirstChild.Type == html.TextNode {
-							filter.Results = append(filter.Results, html.UnescapeString(node.FirstChild.Data))
+						if node.FirstChild == nil {
 							continue
 						}
-						// else, theres more nodes, turn them all into a string and add that as a result
+
 						var result bytes.Buffer
 						for child := node.FirstChild; child != nil; child = child.NextSibling {
 							var b bytes.Buffer
-							html.Render(&b, node)
+							html.Render(&b, child)
 							result.WriteString(b.String())
 						}
 						filter.Results = append(filter.Results, html.UnescapeString(result.String()))
@@ -421,16 +419,14 @@ func getFilterResultCSS(filter *Filter) {
 				switch selectType {
 				case "inner":
 					{
-						// if the child is a text node, theres nothing else (?), so just append that
-						if node.FirstChild != nil && node.FirstChild.Type == html.TextNode {
-							filter.Results = append(filter.Results, html.UnescapeString(node.FirstChild.Data))
+						if node.FirstChild == nil {
 							continue
 						}
-						// else, theres more nodes, turn them all into a string and add that as a result
+
 						var result bytes.Buffer
 						for child := node.FirstChild; child != nil; child = child.NextSibling {
 							var b bytes.Buffer
-							html.Render(&b, node)
+							html.Render(&b, child)
 							result.WriteString(b.String())
 						}
 						filter.Results = append(filter.Results, html.UnescapeString(result.String()))
