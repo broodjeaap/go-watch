@@ -567,9 +567,6 @@ func (web *Web) watchEdit(c *gin.Context) {
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
-	var values []FilterOutput
-	web.db.Model(&FilterOutput{}).Where("watch_id = ?", watch.ID).Find(&values)
-
 	notifiers := make([]string, 1)
 	notifiers = append(notifiers, "All")
 	for notifier := range web.notifiers {
@@ -583,7 +580,6 @@ func (web *Web) watchEdit(c *gin.Context) {
 		"Watch":       watch,
 		"Filters":     filters,
 		"Connections": connections,
-		"Values":      values,
 		"Notifiers":   notifiers,
 	})
 }
