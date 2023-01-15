@@ -532,11 +532,9 @@ func (web *Web) watchView(c *gin.Context) {
 		_, err := strconv.ParseFloat(value.Value, 64)
 		if err == nil {
 			numericalMap[value.Name] = append(numericalMap[value.Name], value)
-			log.Println(value)
 		} else {
 			// probably very inefficient to prepend, but want newest values at the top
 			categoricalMap[value.Name] = append([]*FilterOutput{value}, categoricalMap[value.Name]...)
-			log.Println(value)
 		}
 	}
 
