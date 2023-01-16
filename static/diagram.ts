@@ -488,6 +488,9 @@ function diagramOnMouseUp(ev: MouseEvent){
 function diagramOnMouseMove(ev: MouseEvent){
     _diagram.onmousemove(ev)
 }
+function diagramOnWheel(ev: WheelEvent){
+    _diagram.onwheel(ev);   
+}
 function diagramOnContext(ev: MouseEvent){
     ev.preventDefault();
 }
@@ -532,7 +535,10 @@ class Diagrams {
 
     newConnection: NewConnection | null = null;
 
-    scale: number = 1.0;
+    scaleLevel: number = 0;
+    scaleMax: number = 3;
+    scaleMin: number = -1;
+    get scale(): number {return 1 - (1 / this.scaleMax) * this.scaleLevel;}
 
     editNodeCallback: (node: DiagramNode) => void = function (){};
     deleteNodeCallback: (node: DiagramNode) => void = function (){};
@@ -558,11 +564,11 @@ class Diagrams {
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
+        this.canvas.onwheel = diagramOnWheel;
         window.onresize = diagramOnResize;
-
         tick();
     }
-
+    
     tick(){
         this.drawBackground();
         if (this.mouseState.leftUp && !this.mouseState.panning && !this.mouseState.draggingNode && !this.mouseState.draggingConnection){
@@ -593,10 +599,11 @@ class Diagrams {
 
     onmousemove(ev: MouseEvent){
         let canvasRect = this.canvas.getBoundingClientRect();
-        this.mouseState.canvas.x = ev.x - canvasRect.left;
-        this.mouseState.canvas.y = ev.y - canvasRect.top;
-        this.mouseState.delta.x = ev.movementX;
-        this.mouseState.delta.y = ev.movementY;
+        let scale = 1 / this.scale;
+        this.mouseState.canvas.x = (ev.x - canvasRect.left) * scale;
+        this.mouseState.canvas.y = (ev.y - canvasRect.top) * scale;
+        this.mouseState.delta.x = ev.movementX * scale;
+        this.mouseState.delta.y = ev.movementY * scale;
 
         if (this.mouseState.panning){
             this.mouseState.offset.x += this.mouseState.delta.x;
@@ -633,12 +640,37 @@ class Diagrams {
         this.newConnection = null;
     }
 
+    onwheel(ev: WheelEvent) {
+        ev.preventDefault();
+        let sign = Math.sign(ev.deltaY);
+        let zoomOut = sign > 0;
+        if (zoomOut && this.scaleLevel >= this.scaleMax-1) {
+            return;
+        } 
+        let zoomIn = !zoomOut
+        if (zoomIn && this.scaleLevel <= this.scaleMin) {
+            return;
+        }
+        
+        // undo previous scaling
+        let currentScale = this.scale;
+        let unscale = 1 / currentScale;
+        this.ctx.scale(unscale, unscale);
+        
+        this.scaleLevel += sign;
+        
+        // scale with new value
+        let scale = this.scale;
+        this.ctx.scale(scale, scale);
+    }
+
     drawBackground(){
         this.ctx.fillStyle = "#D8D8D8";
-        this.ctx.fillRect(0,0,this.canvas.width, this.canvas.height);
+        let scale = 1 / this.scale;
+        this.ctx.fillRect(0,0,this.canvas.width * scale, this.canvas.height * scale);
         this.ctx.strokeStyle = "#888";
-        this.ctx.lineWidth = 5;
-        this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.lineWidth = 5 * scale;
+        this.ctx.strokeRect(0, 0, this.canvas.width * scale, this.canvas.height * scale);
     }
 
     drawWarning(){

@@ -142,7 +142,7 @@ var NodeConnection = /** @class */ (function (_super) {
             cp1x: 0,
             cp1y: 0,
             cp2x: 0,
-            cp2y: 0
+            cp2y: 0,
         };
         _this.halfWayPoint = new Point();
         _this.output = output;
@@ -200,7 +200,7 @@ var NewConnection = /** @class */ (function (_super) {
             cp1x: 0,
             cp1y: 0,
             cp2x: 0,
-            cp2y: 0
+            cp2y: 0,
         };
         _this.output = output;
         return _this;
@@ -219,7 +219,7 @@ var NewConnection = /** @class */ (function (_super) {
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_1) throw e_1.error; }
         }
@@ -413,6 +413,9 @@ function diagramOnMouseUp(ev) {
 function diagramOnMouseMove(ev) {
     _diagram.onmousemove(ev);
 }
+function diagramOnWheel(ev) {
+    _diagram.onwheel(ev);
+}
 function diagramOnContext(ev) {
     ev.preventDefault();
 }
@@ -454,7 +457,9 @@ var Diagrams = /** @class */ (function () {
         this.nodeDragging = null;
         this.nodeHover = null;
         this.newConnection = null;
-        this.scale = 1.0;
+        this.scaleLevel = 0;
+        this.scaleMax = 3;
+        this.scaleMin = -1;
         this.editNodeCallback = function () { };
         this.deleteNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
@@ -472,9 +477,15 @@ var Diagrams = /** @class */ (function () {
         this.canvas.onmousemove = diagramOnMouseMove;
         this.canvas.onmousedown = diagramOnMouseDown;
         this.canvas.onmouseup = diagramOnMouseUp;
+        this.canvas.onwheel = diagramOnWheel;
         window.onresize = diagramOnResize;
         tick();
     }
+    Object.defineProperty(Diagrams.prototype, "scale", {
+        get: function () { return 1 - (1 / this.scaleMax) * this.scaleLevel; },
+        enumerable: true,
+        configurable: true
+    });
     Diagrams.prototype.tick = function () {
         var e_2, _a, e_3, _b, e_4, _c, e_5, _d;
         this.drawBackground();
@@ -490,7 +501,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (_f && !_f.done && (_a = _e["return"])) _a.call(_e);
+                if (_f && !_f.done && (_a = _e.return)) _a.call(_e);
             }
             finally { if (e_2) throw e_2.error; }
         }
@@ -503,7 +514,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
-                if (_h && !_h.done && (_b = _g["return"])) _b.call(_g);
+                if (_h && !_h.done && (_b = _g.return)) _b.call(_g);
             }
             finally { if (e_3) throw e_3.error; }
         }
@@ -519,7 +530,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
-                if (_k && !_k.done && (_c = _j["return"])) _c.call(_j);
+                if (_k && !_k.done && (_c = _j.return)) _c.call(_j);
             }
             finally { if (e_4) throw e_4.error; }
         }
@@ -535,7 +546,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
-                if (_m && !_m.done && (_d = _l["return"])) _d.call(_l);
+                if (_m && !_m.done && (_d = _l.return)) _d.call(_l);
             }
             finally { if (e_5) throw e_5.error; }
         }
@@ -545,10 +556,11 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.onmousemove = function (ev) {
         var canvasRect = this.canvas.getBoundingClientRect();
-        this.mouseState.canvas.x = ev.x - canvasRect.left;
-        this.mouseState.canvas.y = ev.y - canvasRect.top;
-        this.mouseState.delta.x = ev.movementX;
-        this.mouseState.delta.y = ev.movementY;
+        var scale = 1 / this.scale;
+        this.mouseState.canvas.x = (ev.x - canvasRect.left) * scale;
+        this.mouseState.canvas.y = (ev.y - canvasRect.top) * scale;
+        this.mouseState.delta.x = ev.movementX * scale;
+        this.mouseState.delta.y = ev.movementY * scale;
         if (this.mouseState.panning) {
             this.mouseState.offset.x += this.mouseState.delta.x;
             this.mouseState.offset.y += this.mouseState.delta.y;
@@ -573,7 +585,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_6) throw e_6.error; }
         }
@@ -591,12 +603,33 @@ var Diagrams = /** @class */ (function () {
         }
         this.newConnection = null;
     };
+    Diagrams.prototype.onwheel = function (ev) {
+        ev.preventDefault();
+        var sign = Math.sign(ev.deltaY);
+        var zoomOut = sign > 0;
+        if (zoomOut && this.scaleLevel >= this.scaleMax - 1) {
+            return;
+        }
+        var zoomIn = !zoomOut;
+        if (zoomIn && this.scaleLevel <= this.scaleMin) {
+            return;
+        }
+        // undo previous scaling
+        var currentScale = this.scale;
+        var unscale = 1 / currentScale;
+        this.ctx.scale(unscale, unscale);
+        this.scaleLevel += sign;
+        // scale with new value
+        var scale = this.scale;
+        this.ctx.scale(scale, scale);
+    };
     Diagrams.prototype.drawBackground = function () {
         this.ctx.fillStyle = "#D8D8D8";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        var scale = 1 / this.scale;
+        this.ctx.fillRect(0, 0, this.canvas.width * scale, this.canvas.height * scale);
         this.ctx.strokeStyle = "#888";
-        this.ctx.lineWidth = 5;
-        this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.lineWidth = 5 * scale;
+        this.ctx.strokeRect(0, 0, this.canvas.width * scale, this.canvas.height * scale);
     };
     Diagrams.prototype.drawWarning = function () {
         var e_7, _a;
@@ -613,7 +646,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_7_1) { e_7 = { error: e_7_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_7) throw e_7.error; }
         }
@@ -668,7 +701,7 @@ var Diagrams = /** @class */ (function () {
         catch (e_8_1) { e_8 = { error: e_8_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_8) throw e_8.error; }
         }

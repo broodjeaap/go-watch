@@ -552,7 +552,7 @@ function onTypeChange(node) {
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
             finally {
                 try {
-                    if (notifiers_1_1 && !notifiers_1_1.done && (_a = notifiers_1["return"])) _a.call(notifiers_1);
+                    if (notifiers_1_1 && !notifiers_1_1.done && (_a = notifiers_1.return)) _a.call(notifiers_1);
                 }
                 finally { if (e_1) throw e_1.error; }
             }
@@ -677,7 +677,7 @@ function onTypeChange(node) {
             catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
-                    if (luaSnippets_1_1 && !luaSnippets_1_1.done && (_b = luaSnippets_1["return"])) _b.call(luaSnippets_1);
+                    if (luaSnippets_1_1 && !luaSnippets_1_1.done && (_b = luaSnippets_1.return)) _b.call(luaSnippets_1);
                 }
                 finally { if (e_2) throw e_2.error; }
             }
@@ -804,7 +804,7 @@ function onConditionChange(node) {
             catch (e_3_1) { e_3 = { error: e_3_1 }; }
             finally {
                 try {
-                    if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
                 }
                 finally { if (e_3) throw e_3.error; }
             }
@@ -829,7 +829,7 @@ function onSubmitNewFilter() {
         type: type,
         var1: var1Input.value,
         var2: var2Input.value,
-        var3: var3Input.value
+        var3: var3Input.value,
     });
 }
 function editNode(node) {
@@ -882,7 +882,7 @@ function editNode(node) {
     catch (e_4_1) { e_4 = { error: e_4_1 }; }
     finally {
         try {
-            if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
+            if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
         }
         finally { if (e_4) throw e_4.error; }
     }
@@ -913,14 +913,14 @@ function editNode(node) {
     catch (e_5_1) { e_5 = { error: e_5_1 }; }
     finally {
         try {
-            if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
+            if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
         }
         finally { if (e_5) throw e_5.error; }
     }
     submitButton.onclick = function () { submitEditNode(node); };
 }
 function deleteNode(node) {
-    _diagram.nodes["delete"](node.id);
+    _diagram.nodes.delete(node.id);
     for (var i = 0; i < _diagram.connections.length; i++) {
         var connection = _diagram.connections[i];
         var output = connection.output;
@@ -973,14 +973,14 @@ function saveWatch() {
                 // @ts-ignore
                 var2: filter.meta.var2,
                 // @ts-ignore
-                var3: filter.meta.var3
+                var3: filter.meta.var3,
             });
         }
     }
     catch (e_6_1) { e_6 = { error: e_6_1 }; }
     finally {
         try {
-            if (_d && !_d.done && (_a = _c["return"])) _a.call(_c);
+            if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
         }
         finally { if (e_6) throw e_6.error; }
     }
@@ -995,14 +995,14 @@ function saveWatch() {
             connections.push({
                 connection_watch_id: watchId,
                 filter_output_id: output.id,
-                filter_input_id: input.id
+                filter_input_id: input.id,
             });
         }
     }
     catch (e_7_1) { e_7 = { error: e_7_1 }; }
     finally {
         try {
-            if (_f && !_f.done && (_b = _e["return"])) _b.call(_e);
+            if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
         }
         finally { if (e_7) throw e_7.error; }
     }

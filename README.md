@@ -498,7 +498,7 @@ Or if you have [Air](https://github.com/cosmtrek/air) set up, just:
 
 ## type script compilation
 
-`tsc static/*.ts --lib es2020,dom --watch --downlevelIteration`
+`tsc static/*.ts --lib es2020,dom --target ES5 --watch --downlevelIteration`
 
 # Dependencies
 
