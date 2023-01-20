@@ -5,17 +5,20 @@ go 1.18
 require (
 	github.com/andybalholm/cascadia v1.3.1
 	github.com/antchfx/htmlquery v1.2.5
+	github.com/containrrr/shoutrrr v0.6.1
 	github.com/gin-contrib/multitemplate v0.0.0-20220705015713-e21a0ba39de3
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.0
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/spf13/viper v1.12.0
 	github.com/tidwall/gjson v1.14.2
 	github.com/vadv/gopher-lua-libs v0.4.0
 	github.com/yuin/gopher-lua v0.0.0-20220504180219-658193537a64
 	golang.org/x/net v0.3.0
+	gorm.io/driver/mysql v1.4.4
+	gorm.io/driver/postgres v1.4.5
 	gorm.io/driver/sqlite v1.4.3
+	gorm.io/driver/sqlserver v1.4.1
 	gorm.io/gorm v1.24.2
 )
 
@@ -25,11 +28,9 @@ require (
 	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/aws/aws-sdk-go v1.32.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bwmarrin/discordgo v0.26.1 // indirect
 	github.com/cbroglie/mustache v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.5 // indirect
-	github.com/containrrr/shoutrrr v0.6.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -42,7 +43,6 @@ require (
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
@@ -89,13 +89,8 @@ require (
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/xmlpath.v2 v2.0.0-20150820204837-860cbeca3ebc // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.4.4 // indirect
-	gorm.io/driver/postgres v1.4.5 // indirect
-	gorm.io/driver/sqlserver v1.4.1 // indirect
 )

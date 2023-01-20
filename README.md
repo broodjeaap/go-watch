@@ -508,11 +508,7 @@ The following libaries are used in Go-Watch:
 - [Cascadia](https://pkg.go.dev/github.com/andybalholm/cascadia) for CSS selectors
 - [htmlquery](https://pkg.go.dev/github.com/antchfx/htmlquery) for XPath selectors
 - [validator](https://pkg.go.dev/github.com/go-playground/validator/v10@v10.11.0) for user user input validation
-- Notifiers
-  - [Shoutrrr](https://github.com/containrrr/shoutrrr/) for many different services
-  - [tgbotapi](https://pkg.go.dev/github.com/go-telegram-bot-api/telegram-bot-api/v5@v5.5.1) for Telegram
-  - [discordgo](https://pkg.go.dev/github.com/bwmarrin/discordgo) for Discord
-  - [gomail](https://pkg.go.dev/gopkg.in/gomail.v2?utm_source=godoc) for Email
+- [Shoutrrr](https://github.com/containrrr/shoutrrr/) for built in notifiers
 - [cron](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0) for job scheduling
 - [viper](https://pkg.go.dev/github.com/spf13/viper@v1.12.0) for config management
 - [gjson](https://pkg.go.dev/github.com/tidwall/gjson@v1.14.2) for JSON selectors
