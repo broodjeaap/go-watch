@@ -433,6 +433,7 @@ var Point = /** @class */ (function () {
 var MouseState = /** @class */ (function () {
     function MouseState() {
         this.canvas = new Point();
+        this.absCanvas = new Point();
         this.world = new Point();
         this.offset = new Point();
         this.delta = new Point();
@@ -457,9 +458,9 @@ var Diagrams = /** @class */ (function () {
         this.nodeDragging = null;
         this.nodeHover = null;
         this.newConnection = null;
-        this.scaleLevel = 0;
-        this.scaleMax = 3;
-        this.scaleMin = -1;
+        this.scale = 4;
+        this.scales = 10;
+        this.scalingFactor = 1;
         this.editNodeCallback = function () { };
         this.deleteNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
@@ -481,11 +482,12 @@ var Diagrams = /** @class */ (function () {
         window.onresize = diagramOnResize;
         tick();
     }
-    Object.defineProperty(Diagrams.prototype, "scale", {
-        get: function () { return 1 - (1 / this.scaleMax) * this.scaleLevel; },
+    Object.defineProperty(Diagrams.prototype, "inverseScalingFactor", {
+        get: function () { return 1 / this.scalingFactor; },
         enumerable: true,
         configurable: true
     });
+    ;
     Diagrams.prototype.tick = function () {
         var e_2, _a, e_3, _b, e_4, _c, e_5, _d;
         this.drawBackground();
@@ -556,11 +558,13 @@ var Diagrams = /** @class */ (function () {
     };
     Diagrams.prototype.onmousemove = function (ev) {
         var canvasRect = this.canvas.getBoundingClientRect();
-        var scale = 1 / this.scale;
-        this.mouseState.canvas.x = (ev.x - canvasRect.left) * scale;
-        this.mouseState.canvas.y = (ev.y - canvasRect.top) * scale;
-        this.mouseState.delta.x = ev.movementX * scale;
-        this.mouseState.delta.y = ev.movementY * scale;
+        var scale = this.scalingFactor;
+        this.mouseState.absCanvas.x = ev.x - canvasRect.left;
+        this.mouseState.absCanvas.y = ev.y - canvasRect.top;
+        this.mouseState.canvas.x = this.mouseState.absCanvas.x / scale;
+        this.mouseState.canvas.y = this.mouseState.absCanvas.y / scale;
+        this.mouseState.delta.x = ev.movementX / scale;
+        this.mouseState.delta.y = ev.movementY / scale;
         if (this.mouseState.panning) {
             this.mouseState.offset.x += this.mouseState.delta.x;
             this.mouseState.offset.y += this.mouseState.delta.y;
@@ -607,25 +611,50 @@ var Diagrams = /** @class */ (function () {
         ev.preventDefault();
         var sign = Math.sign(ev.deltaY);
         var zoomOut = sign > 0;
-        if (zoomOut && this.scaleLevel >= this.scaleMax - 1) {
+        if (zoomOut && this.scale >= this.scales - 1) {
             return;
         }
         var zoomIn = !zoomOut;
-        if (zoomIn && this.scaleLevel <= this.scaleMin) {
+        if (zoomIn && this.scale <= 0) {
             return;
         }
-        // undo previous scaling
-        var currentScale = this.scale;
-        var unscale = 1 / currentScale;
-        this.ctx.scale(unscale, unscale);
-        this.scaleLevel += sign;
+        var oldWorldPos = new Point(this.mouseState.world.x, this.mouseState.world.y);
+        var oldCanvasPos = new Point(this.mouseState.canvas.x, this.mouseState.canvas.y);
+        console.log(oldWorldPos);
+        this.scale += sign;
+        var zoomOutFactor = 0.9;
+        var zoomInFactor = 1 / zoomOutFactor;
+        var zoomFactor = zoomIn ? zoomInFactor : zoomOutFactor;
+        this.ctx.scale(zoomFactor, zoomFactor);
+        this.scalingFactor *= zoomFactor;
+        this.mouseState.canvas.x *= zoomFactor;
+        this.mouseState.canvas.y *= zoomFactor;
+        //this.mouseState.canvas.x = this.mouseState.absCanvas.x * this.scalingFactor;
+        //this.mouseState.canvas.y = this.mouseState.absCanvas.y * this.scalingFactor;
+        var mouseDelta = new Point(oldCanvasPos.x - this.mouseState.canvas.x, oldCanvasPos.y - this.mouseState.canvas.y);
+        this.mouseState.offset.x += mouseDelta.x;
+        this.mouseState.offset.y += mouseDelta.y;
+        console.log(this.mouseState.world);
+        /*
         // scale with new value
-        var scale = this.scale;
+        let scale = this.scale;
         this.ctx.scale(scale, scale);
+        
+        // recalculate mouse 'world' position, so we can realign it after zooming
+        this.mouseState.canvas.x = this.mouseState.absCanvas.x / scale;
+        this.mouseState.canvas.y = this.mouseState.absCanvas.y / scale;
+        
+        this.mouseState.world.x = (this.mouseState.canvas.x - this.mouseState.offset.x) * scale;
+        this.mouseState.world.y = (this.mouseState.canvas.y - this.mouseState.offset.y) * scale;
+        
+        this.mouseState.offset.x -= (oldWorld.x - this.mouseState.world.x);
+        this.mouseState.offset.y -= (oldWorld.y - this.mouseState.world.y);
+        console.log(this.mouseState.offset);
+        */
     };
     Diagrams.prototype.drawBackground = function () {
         this.ctx.fillStyle = "#D8D8D8";
-        var scale = 1 / this.scale;
+        var scale = this.inverseScalingFactor;
         this.ctx.fillRect(0, 0, this.canvas.width * scale, this.canvas.height * scale);
         this.ctx.strokeStyle = "#888";
         this.ctx.lineWidth = 5 * scale;
