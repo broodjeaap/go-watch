@@ -3,9 +3,4 @@
 - import options add/clear
 - comments
 - safe escape {{ }} for pages
-- diagram zoom
-    - zoom towards pointer
-        - mouse stays on pre-zoomed world pos
-    - refactor zoom with fixed 0.9-1.1 values?
-    - minimap
 - 'jitter' for cronjobs after first start ?

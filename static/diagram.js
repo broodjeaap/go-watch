@@ -618,39 +618,18 @@ var Diagrams = /** @class */ (function () {
         if (zoomIn && this.scale <= 0) {
             return;
         }
-        var oldWorldPos = new Point(this.mouseState.world.x, this.mouseState.world.y);
-        var oldCanvasPos = new Point(this.mouseState.canvas.x, this.mouseState.canvas.y);
-        console.log(oldWorldPos);
         this.scale += sign;
         var zoomOutFactor = 0.9;
         var zoomInFactor = 1 / zoomOutFactor;
         var zoomFactor = zoomIn ? zoomInFactor : zoomOutFactor;
         this.ctx.scale(zoomFactor, zoomFactor);
         this.scalingFactor *= zoomFactor;
-        this.mouseState.canvas.x *= zoomFactor;
-        this.mouseState.canvas.y *= zoomFactor;
-        //this.mouseState.canvas.x = this.mouseState.absCanvas.x * this.scalingFactor;
-        //this.mouseState.canvas.y = this.mouseState.absCanvas.y * this.scalingFactor;
-        var mouseDelta = new Point(oldCanvasPos.x - this.mouseState.canvas.x, oldCanvasPos.y - this.mouseState.canvas.y);
-        this.mouseState.offset.x += mouseDelta.x;
-        this.mouseState.offset.y += mouseDelta.y;
-        console.log(this.mouseState.world);
-        /*
-        // scale with new value
-        let scale = this.scale;
-        this.ctx.scale(scale, scale);
-        
-        // recalculate mouse 'world' position, so we can realign it after zooming
-        this.mouseState.canvas.x = this.mouseState.absCanvas.x / scale;
-        this.mouseState.canvas.y = this.mouseState.absCanvas.y / scale;
-        
-        this.mouseState.world.x = (this.mouseState.canvas.x - this.mouseState.offset.x) * scale;
-        this.mouseState.world.y = (this.mouseState.canvas.y - this.mouseState.offset.y) * scale;
-        
-        this.mouseState.offset.x -= (oldWorld.x - this.mouseState.world.x);
-        this.mouseState.offset.y -= (oldWorld.y - this.mouseState.world.y);
-        console.log(this.mouseState.offset);
-        */
+        var oldCanvasPos = new Point(this.mouseState.canvas.x, this.mouseState.canvas.y);
+        this.mouseState.canvas.x /= zoomFactor;
+        this.mouseState.canvas.y /= zoomFactor;
+        var mouseDelta = new Point((oldCanvasPos.x - this.mouseState.canvas.x), (oldCanvasPos.y - this.mouseState.canvas.y));
+        this.mouseState.offset.x -= mouseDelta.x;
+        this.mouseState.offset.y -= mouseDelta.y;
     };
     Diagrams.prototype.drawBackground = function () {
         this.ctx.fillStyle = "#D8D8D8";
