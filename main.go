@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -690,6 +691,22 @@ func (web *Web) importWatch(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+	importType := c.PostForm("type")
+	if !(importType == "clear" || importType == "add") {
+		c.AbortWithError(http.StatusBadRequest, errors.New("Unknown Import Type"))
+		return
+	}
+	clearFilters := importType == "clear"
+
+	offsetX := 0
+	offsetY := 0
+
+	if !clearFilters {
+		offsetX, _ = strconv.Atoi(c.PostForm("offset_x"))
+		offsetY, _ = strconv.Atoi(c.PostForm("offset_y"))
+		offsetX *= -1
+		offsetY *= -1
+	}
 
 	file, err := c.FormFile("json")
 
@@ -714,7 +731,9 @@ func (web *Web) importWatch(c *gin.Context) {
 
 	// stop/delete cronjobs running for this watch
 	var cronFilters []Filter
+	if !clearFilters {
 	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watchID).Find(&cronFilters)
+	}
 	for _, filter := range cronFilters {
 		entryID, exist := web.cronWatch[filter.ID]
 		if exist {
@@ -728,9 +747,14 @@ func (web *Web) importWatch(c *gin.Context) {
 		filter := &export.Filters[i]
 		filterMap[filter.ID] = filter
 		filter.ID = 0
+		filter.X += offsetX
+		filter.Y += offsetY
 		filter.WatchID = uint(watchID)
 	}
+
+	if clearFilters {
 	web.db.Delete(&Filter{}, "watch_id = ?", watchID)
+	}
 
 	if len(export.Filters) > 0 {
 		tx := web.db.Create(&export.Filters)
@@ -740,7 +764,7 @@ func (web *Web) importWatch(c *gin.Context) {
 		}
 		for i := range export.Filters {
 			filter := &export.Filters[i]
-			if filter.Type == "cron" {
+			if filter.Type == "cron" && filter.Var2 != nil && *filter.Var2 == "yes" {
 				entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
 				if err != nil {
 					log.Println("Could not start job for Watch: ", filter.WatchID)
@@ -752,7 +776,9 @@ func (web *Web) importWatch(c *gin.Context) {
 		}
 	}
 
+	if clearFilters {
 	web.db.Delete(&FilterConnection{}, "watch_id = ?", watchID)
+	}
 	for i := range export.Connections {
 		connection := &export.Connections[i]
 		connection.ID = 0

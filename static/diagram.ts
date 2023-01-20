@@ -611,6 +611,12 @@ class Diagrams {
         if (this.mouseState.panning){
             this.mouseState.offset.x += this.mouseState.delta.x;
             this.mouseState.offset.y += this.mouseState.delta.y;
+
+            let importOffsetInputX = document.getElementById("offset_x") as HTMLInputElement;
+            importOffsetInputX.value = this.mouseState.offset.x.toString();
+            
+            let importOffsetInputY = document.getElementById("offset_y") as HTMLInputElement;
+            importOffsetInputY.value = this.mouseState.offset.y.toString();
         }
         
         this.mouseState.world.x = this.mouseState.canvas.x - this.mouseState.offset.x;

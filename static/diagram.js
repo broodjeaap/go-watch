@@ -568,6 +568,10 @@ var Diagrams = /** @class */ (function () {
         if (this.mouseState.panning) {
             this.mouseState.offset.x += this.mouseState.delta.x;
             this.mouseState.offset.y += this.mouseState.delta.y;
+            var importOffsetInputX = document.getElementById("offset_x");
+            importOffsetInputX.value = this.mouseState.offset.x.toString();
+            var importOffsetInputY = document.getElementById("offset_y");
+            importOffsetInputY.value = this.mouseState.offset.y.toString();
         }
         this.mouseState.world.x = this.mouseState.canvas.x - this.mouseState.offset.x;
         this.mouseState.world.y = this.mouseState.canvas.y - this.mouseState.offset.y;

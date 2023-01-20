@@ -169,6 +169,12 @@ GoWatch Edit {{ .Watch.Name }}
                     <div class="mb-3">
                         <label for="json" class="form-label">Upload JSON to import</label>
                         <input class="form-control" type="file" id="json" name="json">
+                        <select class="form-select form-select-lg mb-3 mt-2" name="type">
+                            <option value="clear" selected>Clear filters</option>
+                            <option value="add">Add to filters</option>
+                        </select>
+                        <input type="hidden" id="offset_x" name="offset_x" value="0">
+                        <input type="hidden" id="offset_y" name="offset_y" value="0">
                         <div class="col-auto mt-3">
                             <button type="submit" class="btn btn-primary mb-3">Import</button>
                         </div>                    
