@@ -1,5 +1,4 @@
 # Todo
-- lua user agent snippet
 - import options add/clear
 - comments
 - safe escape {{ }} for pages

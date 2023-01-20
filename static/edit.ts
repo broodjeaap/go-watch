@@ -697,6 +697,24 @@ end
 
 table.insert(outputs, result.body)
                 `],
+                ["HTTP User Agent", `local http = require("http")
+local agent = "GoWatch Crawler"
+local client = http.client({user_agent = agent})
+
+local request = http.request("GET", "http://httpbin.org/headers")
+request:header_set("User-Agent", agent)
+local result, err = client:do_request(request)
+if err then
+    table.insert(logs, err)
+    error(err)
+end
+if not (result.code == 200) then
+    table.insert(logs, err)
+    error(err)
+end
+
+table.insert(outputs, result.body)
+                `],
                 ["HTTP Proxy", `local http = require("http")
 local client = http.client({ proxy = "http://login:password@hostname.com" })
 
