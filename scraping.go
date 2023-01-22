@@ -734,7 +734,7 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 
 func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
-	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
+	db.Model(&FilterOutput{}).Limit(1).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Find(&previousOutput)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			if previousOutput.WatchID == 0 {
