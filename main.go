@@ -196,6 +196,8 @@ func (web *Web) initCronJobs() {
 		if delayErr == nil {
 			time.Sleep(cronDelay)
 	}
+	}
+
 	if viper.IsSet("database.prune") {
 		pruneSchedule := viper.GetString("database.prune")
 		_, err := web.cron.AddFunc(pruneSchedule, web.pruneDB)
