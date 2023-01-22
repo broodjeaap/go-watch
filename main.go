@@ -34,16 +34,17 @@ import (
 var EMBED_FS embed.FS
 
 type Web struct {
-	router          *gin.Engine
-	templates       multitemplate.Renderer
-	cron            *cron.Cron
-	urlCache        map[string]string
-	cronWatch       map[uint]cron.EntryID
-	db              *gorm.DB
-	notifiers       map[string]notifiers.Notifier
-	startupWarnings []string
+	router          *gin.Engine                   // gin router instance
+	templates       multitemplate.Renderer        // multitemplate instance
+	cron            *cron.Cron                    // cron instance
+	urlCache        map[string]string             // holds url -> http response
+	cronWatch       map[uint]cron.EntryID         // holds cronFilter.ID -> EntryID
+	db              *gorm.DB                      // gorm db instance
+	notifiers       map[string]notifiers.Notifier // holds notifierName -> notifier
+	startupWarnings []string                      // simple list of warnings/errors found during startup, displayed on / page
 }
 
+// NewWeb creates a new web instance and calls .init() before returning it
 func newWeb() *Web {
 	web := &Web{
 		urlCache:        make(map[string]string, 5),
@@ -53,6 +54,7 @@ func newWeb() *Web {
 	return web
 }
 
+// init initializes DB, routers, cron jobs and notifiers
 func (web *Web) init() {
 	web.urlCache = make(map[string]string, 5)
 	if !viper.GetBool("gin.debug") {
@@ -65,12 +67,14 @@ func (web *Web) init() {
 	web.initCronJobs()
 }
 
+// startupWarning is a helper function to add a message to web.startupWarnings and print it to stdout
 func (web *Web) startupWarning(m ...any) {
 	warning := fmt.Sprint(m...)
 	log.Println(warning)
 	web.startupWarnings = append(web.startupWarnings, warning)
 }
 
+// validateProxyURL calls url.Parse with the proxy.proxy_url, if there is an error, it's added to startupWarnings
 func (web *Web) validateProxyURL() {
 	if viper.IsSet("proxy.proxy_url") {
 		_, err := url.Parse(viper.GetString("proxy.proxy_url"))
@@ -81,6 +85,7 @@ func (web *Web) validateProxyURL() {
 	}
 }
 
+// initDB initializes the database with the database.dsn value.
 func (web *Web) initDB() {
 	dsn := "./watch.db"
 	if viper.IsSet("database.dsn") {
@@ -121,7 +126,7 @@ func (web *Web) initDB() {
 		if err == nil {
 			log.Println("Connected to DB!")
 			break
-}
+		}
 		if delay >= maxDelay {
 			web.startupWarning("Could not initialize database", err)
 			break
@@ -132,6 +137,7 @@ func (web *Web) initDB() {
 	}
 }
 
+// initRouer initializes the GoWatch routes, binding web.func to a url path
 func (web *Web) initRouter() {
 	web.router = gin.Default()
 
@@ -165,6 +171,7 @@ func (web *Web) initRouter() {
 	web.router.SetTrustedProxies(nil)
 }
 
+// initTemplates initializes the templates from EMBED_FS/templates
 func (web *Web) initTemplates() {
 	web.templates = multitemplate.NewRenderer()
 
@@ -186,10 +193,15 @@ func (web *Web) initTemplates() {
 	web.templates.Add("500", template.Must(template.ParseFS(templatesFS, "base.html", "500.html")))
 }
 
+// initCronJobs reads any 'cron' type filters from the database, and starts a cron job for each
 func (web *Web) initCronJobs() {
 	var cronFilters []Filter
+
+	// type cron and enabled = yes
 	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron' AND var2 = 'yes'")
+
 	web.cronWatch = make(map[uint]cron.EntryID, len(cronFilters))
+
 	web.cron = cron.New()
 	web.cron.Start()
 
@@ -202,6 +214,8 @@ func (web *Web) initCronJobs() {
 	} else {
 		web.startupWarning("Could not parse schedule.delay: ", cronDelayStr)
 	}
+
+	// for every cronFilter, add a new cronjob with the schedule in filter.var1
 	for i := range cronFilters {
 		cronFilter := &cronFilters[i]
 		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
@@ -214,9 +228,10 @@ func (web *Web) initCronJobs() {
 
 		if delayErr == nil {
 			time.Sleep(cronDelay)
-	}
+		}
 	}
 
+	// db prune job is started if there is a database.prune set
 	if viper.IsSet("database.prune") {
 		pruneSchedule := viper.GetString("database.prune")
 		_, err := web.cron.AddFunc(pruneSchedule, web.pruneDB)
@@ -227,14 +242,19 @@ func (web *Web) initCronJobs() {
 	}
 }
 
+// initNotifiers initializes the notifiers configured in the config
 func (web *Web) initNotifiers() {
 	web.notifiers = make(map[string]notifiers.Notifier, 5)
 	if !viper.IsSet("notifiers") {
 		web.startupWarning("No notifiers set!")
 		return
 	}
+
+	// iterates over the map of notifiers, key being the name of the notifier
 	notifiersMap := viper.GetStringMap("notifiers")
 	for name := range notifiersMap {
+
+		// should probably use notifiersMap.Sub(name), but if it aint broke...
 		notifierPath := fmt.Sprintf("notifiers.%s", name)
 		notifierMap := viper.GetStringMapString(notifierPath)
 
@@ -243,6 +263,9 @@ func (web *Web) initNotifiers() {
 			web.startupWarning(fmt.Sprintf("No 'type' for '%s' notifier!", name))
 			continue
 		}
+
+		// create an empty notifier and a success flag,
+		// so we can add it to the map at the end instead of each switch case
 		success := false
 		var notifier notifiers.Notifier
 		switch notifierType {
@@ -277,16 +300,22 @@ func (web *Web) initNotifiers() {
 	}
 }
 
+// pruneDB is called by the pruneDB cronjob, it removes repeating values from the database.
 func (web *Web) pruneDB() {
 	log.Println("Starting database pruning")
+
+	// for every unique (watch.ID, storeFilter.Name)
 	var storeFilters []Filter
 	web.db.Model(&FilterOutput{}).Distinct("watch_id", "name").Find(&storeFilters)
 	for _, storeFilter := range storeFilters {
+		// get all the values out of the database
 		var values []FilterOutput
 		tx := web.db.Model(&FilterOutput{}).Order("time asc").Find(&values, fmt.Sprintf("watch_id = %d AND name = '%s'", storeFilter.WatchID, storeFilter.Name))
 		if tx.Error != nil {
 			continue
 		}
+
+		// a value can be deleted if it's the same as the previous and next value
 		IDs := make([]uint, 0, len(values))
 		for i := range values {
 			if i > len(values)-3 {
@@ -308,6 +337,7 @@ func (web *Web) pruneDB() {
 	}
 }
 
+// notify sends a message to the notifier with notifierKey name, or all notifiers if key is 'All'
 func (web *Web) notify(notifierKey string, message string) {
 	if notifierKey == "All" {
 		for _, notifier := range web.notifiers {
@@ -323,18 +353,22 @@ func (web *Web) notify(notifierKey string, message string) {
 	}
 }
 
+// run simply calls router.Run
 func (web *Web) run() {
 	web.router.Run("0.0.0.0:8080")
 }
 
+// index (/) displays all watches with name, last run, next run, last value
 func (web *Web) index(c *gin.Context) {
 	watches := []Watch{}
 	web.db.Find(&watches)
 
+	// make a map[watch.ID] -> watch so after this we can add data to watches in O(1)
 	watchMap := make(map[uint]*Watch, len(watches))
 	for i := 0; i < len(watches); i++ {
 		watchMap[watches[i].ID] = &watches[i]
 	}
+	// get the schedule for this watch, so we can display last/next run
 	// this doesn't work with multiple schedule filters per watch, but meh
 	var filters []Filter
 	web.db.Model(&Filter{}).Find(&filters, "type = 'cron'")
@@ -378,10 +412,12 @@ func (web *Web) index(c *gin.Context) {
 	})
 }
 
+// notifiersView (/notifiers/view) shows the notifiers and a test button
 func (web *Web) notifiersView(c *gin.Context) {
 	c.HTML(http.StatusOK, "notifiersView", web.notifiers)
 }
 
+// notifiersTest (/notifiers/test) sends a test message to notifier_name
 func (web *Web) notifiersTest(c *gin.Context) {
 	notifierName := c.PostForm("notifier_name")
 	notifier, exists := web.notifiers[notifierName]
@@ -393,6 +429,8 @@ func (web *Web) notifiersTest(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/notifiers/view")
 }
 
+// watchCreate (/watch/create) allows user to create a new watch
+// A name and an optional template can be picked
 func (web *Web) watchCreate(c *gin.Context) {
 	templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
 	if err != nil {
@@ -410,6 +448,7 @@ func (web *Web) watchCreate(c *gin.Context) {
 	})
 }
 
+// watchCreatePost (/watch/create) is where a new watch create will be submitted to
 func (web *Web) watchCreatePost(c *gin.Context) {
 	var watch Watch
 	errMap, err := bindAndValidateWatch(&watch, c)
@@ -427,9 +466,10 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 	if templateID == 0 { // empty new watch
 		web.db.Create(&watch)
 		c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
-		return
+		return // nothing else to do
 	}
 
+	// get the template either from a url or from one of the template files
 	var jsn []byte
 	if templateID == -1 { // watch from url template
 		url := c.PostForm("url")
@@ -449,7 +489,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 			return
 		}
 		jsn = body
-	} else {
+	} else { // selected one of the templates
 		templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
 		if err != nil {
 			log.Fatalln("Could not load templates from embed FS")
@@ -479,8 +519,12 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		return
 	}
 
+	// create the watch
 	web.db.Create(&watch)
 
+	// the IDs of filters and connections have to be 0 when they are added to the database
+	// otherwise they will overwrite whatever filters/connections happened to have the same ID
+	// so we set them all to 0, but keep a map of 'old filter ID' -> filter
 	filterMap := make(map[uint]*Filter)
 	for i := range export.Filters {
 		filter := &export.Filters[i]
@@ -489,6 +533,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		filter.WatchID = watch.ID
 	}
 	if len(export.Filters) > 0 {
+		// after web.db.Create, the filters will have their new IDs
 		tx := web.db.Create(&export.Filters)
 		if tx.Error != nil {
 			log.Println("Create filters transaction failed:", err)
@@ -497,6 +542,8 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		}
 	}
 
+	// we again set all the connection.ID to 0,
+	// but then also swap the old filterIDs to the new IDs the filters got after db.Create
 	for i := range export.Connections {
 		connection := &export.Connections[i]
 		connection.ID = 0
@@ -516,6 +563,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
 }
 
+// deleteWatch (/watch/delete) removes a watch and it's cronjobs
 func (web *Web) deleteWatch(c *gin.Context) {
 	id, err := strconv.Atoi(c.PostForm("watch_id"))
 	if err != nil {
@@ -542,12 +590,14 @@ func (web *Web) deleteWatch(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/")
 }
 
+// watchView (/watch/view) shows the watch page with a graph and/or a table of stored values
 func (web *Web) watchView(c *gin.Context) {
 	id := c.Param("id")
 
 	var watch Watch
 	web.db.Model(&Watch{}).First(&watch, id)
 
+	// get the cron filter for this watch
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Find(&cronFilters, "watch_id = ? AND type = 'cron'", id)
 	for _, filter := range cronFilters {
@@ -560,6 +610,8 @@ func (web *Web) watchView(c *gin.Context) {
 		watch.CronEntry = &entry
 	}
 
+	// get all the values from this watch from the database
+	// split it in 2 groups, numerical and categorical
 	var values []FilterOutput
 	web.db.Model(&FilterOutput{}).Order("time asc").Where("watch_id = ?", watch.ID).Find(&values)
 	numericalMap := make(map[string][]*FilterOutput, len(values))
@@ -577,8 +629,7 @@ func (web *Web) watchView(c *gin.Context) {
 		}
 	}
 
-	// reverse categoricalMap slice
-
+	// give value groups a color, defined in templates/watch/view.html
 	colorMap := make(map[string]int, len(names))
 	index := 0
 	for name := range names {
@@ -594,6 +645,7 @@ func (web *Web) watchView(c *gin.Context) {
 	})
 }
 
+// watchEdit (/watch/edit) shows the node diagram of a watch, allowing the user to modify it
 func (web *Web) watchEdit(c *gin.Context) {
 	id := c.Param("id")
 
@@ -612,6 +664,7 @@ func (web *Web) watchEdit(c *gin.Context) {
 		notifiers = append(notifiers, notifier)
 	}
 
+	// add all the filters to
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, &watch, true, nil)
 
@@ -623,7 +676,11 @@ func (web *Web) watchEdit(c *gin.Context) {
 	})
 }
 
+// watchUpdate (/watch/update) is where /watch/edit POSTs to
 func (web *Web) watchUpdate(c *gin.Context) {
+	// So this function is a simple/lazy way of implementing a watch update.
+	// the watch is the only thing that gets 'updated', the rest is just wiped from the database
+	// and reinserted
 	var watch Watch
 	bindAndValidateWatch(&watch, c)
 
@@ -700,15 +757,18 @@ func (web *Web) watchUpdate(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
 }
 
+// cacheView (/cache/view) shows the items in the web.urlCache
 func (web *Web) cacheView(c *gin.Context) {
 	c.HTML(http.StatusOK, "cacheView", web.urlCache)
 }
 
+// cacheClear (/cache/clear) clears all items in web.urlCache
 func (web *Web) cacheClear(c *gin.Context) {
 	web.urlCache = make(map[string]string, 5)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+// exportWatch (/watch/export/:id) creates a json export of the current watch
 func (web *Web) exportWatch(c *gin.Context) {
 	watchID := c.Param("id")
 	export := WatchExport{}
@@ -723,6 +783,7 @@ func (web *Web) exportWatch(c *gin.Context) {
 	c.JSON(http.StatusOK, export)
 }
 
+// importWatch (/watch/import/:id) takes a json file and imports it to the current watch
 func (web *Web) importWatch(c *gin.Context) {
 	watchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -770,7 +831,7 @@ func (web *Web) importWatch(c *gin.Context) {
 	// stop/delete cronjobs running for this watch
 	var cronFilters []Filter
 	if !clearFilters {
-	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watchID).Find(&cronFilters)
+		web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", watchID).Find(&cronFilters)
 	}
 	for _, filter := range cronFilters {
 		entryID, exist := web.cronWatch[filter.ID]
@@ -791,7 +852,7 @@ func (web *Web) importWatch(c *gin.Context) {
 	}
 
 	if clearFilters {
-	web.db.Delete(&Filter{}, "watch_id = ?", watchID)
+		web.db.Delete(&Filter{}, "watch_id = ?", watchID)
 	}
 
 	if len(export.Filters) > 0 {
@@ -815,7 +876,7 @@ func (web *Web) importWatch(c *gin.Context) {
 	}
 
 	if clearFilters {
-	web.db.Delete(&FilterConnection{}, "watch_id = ?", watchID)
+		web.db.Delete(&FilterConnection{}, "watch_id = ?", watchID)
 	}
 	for i := range export.Connections {
 		connection := &export.Connections[i]

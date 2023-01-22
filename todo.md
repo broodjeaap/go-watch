@@ -1,6 +1,6 @@
 # Todo
 - comments
-    - main.go
+    - ~~main.go~~
     - scraping.go
     - util.go
     - edit.ts
