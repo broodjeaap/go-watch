@@ -332,7 +332,7 @@ func (web *Web) index(c *gin.Context) {
 		Select("watches.id, max(filter_outputs.time) as time, filter_outputs.value").
 		Joins("left join filter_outputs on filter_outputs.watch_id = watches.id").
 		Order("filter_outputs.name").
-		Group("watches.id").
+		Group("watches.id, time, filter_outputs.value, filter_outputs.name").
 		Rows()
 
 	if err != nil {
