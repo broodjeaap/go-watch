@@ -5,3 +5,5 @@
     - util.go
     - edit.ts
     - diagram.ts
+- new with file upload
+- scheduled backup
