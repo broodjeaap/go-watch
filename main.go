@@ -111,9 +111,27 @@ func (web *Web) initDB() {
 	if err != nil {
 		log.Panicln("Could not start DB: ", err)
 	}
+
+	// retry connection to the db a couple times with exp retry time
 	web.db = db
-	web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
+	delay := time.Duration(1) * time.Second
+	maxDelay := time.Duration(8) * time.Second
+	for {
+		err := web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
+		if err == nil {
+			log.Println("Connected to DB!")
+			break
 }
+		if delay >= maxDelay {
+			web.startupWarning("Could not initialize database", err)
+			break
+		}
+		log.Println("Could not connect to DB, retry in:", delay.String())
+		time.Sleep(delay)
+		delay *= 2
+	}
+}
+
 func (web *Web) initRouter() {
 	web.router = gin.Default()
 
