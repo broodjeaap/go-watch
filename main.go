@@ -61,8 +61,8 @@ func (web *Web) init() {
 	web.validateProxyURL()
 	web.initDB()
 	web.initRouter()
-	web.initCronJobs()
 	web.initNotifiers()
+	web.initCronJobs()
 }
 
 func (web *Web) startupWarning(m ...any) {
