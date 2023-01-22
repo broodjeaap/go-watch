@@ -172,6 +172,17 @@ func (web *Web) initCronJobs() {
 	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron' AND var2 = 'yes'")
 	web.cronWatch = make(map[uint]cron.EntryID, len(cronFilters))
 	web.cron = cron.New()
+	web.cron.Start()
+
+	// add some delay to cron jobs, so watches with the same schedule don't
+	// 'burst' at the same time after restarting GoWatch
+	cronDelayStr := viper.GetString("schedule.delay")
+	cronDelay, delayErr := time.ParseDuration(cronDelayStr)
+	if delayErr == nil {
+		log.Println("Delaying job startup by:", cronDelay.String())
+	} else {
+		web.startupWarning("Could not parse schedule.delay: ", cronDelayStr)
+	}
 	for i := range cronFilters {
 		cronFilter := &cronFilters[i]
 		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
@@ -181,6 +192,9 @@ func (web *Web) initCronJobs() {
 		}
 		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
 		web.cronWatch[cronFilter.ID] = entryID
+
+		if delayErr == nil {
+			time.Sleep(cronDelay)
 	}
 	if viper.IsSet("database.prune") {
 		pruneSchedule := viper.GetString("database.prune")
@@ -190,7 +204,6 @@ func (web *Web) initCronJobs() {
 		}
 		log.Println("Started DB prune cronjob:", pruneSchedule)
 	}
-	web.cron.Start()
 }
 
 func (web *Web) initNotifiers() {
