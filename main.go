@@ -85,19 +85,23 @@ func (web *Web) initDB() {
 	if viper.IsSet("database.dsn") {
 		dsn = viper.GetString("database.dsn")
 	}
+
+	conf := &gorm.Config{}
+	conf.PrepareStmt = true
+
 	var db *gorm.DB
 	var err error
 	if strings.HasPrefix(dsn, "sqlserver") {
-		db, err = gorm.Open(sqlserver.Open(dsn))
+		db, err = gorm.Open(sqlserver.Open(dsn), conf)
 		log.Println("Using SQLServer database")
 	} else if strings.HasPrefix(dsn, "postgres") {
-		db, err = gorm.Open(postgres.Open(dsn))
+		db, err = gorm.Open(postgres.Open(dsn), conf)
 		log.Println("Using PostgreSQL database")
 	} else if strings.HasPrefix(dsn, "mysql") {
-		db, err = gorm.Open(mysql.Open(dsn))
+		db, err = gorm.Open(mysql.Open(dsn), conf)
 		log.Println("Using MySQL database")
 	} else {
-		db, err = gorm.Open(sqlite.Open(dsn))
+		db, err = gorm.Open(sqlite.Open(dsn), conf)
 		log.Println("Using sqlite database at:", dsn)
 	}
 	if db == nil {
