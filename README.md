@@ -169,6 +169,16 @@ database:
   prune: "@every 1h"
 ```
 
+
+## Startup CronJob delay
+
+If there are multiple watches set up with the same schedule then if GoWatch is restarted, all these watches will trigger at the same time, which causes a short burst of activity.  
+It might be preferable to spread out these schedules a bit, this can be done by setting `schedule.delay` in the config or with the `GOWATCH_SCHEDULE_DELAY` environment variable:  
+```
+schedule:
+  delay: "5s"
+```
+
 ## Proxy
 
 The config can be used to proxy HTTP/HTTPS requests through a proxy:  
