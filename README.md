@@ -125,6 +125,8 @@ For example, if you want to set up GoWatch with Browserless, Apprise and a Postg
 ## Database
 
 By default, GoWatch will use an SQLite database, stored in the `/config` directory for the docker image.  
+If you have only a few watches with schedules of a few minutes+ then SQLite is probably fine.
+But with more watches, especially with shorter schedules, Gorm will start logging warnings about `SLOW SQL`, which are just warnings, but at that point it's probably better to switch to another database.
 
 You can use another database by changing the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
 ```
