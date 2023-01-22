@@ -62,9 +62,9 @@ func (web *Web) init() {
 	}
 	web.validateProxyURL()
 	web.initDB()
+	go web.initCronJobs()
 	web.initRouter()
 	web.initNotifiers()
-	web.initCronJobs()
 }
 
 // startupWarning is a helper function to add a message to web.startupWarnings and print it to stdout
