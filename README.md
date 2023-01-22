@@ -494,6 +494,16 @@ database:
   prune: "@every 1h"
 ```
 
+## File
+
+GoWatch can also simply append your notification text to a file:
+```
+notifiers:
+  File:
+    type: "file"
+    path: /config/notifications.log
+```
+
 # Build/Development
 
 For local development, clone this repository:  
