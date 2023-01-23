@@ -62,9 +62,9 @@ func (web *Web) init() {
 	}
 	web.validateProxyURL()
 	web.initDB()
-	go web.initCronJobs()
 	web.initRouter()
 	web.initNotifiers()
+	go web.initCronJobs()
 }
 
 // startupWarning is a helper function to add a message to web.startupWarnings and print it to stdout
@@ -72,6 +72,29 @@ func (web *Web) startupWarning(m ...any) {
 	warning := fmt.Sprint(m...)
 	log.Println(warning)
 	web.startupWarnings = append(web.startupWarnings, warning)
+}
+
+func (web *Web) addCronJobIfCronFilter(filter *Filter, startup bool) {
+	if filter.ID == 0 {
+		return
+	}
+	if filter.Type != "cron" {
+		return
+	}
+	if filter.Var2 != nil && *filter.Var2 == "no" {
+		return
+	}
+	entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
+	if err != nil {
+		if startup {
+			web.startupWarning("Could not start job for Watch: ", filter.WatchID)
+		} else {
+			log.Println("Could not start job for Watch: ", filter.WatchID)
+		}
+		return
+	}
+	log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
+	web.cronWatch[filter.ID] = entryID
 }
 
 // validateProxyURL calls url.Parse with the proxy.proxy_url, if there is an error, it's added to startupWarnings
@@ -218,14 +241,7 @@ func (web *Web) initCronJobs() {
 	// for every cronFilter, add a new cronjob with the schedule in filter.var1
 	for i := range cronFilters {
 		cronFilter := &cronFilters[i]
-		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
-		if err != nil {
-			web.startupWarning("Could not start job for Watch: ", cronFilter.WatchID)
-			continue
-		}
-		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
-		web.cronWatch[cronFilter.ID] = entryID
-
+		web.addCronJobIfCronFilter(cronFilter, true)
 		if delayErr == nil {
 			time.Sleep(cronDelay)
 		}
@@ -557,20 +573,8 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 	}
 
 	for i := range export.Filters {
-		cronFilter := &export.Filters[i]
-		if cronFilter.Type != "cron" {
-			continue
-		}
-		if cronFilter.Var2 != nil && *cronFilter.Var2 == "no" {
-			continue
-		}
-		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
-		if err != nil {
-			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
-			continue
-		}
-		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
-		web.cronWatch[cronFilter.ID] = entryID
+		filter := &export.Filters[i]
+		web.addCronJobIfCronFilter(filter, false)
 	}
 
 	// we again set all the connection.ID to 0,
@@ -759,19 +763,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 
 		for i := range newFilters {
 			filter := &newFilters[i]
-			if filter.Type != "cron" {
-				continue
-			}
-			if *filter.Var2 == "no" {
-				continue
-			}
-			entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
-			if err != nil {
-				log.Println("Could not start job for Watch: ", filter.WatchID, err)
-				continue
-			}
-			log.Println("Started CronJob for WatchID", filter.WatchID, "FilterID", filter.ID, "with schedule:", filter.Var1)
-			web.cronWatch[filter.ID] = entryID
+			web.addCronJobIfCronFilter(filter, false)
 		}
 	}
 
@@ -894,15 +886,7 @@ func (web *Web) importWatch(c *gin.Context) {
 		}
 		for i := range export.Filters {
 			filter := &export.Filters[i]
-			if filter.Type == "cron" && filter.Var2 != nil && *filter.Var2 == "yes" {
-				entryID, err := web.cron.AddFunc(filter.Var1, func() { triggerSchedule(filter.WatchID, web, &filter.ID) })
-				if err != nil {
-					log.Println("Could not start job for Watch: ", filter.WatchID)
-					continue
-				}
-				log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
-				web.cronWatch[filter.ID] = entryID
-			}
+			web.addCronJobIfCronFilter(filter, false)
 		}
 	}
 
