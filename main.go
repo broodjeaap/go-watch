@@ -556,6 +556,23 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		}
 	}
 
+	for i := range export.Filters {
+		cronFilter := &export.Filters[i]
+		if cronFilter.Type != "cron" {
+			continue
+		}
+		if cronFilter.Var2 != nil && *cronFilter.Var2 == "no" {
+			continue
+		}
+		entryID, err := web.cron.AddFunc(cronFilter.Var1, func() { triggerSchedule(cronFilter.WatchID, web, &cronFilter.ID) })
+		if err != nil {
+			log.Println("Could not start job for Watch: ", cronFilter.WatchID)
+			continue
+		}
+		log.Println("Started CronJob for WatchID", cronFilter.WatchID, "with schedule:", cronFilter.Var1)
+		web.cronWatch[cronFilter.ID] = entryID
+	}
+
 	// we again set all the connection.ID to 0,
 	// but then also swap the old filterIDs to the new IDs the filters got after db.Create
 	for i := range export.Connections {
