@@ -5,4 +5,9 @@
     - util.go
     - edit.ts
     - diagram.ts
-- scheduled backup
+- ~~scheduled backup~~
+    - test
+    - restore
+    - delete
+    - download
+    - restore from upload
