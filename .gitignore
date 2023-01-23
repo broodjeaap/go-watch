@@ -24,3 +24,4 @@ go.work
 tmp/build-errors.log
 tmp/main
 watch.db
+backups

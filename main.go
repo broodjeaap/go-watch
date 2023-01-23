@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -13,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -191,6 +194,10 @@ func (web *Web) initRouter() {
 	web.router.GET("/notifiers/view", web.notifiersView)
 	web.router.POST("/notifiers/test", web.notifiersTest)
 
+	web.router.GET("/backup/view", web.backupView)
+	web.router.GET("/backup/create", web.backupCreate)
+	web.router.GET("/backup/test/:id", web.backupTest)
+
 	web.router.SetTrustedProxies(nil)
 }
 
@@ -213,6 +220,9 @@ func (web *Web) initTemplates() {
 
 	web.templates.Add("notifiersView", template.Must(template.ParseFS(templatesFS, "base.html", "notifiers.html")))
 
+	web.templates.Add("backupView", template.Must(template.ParseFS(templatesFS, "base.html", "backup/view.html")))
+	web.templates.Add("backupTest", template.Must(template.ParseFS(templatesFS, "base.html", "backup/test.html")))
+
 	web.templates.Add("500", template.Must(template.ParseFS(templatesFS, "base.html", "500.html")))
 }
 
@@ -227,6 +237,26 @@ func (web *Web) initCronJobs() {
 
 	web.cron = cron.New()
 	web.cron.Start()
+
+	// db prune job is started if there is a database.prune set
+	if viper.IsSet("database.prune") {
+		pruneSchedule := viper.GetString("database.prune")
+		_, err := web.cron.AddFunc(pruneSchedule, web.pruneDB)
+		if err != nil {
+			web.startupWarning("Could not parse database.prune:", err)
+		}
+		log.Println("Started DB prune cronjob:", pruneSchedule)
+	}
+
+	// backup job is started if there is a schedule and path
+	if viper.IsSet("database.backup.schedule") && viper.IsSet("database.backup.path") {
+		backupSchedule := viper.GetString("database.backup.schedule")
+		_, err := web.cron.AddFunc(backupSchedule, web.scheduledBackup)
+		if err != nil {
+			web.startupWarning("Could not parse database.backup.schedule:", err)
+		}
+		log.Println("Backup schedule set:", backupSchedule)
+	}
 
 	// add some delay to cron jobs, so watches with the same schedule don't
 	// 'burst' at the same time after restarting GoWatch
@@ -245,16 +275,6 @@ func (web *Web) initCronJobs() {
 		if delayErr == nil {
 			time.Sleep(cronDelay)
 		}
-	}
-
-	// db prune job is started if there is a database.prune set
-	if viper.IsSet("database.prune") {
-		pruneSchedule := viper.GetString("database.prune")
-		_, err := web.cron.AddFunc(pruneSchedule, web.pruneDB)
-		if err != nil {
-			web.startupWarning("Could not parse database.prune:", err)
-		}
-		log.Println("Started DB prune cronjob:", pruneSchedule)
 	}
 }
 
@@ -789,6 +809,170 @@ func (web *Web) cacheView(c *gin.Context) {
 func (web *Web) cacheClear(c *gin.Context) {
 	web.urlCache = make(map[string]string, 5)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+// backupView (/backup/view) lists the stored backups
+func (web *Web) backupView(c *gin.Context) {
+	if !viper.IsSet("database.backup") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.schedule") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.schedule not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.path") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.path not set"})
+		return
+	}
+
+	backupPath := viper.GetString("database.backup.path")
+
+	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	filesInBackupDir, err := ioutil.ReadDir(backupDir)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	filePaths := make([]string, 0, len(filesInBackupDir))
+	for _, fileInBackupDir := range filesInBackupDir {
+		fullPath := filepath.Join(backupDir, fileInBackupDir.Name())
+		filePaths = append(filePaths, fullPath)
+	}
+
+	c.HTML(http.StatusOK, "backupView", gin.H{"Backups": filePaths})
+}
+
+// backupCreate (/backup/create) creates a new backup
+func (web *Web) backupCreate(c *gin.Context) {
+	if !viper.IsSet("database.backup") {
+		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": "database.backup not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.path") {
+		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": "database.backup.path not set"})
+		return
+	}
+	backupDir := filepath.Dir(viper.GetString("database.backup.path"))
+	backupName := fmt.Sprintf("gowatch_%s.gzip", time.Now().Format(time.RFC3339))
+	backupName = strings.Replace(backupName, ":", "-", -1)
+
+	backupPath := filepath.Join(backupDir, backupName)
+	err := web.createBackup(backupPath)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": err})
+		return
+	}
+	c.Redirect(http.StatusSeeOther, "/backup/view")
+}
+
+func (web *Web) scheduledBackup() {
+	log.Println("Starting scheduled backup")
+	backupPath := viper.GetString("database.backup.path")
+
+	// compare abs backup path to abs dir path, if they are the same, it's a dir
+	// avoids an Open(backupPath).Stat, which will fail if it's a file that doesn't exist
+	absBackupPath, err := filepath.Abs(backupPath)
+	if err != nil {
+		log.Println("Could not get abs path of database.backup.path")
+		return
+	}
+
+	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
+	if err != nil {
+		log.Println("Could not get abs path of dir(database.backup.path)")
+		return
+	}
+	if absBackupPath == backupDir {
+		backupName := fmt.Sprintf("gowatch_%s.gzip", time.Now().Format(time.RFC3339))
+		backupPath = filepath.Join(backupPath, backupName)
+		log.Println(backupPath)
+	} else {
+		backupTemplate, err := template.New("backup").Parse(backupPath)
+		if err != nil {
+			log.Println("Could not parse backup path as template:", err)
+			return
+		}
+		var backupNameBytes bytes.Buffer
+		err = backupTemplate.Execute(&backupNameBytes, time.Now())
+		if err != nil {
+			log.Println("Could not execute backup template:", err)
+			return
+		}
+		backupPath = backupNameBytes.String()
+	}
+	err = web.createBackup(backupPath)
+	if err != nil {
+		log.Println("Could not create scheduled backup:", err)
+		return
+	}
+	log.Println("Backup succesful:", backupPath)
+}
+
+// createBackup is the function that actually creates the backup
+func (web *Web) createBackup(backupPath string) error {
+	backupFile, err := os.OpenFile(backupPath, os.O_CREATE|os.O_WRONLY, 0660)
+	if err != nil {
+		return err
+	}
+	defer backupFile.Close()
+
+	backupWriter := gzip.NewWriter(backupFile)
+	defer backupWriter.Close()
+
+	var watches []Watch
+	tx := web.db.Find(&watches)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	var filters []Filter
+	tx = web.db.Find(&filters)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	var connections []FilterConnection
+	tx = web.db.Find(&connections)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	var values []FilterOutput
+	tx = web.db.Find(&values)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	backup := Backup{
+		Watches:     watches,
+		Filters:     filters,
+		Connections: connections,
+		Values:      values,
+	}
+
+	jsn, err := json.Marshal(backup)
+	if err != nil {
+		return err
+	}
+	_, err = backupWriter.Write(jsn)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// backupTest (/backup/test) tests the selected backup file
+func (web *Web) backupTest(c *gin.Context) {
+
 }
 
 // exportWatch (/watch/export/:id) creates a json export of the current watch

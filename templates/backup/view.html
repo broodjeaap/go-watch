@@ -1,0 +1,52 @@
+{{define "title"}}
+GoWatch Backups
+{{end}}
+{{define "content"}}
+
+<div class="container row">
+    <div class="row h3 justify-content-center">
+        Backups
+    </div>
+    {{ if .Error }}
+    <div class="row h3 justify-content-center text-danger">
+        {{ .Error }}
+    </div>
+    {{ end }}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr class="table-dark">
+                <th>File</th>
+                <th>Test</th>
+                <th>Restore</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $i, $backup := .Backups  }}
+            <tr>
+                <td class="h5">{{ $backup }}</td>
+                <td>
+                    <a class="btn btn-success">
+                        Test
+                    </a>
+                </td>
+                <td>
+                    <a class="btn btn-danger">
+                        Restore
+                    </a>
+                </td>
+                <td>
+                    <a class="btn btn-secondary">
+                        Download
+                    </a>
+                </td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+    <a href="/backup/create" class="btn btn-warning btn-lg">
+        Backup Now
+    </a>
+</div>
+
+{{end}}

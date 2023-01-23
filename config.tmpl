@@ -38,6 +38,9 @@ notifiers:
 database:
   dsn: "/config/watch.db" # for docker usage
   prune: "@every 1h"
+  backup:
+    schedule: "@every 1d"
+    path: "/backup/{{.Year}}_{{.Month}}_{{.Day}}T{{.Hour}}-{{.Minute}}-{{.Second}}.gzip" # https://pkg.go.dev/time available
 proxy:
   proxy_url: http://proxy.com:1234
 browserless:
