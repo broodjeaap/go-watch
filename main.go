@@ -489,6 +489,20 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 			return
 		}
 		jsn = body
+	} else if templateID == -2 { // watch from file upload
+		file, err := c.FormFile("file")
+
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+
+		openedFile, err := file.Open()
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+			return
+		}
+		jsn, _ = ioutil.ReadAll(openedFile)
 	} else { // selected one of the templates
 		templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
 		if err != nil {

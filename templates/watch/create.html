@@ -1,10 +1,14 @@
 {{define "title"}}
-GoWatch {{ .Watch.Name }}
+GoWatch Create
 {{end}}
+
+{{define "head"}}
+<script src="/static/create.js"></script>
+{{ end }}
 
 {{define "content"}}
 
-<form action="/watch/create" method="POST">
+<form action="/watch/create" enctype="multipart/form-data" method="POST">
     <div class="container">
         <div class="row g-3 justify-content-center">
             <div class="col-auto">
@@ -22,7 +26,7 @@ GoWatch {{ .Watch.Name }}
         <div class="row justify-content-center mt-5">
             <div class="row h3 justify-content-center">With Watch Template:</div>
             <div class="col-2"> </div>
-            <div class="col-2">
+            <div class="col-4">
                 {{ range $i, $name := .templates }}
                 <div class="form-check d-flex my-2">
                     {{ if eq $i 0 }}
@@ -30,17 +34,25 @@ GoWatch {{ .Watch.Name }}
                     {{ else }}
                     <input class="form-check-input" type="radio" name="template" value="{{ $i }}" id="template_{{ $i }}">
                     {{ end }}
-                    <label class="form-check-label h5 mx-3" for="template_{{ $i }}">
+                    <label class="form-check-label h5 mx-3 flex-fill" for="template_{{ $i }}">
                         {{ $name }}
                     </label>
                 </div>
                 {{ end }}
                 <div class="form-check d-flex my-2">
                     <div>
-                        <input class="form-check-input" type="radio" name="template" value="-1">
+                        <input class="form-check-input" type="radio" id="urlRadio" name="template" value="-1">
                     </div>
-                    <div class="form-check-label mx-2">
-                        <input type="text" class="form-control" name="url" size="15" placeholder="From URL">
+                    <div class="form-check-label mx-2 flex-fill">
+                        <input type="text" class="form-control" id="url" name="url" size="15" placeholder="From URL">
+                    </div>
+                </div>
+                <div class="form-check d-flex my-2">
+                    <div>
+                        <input class="form-check-input" type="radio" id="fileRadio" name="template" value="-2">
+                    </div>
+                    <div class="form-check-label mx-2 flex-fill">
+                        <input class="form-control" type="file" id="file" name="file">
                     </div>
                 </div>
             </div>
