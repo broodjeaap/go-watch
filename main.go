@@ -199,6 +199,7 @@ func (web *Web) initRouter() {
 	web.router.GET("/backup/create", web.backupCreate)
 	web.router.POST("/backup/test", web.backupTest)
 	web.router.POST("/backup/restore", web.backupRestore)
+	web.router.POST("/backup/delete", web.backupDelete)
 
 	web.router.SetTrustedProxies(nil)
 }
@@ -1155,6 +1156,60 @@ func (web *Web) backupRestore(c *gin.Context) {
 		"Backup":     backup,
 		"BackupPath": backupFullPath,
 	})
+}
+
+// backupRestore (/backup/restore/:id) either restores the filesInBackupDir[id] file or from an uploaded file
+func (web *Web) backupDelete(c *gin.Context) {
+	importID, err := strconv.Atoi(c.PostForm("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	if importID <= 0 {
+		c.Redirect(http.StatusSeeOther, "/backup/view")
+		return
+	}
+
+	if !viper.IsSet("database.backup") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.schedule") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.schedule not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.path") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.path not set"})
+		return
+	}
+
+	backupPath := viper.GetString("database.backup.path")
+
+	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	filesInBackupDir, err := ioutil.ReadDir(backupDir)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+	if importID >= len(filesInBackupDir) {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	backupFileName := filesInBackupDir[importID]
+	backupFullPath := filepath.Join(backupDir, backupFileName.Name())
+
+	err = os.Remove(backupFullPath)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+	c.Redirect(http.StatusSeeOther, "/backup/view")
 }
 
 // exportWatch (/watch/export/:id) creates a json export of the current watch

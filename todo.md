@@ -8,7 +8,7 @@
 - ~~scheduled backup~~
     - ~~test~~
     - ~~restore~~
-    - delete
+    - ~~delete~~
     - download
     - ~~restore from upload~~
 - browserless function filters

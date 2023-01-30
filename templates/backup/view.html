@@ -23,6 +23,7 @@ GoWatch Backups
                 <th>File</th>
                 <th>Test</th>
                 <th>Restore</th>
+                <th>Delete</th>
                 <th>Download</th>
             </tr>
         </thead>
@@ -38,9 +39,10 @@ GoWatch Backups
                     <input id="testSubmit" type="submit" class="btn btn-success" value="Test">
                 </td>
                 <td>
-                    <input id="restoreSubmit" type="submit" class="btn btn-danger" value="Restore">
+                    <input id="restoreSubmit" type="submit" class="btn btn-warning" value="Restore">
                 </td>
-                <td></td>
+                <td><button class="btn btn-danger" disabled>Delete</button></td>
+                <td><button class="btn btn-secondary" disabled>Download</button></td>
             </tr>
             {{ range $i, $backup := .Backups  }}
             <tr>
@@ -54,7 +56,13 @@ GoWatch Backups
                 <td>
                     <form action="/backup/restore" enctype="multipart/form-data" method="POST">
                         <input type="hidden" value="{{ $i }}" name="id">
-                        <button class="btn btn-danger">Restore</button>
+                        <button class="btn btn-warning">Restore</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="/backup/delete" enctype="multipart/form-data" method="POST">
+                        <input type="hidden" value="{{ $i }}" name="id">
+                        <button class="btn btn-danger">Delete</button>
                     </form>
                 </td>
                 <td>
