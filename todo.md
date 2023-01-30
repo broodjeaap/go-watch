@@ -5,11 +5,6 @@
     - util.go
     - edit.ts
     - diagram.ts
-- ~~scheduled backup~~
-    - ~~test~~
-    - ~~restore~~
-    - ~~delete~~
-    - download
-    - ~~restore from upload~~
 - browserless function filters
+    - split get url http.get and browserless get into 2 filters
 - url path support
