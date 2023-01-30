@@ -6,7 +6,7 @@
     - edit.ts
     - diagram.ts
 - ~~scheduled backup~~
-    - test
+    - ~~test~~
     - restore
     - delete
     - download

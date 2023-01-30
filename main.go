@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
 	"io/ioutil"
 	"log"
@@ -972,7 +973,70 @@ func (web *Web) createBackup(backupPath string) error {
 
 // backupTest (/backup/test) tests the selected backup file
 func (web *Web) backupTest(c *gin.Context) {
+	importID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	if importID < 0 {
+		c.Redirect(http.StatusSeeOther, "/backup/view")
+		return
+	}
+	if !viper.IsSet("database.backup") {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": "database.backup not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.schedule") {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": "database.backup.schedule not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.path") {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": "database.backup.path not set"})
+		return
+	}
 
+	backupPath := viper.GetString("database.backup.path")
+
+	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
+	if err != nil {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
+		return
+	}
+
+	filesInBackupDir, err := ioutil.ReadDir(backupDir)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
+		return
+	}
+	if importID >= len(filesInBackupDir) {
+		c.Redirect(http.StatusSeeOther, "/backup/view")
+		return
+	}
+
+	backupFileName := filesInBackupDir[importID]
+	backupFullPath := filepath.Join(backupDir, backupFileName.Name())
+	backupFile, err := os.Open(backupFullPath)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
+		return
+	}
+	defer backupFile.Close()
+
+	backupReader, err := gzip.NewReader(backupFile)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
+		return
+	}
+	defer backupReader.Close()
+	rawBytes, err := io.ReadAll(backupReader)
+
+	var backup Backup
+	json.Unmarshal(rawBytes, &backup)
+
+	c.HTML(http.StatusOK, "backupTest", gin.H{
+		"Backup":     backup,
+		"BackupPath": backupFullPath,
+	})
 }
 
 // exportWatch (/watch/export/:id) creates a json export of the current watch
