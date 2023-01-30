@@ -200,6 +200,7 @@ func (web *Web) initRouter() {
 	web.router.POST("/backup/test", web.backupTest)
 	web.router.POST("/backup/restore", web.backupRestore)
 	web.router.POST("/backup/delete", web.backupDelete)
+	web.router.GET("/backup/download/:id", web.backupDownload)
 
 	web.router.SetTrustedProxies(nil)
 }
@@ -1210,6 +1211,72 @@ func (web *Web) backupDelete(c *gin.Context) {
 		return
 	}
 	c.Redirect(http.StatusSeeOther, "/backup/view")
+}
+
+// backupDownload (/backup/download) serves the backup file in index 'id'
+func (web *Web) backupDownload(c *gin.Context) {
+	importID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	if importID < 0 {
+		c.Redirect(http.StatusSeeOther, "/backup/view")
+		return
+	}
+
+	if !viper.IsSet("database.backup") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.schedule") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.schedule not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.path") {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.path not set"})
+		return
+	}
+
+	backupPath := viper.GetString("database.backup.path")
+
+	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	filesInBackupDir, err := ioutil.ReadDir(backupDir)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+	if importID >= len(filesInBackupDir) {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	backupFileName := filesInBackupDir[importID]
+	backupFullPath := filepath.Join(backupDir, backupFileName.Name())
+
+	backupFile, err := os.Open(backupFullPath)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+	defer backupFile.Close()
+
+	rawBytes, err := io.ReadAll(backupFile)
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		return
+	}
+
+	c.Header("Content-Disposition", "attachment; filename=\""+backupFileName.Name()+"\"")
+	c.Stream(func(w io.Writer) bool {
+		w.Write(rawBytes)
+		return false
+	})
 }
 
 // exportWatch (/watch/export/:id) creates a json export of the current watch
