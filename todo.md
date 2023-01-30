@@ -13,4 +13,3 @@
     - ~~restore from upload~~
 - browserless function filters
 - url path support
-- defer formfile.close()

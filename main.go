@@ -541,6 +541,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
+		defer openedFile.Close()
 		jsn, _ = ioutil.ReadAll(openedFile)
 	} else { // selected one of the templates
 		templateFiles, err := EMBED_FS.ReadDir("watchTemplates")
@@ -1207,6 +1208,7 @@ func (web *Web) importWatch(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+	defer openedFile.Close()
 	jsn, _ := ioutil.ReadAll(openedFile)
 
 	export := WatchExport{}
