@@ -197,7 +197,8 @@ func (web *Web) initRouter() {
 
 	web.router.GET("/backup/view", web.backupView)
 	web.router.GET("/backup/create", web.backupCreate)
-	web.router.GET("/backup/test/:id", web.backupTest)
+	web.router.POST("/backup/test", web.backupTest)
+	web.router.POST("/backup/restore", web.backupRestore)
 
 	web.router.SetTrustedProxies(nil)
 }
@@ -223,6 +224,7 @@ func (web *Web) initTemplates() {
 
 	web.templates.Add("backupView", template.Must(template.ParseFS(templatesFS, "base.html", "backup/view.html")))
 	web.templates.Add("backupTest", template.Must(template.ParseFS(templatesFS, "base.html", "backup/test.html")))
+	web.templates.Add("backupRestore", template.Must(template.ParseFS(templatesFS, "base.html", "backup/restore.html")))
 
 	web.templates.Add("500", template.Must(template.ParseFS(templatesFS, "base.html", "500.html")))
 }
@@ -973,12 +975,12 @@ func (web *Web) createBackup(backupPath string) error {
 
 // backupTest (/backup/test) tests the selected backup file
 func (web *Web) backupTest(c *gin.Context) {
-	importID, err := strconv.Atoi(c.Param("id"))
+	importID, err := strconv.Atoi(c.PostForm("id"))
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if importID < 0 {
+	if importID < -1 {
 		c.Redirect(http.StatusSeeOther, "/backup/view")
 		return
 	}
@@ -995,45 +997,160 @@ func (web *Web) backupTest(c *gin.Context) {
 		return
 	}
 
+	backupFullPath := ""
+	var backup Backup
+	if importID >= 0 {
+		backupFullPath, err = web.backupFromFile(importID, &backup)
+	} else { // uploaded backup file
+		backupFullPath, err = web.backupFromUpload(c, &backup)
+	}
+
+	if err != nil {
+		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
+		return
+	}
+
+	c.HTML(http.StatusOK, "backupTest", gin.H{
+		"Backup":     backup,
+		"BackupPath": backupFullPath,
+	})
+}
+
+func (web *Web) backupFromFile(importID int, backup *Backup) (string, error) {
 	backupPath := viper.GetString("database.backup.path")
 
 	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
 	if err != nil {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
-		return
+		return "", err
 	}
 
 	filesInBackupDir, err := ioutil.ReadDir(backupDir)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
-		return
+		return "", err
 	}
 	if importID >= len(filesInBackupDir) {
-		c.Redirect(http.StatusSeeOther, "/backup/view")
-		return
+		return "", err
 	}
 
 	backupFileName := filesInBackupDir[importID]
 	backupFullPath := filepath.Join(backupDir, backupFileName.Name())
 	backupFile, err := os.Open(backupFullPath)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
-		return
+		return "", err
 	}
 	defer backupFile.Close()
 
 	backupReader, err := gzip.NewReader(backupFile)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
-		return
+		return "", err
+	}
+	defer backupReader.Close()
+	rawBytes, err := io.ReadAll(backupReader)
+	err = json.Unmarshal(rawBytes, backup)
+	if err != nil {
+		return "", err
+	}
+	return backupFullPath, nil
+}
+
+func (web *Web) backupFromUpload(c *gin.Context, backup *Backup) (string, error) {
+	upload, err := c.FormFile("upload")
+	if err != nil {
+		return "", err
+	}
+	backupFullPath := upload.Filename + " (Uploaded)"
+
+	uploadFile, err := upload.Open()
+	if err != nil {
+		return "", err
+	}
+	defer uploadFile.Close()
+
+	backupReader, err := gzip.NewReader(uploadFile)
+	if err != nil {
+		return "", err
 	}
 	defer backupReader.Close()
 	rawBytes, err := io.ReadAll(backupReader)
 
-	var backup Backup
-	json.Unmarshal(rawBytes, &backup)
+	err = json.Unmarshal(rawBytes, &backup)
+	if err != nil {
+		return "", err
+	}
+	return backupFullPath, nil
+}
 
-	c.HTML(http.StatusOK, "backupTest", gin.H{
+// backupRestore (/backup/restore/:id) either restores the filesInBackupDir[id] file or from an uploaded file
+func (web *Web) backupRestore(c *gin.Context) {
+	importID, err := strconv.Atoi(c.PostForm("id"))
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	if importID < -1 {
+		c.Redirect(http.StatusSeeOther, "/backup/view")
+		return
+	}
+
+	if !viper.IsSet("database.backup") {
+		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": "database.backup not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.schedule") {
+		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": "database.backup.schedule not set"})
+		return
+	}
+	if !viper.IsSet("database.backup.path") {
+		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": "database.backup.path not set"})
+		return
+	}
+
+	backupFullPath := ""
+	var backup Backup
+	if importID >= 0 {
+		backupFullPath, err = web.backupFromFile(importID, &backup)
+	} else { // uploaded backup file
+		backupFullPath, err = web.backupFromUpload(c, &backup)
+	}
+
+	if err != nil {
+		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": err})
+		return
+	}
+
+	err = web.db.Transaction(func(tx *gorm.DB) error {
+		delete := tx.Where("1 = 1").Delete(&Watch{})
+		if delete.Error != nil {
+			return err
+		}
+
+		watches := tx.Create(&backup.Watches)
+		if watches.Error != nil {
+			return err
+		}
+
+		filters := tx.Create(&backup.Filters)
+		if filters.Error != nil {
+			return err
+		}
+
+		connections := tx.Create(&backup.Connections)
+		if connections.Error != nil {
+			return err
+		}
+
+		values := tx.Create(&backup.Values)
+		if values.Error != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": err})
+		return
+	}
+
+	c.HTML(http.StatusOK, "backupRestore", gin.H{
 		"Backup":     backup,
 		"BackupPath": backupFullPath,
 	})

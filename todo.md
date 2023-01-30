@@ -7,7 +7,7 @@
     - diagram.ts
 - ~~scheduled backup~~
     - ~~test~~
-    - restore
+    - ~~restore~~
     - delete
     - download
-    - restore from upload
+    - ~~restore from upload~~

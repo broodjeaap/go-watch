@@ -1,0 +1,69 @@
+{{define "title"}}
+GoWatch Backup Restore
+{{end}}
+{{define "content"}}
+
+<div class="container row">
+    <div class="row h3 justify-content-center {{ if .Error }} text-danger {{ else }} text-success {{ end }}">
+        Restore: {{ .BackupPath }}
+    </div>
+    {{ if .Error }}
+    <div class="row h3 justify-content-center">
+        {{ .Error }}
+    </div>
+    {{ end }}
+    <table class="table table-striped table-hover caption-top">
+        <caption class="h3">Watches</caption>
+        <thead>
+            <tr class="table-dark">
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{ range $watch := .Backup.Watches  }}
+            <tr>
+                <td class="h5">{{ $watch.ID }}</td>
+                <td class="h5">{{ $watch.Name }}</td>
+            </tr>
+        {{ end }}
+        </tbody>
+    </table>
+    <div class="row h4 justify-content-center">
+        Stored Values: {{ len .Backup.Values }}
+    </div>
+    <table class="table table-striped table-hover caption-top">
+        <caption class="h3">Filters</caption>
+        <thead>
+            <tr class="table-dark">
+                <th>ID</th>
+                <th>WatchID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Var1</th>
+                <th>Var2</th>
+                <th>Var3</th>
+                <th>X/Y</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $filter := .Backup.Filters  }}
+            <tr>
+                <td class="h5">{{ $filter.ID }}</td>
+                <td class="h5">{{ $filter.WatchID }}</td>
+                <td class="h5">{{ $filter.Name }}</td>
+                <td class="h5">{{ $filter.Type }}</td>
+                <td class="h5">{{ $filter.Var1 }}</td>
+                <td class="h5">{{ $filter.Var2 }}</td>
+                <td class="h5">{{ $filter.Var3 }}</td>
+                <td class="h5">{{ $filter.X }}/{{ $filter.Y }}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+    <div class="row h4 justify-content-center">
+        FilterConnections: {{ len .Backup.Connections }}
+    </div>
+</div>
+
+{{end}}

@@ -1,6 +1,11 @@
 {{define "title"}}
 GoWatch Backups
 {{end}}
+
+{{define "head"}}
+<script src="/static/backup.js"></script>
+{{ end }}
+
 {{define "content"}}
 
 <div class="container row">
@@ -22,21 +27,38 @@ GoWatch Backups
             </tr>
         </thead>
         <tbody>
+            <tr>
+                <td>
+                    <form id="uploadForm" action="/backup/restore" enctype="multipart/form-data" method="POST">
+                        <input type="hidden" value="-1" name="id">
+                        <input class="form-control" type="file" id="upload" name="upload">
+                    </form>
+                </td>
+                <td>
+                    <input id="testSubmit" type="submit" class="btn btn-success" value="Test">
+                </td>
+                <td>
+                    <input id="restoreSubmit" type="submit" class="btn btn-danger" value="Restore">
+                </td>
+                <td></td>
+            </tr>
             {{ range $i, $backup := .Backups  }}
             <tr>
                 <td class="h5">{{ $backup }}</td>
                 <td>
-                    <a href="/backup/test/{{ $i }}" class="btn btn-success">
-                        Test
-                    </a>
+                    <form action="/backup/test" enctype="multipart/form-data" method="POST">
+                        <input type="hidden" value="{{ $i }}" name="id">
+                        <button class="btn btn-success">Test</button>
+                    </form>
                 </td>
                 <td>
-                    <a class="btn btn-danger">
-                        Restore
-                    </a>
+                    <form action="/backup/restore" enctype="multipart/form-data" method="POST">
+                        <input type="hidden" value="{{ $i }}" name="id">
+                        <button class="btn btn-danger">Restore</button>
+                    </form>
                 </td>
                 <td>
-                    <a class="btn btn-secondary">
+                    <a href="/backup/download/{{ $i }}" class="btn btn-secondary">
                         Download
                     </a>
                 </td>
