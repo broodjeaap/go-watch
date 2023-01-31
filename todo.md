@@ -6,8 +6,8 @@
     - edit.ts
     - diagram.ts
 - browserless function filters
-    - get url
-    - get urls
+    - ~~get url~~
+    - ~~get urls~~
     - session
         - start
         - end

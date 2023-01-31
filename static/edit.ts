@@ -90,69 +90,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var3Div.appendChild(var3Input);
             break;
         }
-        case "bgurl": {
-            let var1Input = document.createElement("input");
-            var1Input.name = "var1";
-            var1Input.id = "var1Input";
-            var1Input.value = var1Value;
-            var1Input.classList.add("form-control");
-            var1Label.innerHTML = "URL";
-            var1Input.placeholder = "https://shopping.website.com";
-            var1Div.appendChild(var1Input);
-
-            let var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Input.placeholder = ""
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
-            
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = ""
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
-            break;
-        }
-        case "bgurls": {
-            let var1Input = document.createElement("input");
-            var1Input.name = "var1";
-            var1Input.id = "var1Input";
-            var1Input.value = var1Value;
-            var1Input.classList.add("form-control")
-            var1Label.innerHTML = "-";
-            var1Input.placeholder = "From parents";
-            var1Input.disabled = true;
-            var1Div.appendChild(var1Input);
-
-            let var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control")
-            var2Input.disabled = true;
-            var2Input.placeholder = ""
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = ""
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
-            break;
-        }
         case "xpath": {
             let var1Input = document.createElement("input");
             var1Input.name = "var1";
@@ -493,7 +430,6 @@ function onTypeChange(node: DiagramNode | null = null){
             break;
         }
         case "unique": {
-            console.log("TEST");
             let var1Input = document.createElement("input");
             var1Input.name = "var1";
             var1Input.id = "var1Input";
@@ -660,6 +596,94 @@ function onTypeChange(node: DiagramNode | null = null){
             var3Label.innerHTML = "-";
             var3Div.appendChild(var3Input);
             break;
+        }
+        case "brow":{
+            let browserlessSelect = document.createElement("select");
+            browserlessSelect.name = "var1";
+            browserlessSelect.id = "var1Input";
+            browserlessSelect.classList.add("form-control");
+            var1Label.innerHTML = "Function";
+
+            let gurlOption = document.createElement("option");
+            gurlOption.value = "gurl"
+            gurlOption.innerHTML = "Get URL";
+            browserlessSelect.appendChild(gurlOption);
+
+            let gurlsOption = document.createElement("option");
+            gurlsOption.value = "gurls"
+            gurlsOption.innerHTML = "Get URLs";
+            browserlessSelect.appendChild(gurlsOption);
+            
+            let startOption = document.createElement("option");
+            startOption.value = "start"
+            startOption.innerHTML = "Start Session";
+            browserlessSelect.appendChild(startOption);
+            
+            let endOption = document.createElement("option");
+            endOption.value = "end"
+            endOption.innerHTML = "End Session";
+            browserlessSelect.appendChild(endOption);
+            
+            let gotoOption = document.createElement("option");
+            gotoOption.value = "go"
+            gotoOption.innerHTML = "Goto URL";
+            browserlessSelect.appendChild(gotoOption);
+            
+            let cssOption = document.createElement("option");
+            cssOption.value = "css"
+            cssOption.innerHTML = "Click CSS Element";
+            browserlessSelect.appendChild(cssOption);
+
+            let xpathOption = document.createElement("option");
+            xpathOption.value = "xpath"
+            xpathOption.innerHTML = "Click XPath Element";
+            browserlessSelect.appendChild(xpathOption);
+
+            let authOption = document.createElement("option");
+            authOption.value = "auth"
+            authOption.innerHTML = "Authenticate";
+            browserlessSelect.appendChild(authOption);
+
+            let selectOption = document.createElement("option");
+            selectOption.value = "select"
+            selectOption.innerHTML = "Set Dropdown";
+            browserlessSelect.appendChild(selectOption);
+
+            let inputOption = document.createElement("option");
+            inputOption.value = "input"
+            inputOption.innerHTML = "Set Input";
+            browserlessSelect.appendChild(inputOption);
+
+            let keyOption = document.createElement("option");
+            keyOption.value = "key"
+            keyOption.innerHTML = "Press Key";
+            browserlessSelect.appendChild(keyOption);
+
+            let waitOption = document.createElement("option");
+            waitOption.value = "wait"
+            waitOption.innerHTML = "Wait";
+            browserlessSelect.appendChild(waitOption);
+
+            let lineOption = document.createElement("option");
+            lineOption.value = "line"
+            lineOption.innerHTML = "Raw Line";
+            browserlessSelect.appendChild(lineOption);
+
+            let rawOption = document.createElement("option");
+            rawOption.value = "raw"
+            rawOption.innerHTML = "Raw Function";
+            browserlessSelect.appendChild(rawOption);
+            
+            var1Div.appendChild(browserlessSelect);
+
+            if (var1Value == ""){
+                browserlessSelect.value = "gurl";
+            } else {
+                browserlessSelect.value = var1Value;
+            }
+            browserlessSelect.onchange = function() {onBrowserlessChange()}
+            onBrowserlessChange(node)
+            break
         }
         case "lua":{
             let var1Input = document.createElement("textarea");
@@ -912,7 +936,6 @@ function onMathChange(node: DiagramNode | null = null){
         var2Input.type = "text";
         var2Input.value = "";
         var2Label.innerHTML = "-";
-
     }
 }
 
@@ -931,6 +954,7 @@ function onConditionChange(node: DiagramNode | null = null){
     let var1Value = "";
     let var2Value = "";
     let var3Value = "";
+    console.log(node, var1Input.value)
     if (node != null){
         // @ts-ignore
         var1Value = node.meta.var1;
@@ -990,6 +1014,53 @@ function onConditionChange(node: DiagramNode | null = null){
             var2Label.innerHTML = "Filter";
             var2Div.appendChild(filterSelect);
             break
+        }
+    }
+}
+
+function onBrowserlessChange(node: DiagramNode | null = null){
+    let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
+    let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
+    let var1Div = document.getElementById("var1Div") as HTMLDivElement;
+    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
+    let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
+    let var2Div = document.getElementById("var2Div") as HTMLDivElement;
+    var2Div.innerHTML = "";
+    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
+    let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
+    let var3Div = document.getElementById("var3Div") as HTMLDivElement;
+
+    let var1Value = "";
+    let var2Value = "";
+    let var3Value = "";
+    console.log(node, var1Input.value)
+    if (node != null){
+        // @ts-ignore
+        var1Value = node.meta.var1;
+        var1Input.value = var1Value;
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    } else {
+        var1Value = var1Input.value;
+    }
+
+    var1Label.innerHTML = "Function";
+
+    switch(var1Value) {
+        case "gurl": {
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
+            var2Label.innerHTML = "URL";
+            var2Div.appendChild(var2Input)
+            break;
+        }
+        case "gurls": {
+            break;
         }
     }
 }

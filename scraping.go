@@ -127,14 +127,6 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 		{
 			getFilterResultURLs(filter, web.urlCache, debug)
 		}
-	case filter.Type == "bgurl":
-		{
-			getFilterResultBrowserlessURL(filter, web.urlCache, debug)
-		}
-	case filter.Type == "bgurls":
-		{
-			getFilterResultBrowserlessURLs(filter, web.urlCache, debug)
-		}
 	case filter.Type == "xpath":
 		{
 			getFilterResultXPath(filter)
@@ -241,6 +233,19 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 				}
 			}
 		}
+	case filter.Type == "brow":
+		{
+			switch filter.Var1 {
+			case "gurl":
+				{
+					getFilterResultBrowserlessURL(filter, web.urlCache, debug)
+				}
+			case "gurls":
+				{
+					getFilterResultBrowserlessURLs(filter, web.urlCache, debug)
+				}
+			}
+		}
 	case filter.Type == "echo":
 		{
 			getFilterResultEcho(filter)
@@ -317,7 +322,11 @@ func getURLContent(filter *Filter, fetchURL string) (string, error) {
 }
 
 func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, debug bool) {
-	fetchURL := filter.Var1
+	if filter.Var2 == nil {
+		filter.log("filter.Var2 == nil")
+		return
+	}
+	fetchURL := *filter.Var2
 	val, exists := urlCache["b"+fetchURL]
 	if debug && exists {
 		filter.Results = append(filter.Results, val)

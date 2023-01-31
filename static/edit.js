@@ -114,65 +114,6 @@ function onTypeChange(node) {
             var3Div.appendChild(var3Input);
             break;
         }
-        case "bgurl": {
-            var var1Input = document.createElement("input");
-            var1Input.name = "var1";
-            var1Input.id = "var1Input";
-            var1Input.value = var1Value;
-            var1Input.classList.add("form-control");
-            var1Label.innerHTML = "URL";
-            var1Input.placeholder = "https://shopping.website.com";
-            var1Div.appendChild(var1Input);
-            var var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Input.placeholder = "";
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = "";
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
-            break;
-        }
-        case "bgurls": {
-            var var1Input = document.createElement("input");
-            var1Input.name = "var1";
-            var1Input.id = "var1Input";
-            var1Input.value = var1Value;
-            var1Input.classList.add("form-control");
-            var1Label.innerHTML = "-";
-            var1Input.placeholder = "From parents";
-            var1Input.disabled = true;
-            var1Div.appendChild(var1Input);
-            var var2Input = document.createElement("input");
-            var2Input.name = "var2";
-            var2Input.id = "var2Input";
-            var2Input.value = var2Value;
-            var2Input.classList.add("form-control");
-            var2Input.disabled = true;
-            var2Input.placeholder = "";
-            var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = "";
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
-            break;
-        }
         case "xpath": {
             var var1Input = document.createElement("input");
             var1Input.name = "var1";
@@ -500,7 +441,6 @@ function onTypeChange(node) {
             break;
         }
         case "unique": {
-            console.log("TEST");
             var var1Input = document.createElement("input");
             var1Input.name = "var1";
             var1Input.id = "var1Input";
@@ -672,6 +612,79 @@ function onTypeChange(node) {
             var3Div.appendChild(var3Input);
             break;
         }
+        case "brow": {
+            var browserlessSelect = document.createElement("select");
+            browserlessSelect.name = "var1";
+            browserlessSelect.id = "var1Input";
+            browserlessSelect.classList.add("form-control");
+            var1Label.innerHTML = "Function";
+            var gurlOption = document.createElement("option");
+            gurlOption.value = "gurl";
+            gurlOption.innerHTML = "Get URL";
+            browserlessSelect.appendChild(gurlOption);
+            var gurlsOption = document.createElement("option");
+            gurlsOption.value = "gurls";
+            gurlsOption.innerHTML = "Get URLs";
+            browserlessSelect.appendChild(gurlsOption);
+            var startOption = document.createElement("option");
+            startOption.value = "start";
+            startOption.innerHTML = "Start Session";
+            browserlessSelect.appendChild(startOption);
+            var endOption = document.createElement("option");
+            endOption.value = "end";
+            endOption.innerHTML = "End Session";
+            browserlessSelect.appendChild(endOption);
+            var gotoOption = document.createElement("option");
+            gotoOption.value = "go";
+            gotoOption.innerHTML = "Goto URL";
+            browserlessSelect.appendChild(gotoOption);
+            var cssOption = document.createElement("option");
+            cssOption.value = "css";
+            cssOption.innerHTML = "Click CSS Element";
+            browserlessSelect.appendChild(cssOption);
+            var xpathOption = document.createElement("option");
+            xpathOption.value = "xpath";
+            xpathOption.innerHTML = "Click XPath Element";
+            browserlessSelect.appendChild(xpathOption);
+            var authOption = document.createElement("option");
+            authOption.value = "auth";
+            authOption.innerHTML = "Authenticate";
+            browserlessSelect.appendChild(authOption);
+            var selectOption = document.createElement("option");
+            selectOption.value = "select";
+            selectOption.innerHTML = "Set Dropdown";
+            browserlessSelect.appendChild(selectOption);
+            var inputOption = document.createElement("option");
+            inputOption.value = "input";
+            inputOption.innerHTML = "Set Input";
+            browserlessSelect.appendChild(inputOption);
+            var keyOption = document.createElement("option");
+            keyOption.value = "key";
+            keyOption.innerHTML = "Press Key";
+            browserlessSelect.appendChild(keyOption);
+            var waitOption = document.createElement("option");
+            waitOption.value = "wait";
+            waitOption.innerHTML = "Wait";
+            browserlessSelect.appendChild(waitOption);
+            var lineOption = document.createElement("option");
+            lineOption.value = "line";
+            lineOption.innerHTML = "Raw Line";
+            browserlessSelect.appendChild(lineOption);
+            var rawOption = document.createElement("option");
+            rawOption.value = "raw";
+            rawOption.innerHTML = "Raw Function";
+            browserlessSelect.appendChild(rawOption);
+            var1Div.appendChild(browserlessSelect);
+            if (var1Value == "") {
+                browserlessSelect.value = "gurl";
+            }
+            else {
+                browserlessSelect.value = var1Value;
+            }
+            browserlessSelect.onchange = function () { onBrowserlessChange(); };
+            onBrowserlessChange(node);
+            break;
+        }
         case "lua": {
             var var1Input_1 = document.createElement("textarea");
             var1Input_1.name = "var1";
@@ -807,6 +820,7 @@ function onConditionChange(node) {
     var var1Value = "";
     var var2Value = "";
     var var3Value = "";
+    console.log(node, var1Input.value);
     if (node != null) {
         // @ts-ignore
         var1Value = node.meta.var1;
@@ -873,6 +887,51 @@ function onConditionChange(node) {
             }
             var2Label.innerHTML = "Filter";
             var2Div.appendChild(filterSelect);
+            break;
+        }
+    }
+}
+function onBrowserlessChange(node) {
+    if (node === void 0) { node = null; }
+    var var1Input = document.getElementById("var1Input");
+    var var1Label = document.getElementById("var1Label");
+    var var1Div = document.getElementById("var1Div");
+    var var2Input = document.getElementById("var2Input");
+    var var2Label = document.getElementById("var2Label");
+    var var2Div = document.getElementById("var2Div");
+    var2Div.innerHTML = "";
+    var var3Input = document.getElementById("var3Input");
+    var var3Label = document.getElementById("var3Label");
+    var var3Div = document.getElementById("var3Div");
+    var var1Value = "";
+    var var2Value = "";
+    var var3Value = "";
+    console.log(node, var1Input.value);
+    if (node != null) {
+        // @ts-ignore
+        var1Value = node.meta.var1;
+        var1Input.value = var1Value;
+        // @ts-ignore
+        var2Value = node.meta.var2;
+        // @ts-ignore
+        var3Value = node.meta.var3;
+    }
+    else {
+        var1Value = var1Input.value;
+    }
+    var1Label.innerHTML = "Function";
+    switch (var1Value) {
+        case "gurl": {
+            var var2Input_3 = document.createElement("input");
+            var2Input_3.name = "var2";
+            var2Input_3.id = "var2Input";
+            var2Input_3.value = var2Value;
+            var2Input_3.classList.add("form-control");
+            var2Label.innerHTML = "URL";
+            var2Div.appendChild(var2Input_3);
+            break;
+        }
+        case "gurls": {
             break;
         }
     }
