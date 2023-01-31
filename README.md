@@ -47,6 +47,7 @@ A change detection server that can notify through various services, written in G
 - [Notifiers](#notifiers)
   - [Shoutrrr](#shoutrrr)
   - [Apprise](#apprise)
+  - [File](#file)
 - [Build/Development](#builddevelopment)
   - [Typescript compilation](#type-script-compilation)
 - [Dependencies](#dependencies)
@@ -248,6 +249,7 @@ services:
     image: browserless/chrome:latest
 ```
 
+To use Browserless, the [Browserless Get URL](#browserless-get-url) and [Browserless](#browserless-get-urls) filters must be used.  
 Note that the proxy environment variables can be added to the Browserless container to still allow for proxying.
 
 ## Authentication
@@ -324,6 +326,16 @@ During editing, http requests are cached, so not to trigger any DOS protection o
 
 Fetches every URL given as input and outputs every HTTP response.  
 During editing, http requests are cached, so not to trigger any DOS protection on your sources.
+
+## Browserless Get URL
+
+Fetches the given URL through [Browserless](#browserless) and outputs the HTTP response.  
+Will log an error if no Browserless instance is configured.
+
+## Browserless Get URLs
+
+Fetches every URL given as input through [Browserless](#browserless) and outputs every HTTP response.  
+Will log an error if no Browserless instance is configured.
 
 ## CSS
 

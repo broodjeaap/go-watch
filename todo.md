@@ -8,6 +8,6 @@
 - browserless function filters
     - ~~split get url http.get and browserless get into 2 filters~~
         - ~~refactor amazon template~~
-    - docs
+    - ~~docs~~
 - url path support
 - refactor project structure
