@@ -114,6 +114,65 @@ function onTypeChange(node) {
             var3Div.appendChild(var3Input);
             break;
         }
+        case "bgurl": {
+            var var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control");
+            var1Label.innerHTML = "URL";
+            var1Input.placeholder = "https://shopping.website.com";
+            var1Div.appendChild(var1Input);
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
+            var2Input.disabled = true;
+            var2Input.placeholder = "";
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            var var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Input.placeholder = "";
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
+        }
+        case "bgurls": {
+            var var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control");
+            var1Label.innerHTML = "-";
+            var1Input.placeholder = "From parents";
+            var1Input.disabled = true;
+            var1Div.appendChild(var1Input);
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
+            var2Input.disabled = true;
+            var2Input.placeholder = "";
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            var var3Input = document.createElement("input");
+            var3Input.name = "var3";
+            var3Input.id = "var3Input";
+            var3Input.value = var3Value;
+            var3Input.classList.add("form-control");
+            var3Input.disabled = true;
+            var3Input.placeholder = "";
+            var3Label.innerHTML = "-";
+            var3Div.appendChild(var3Input);
+            break;
+        }
         case "xpath": {
             var var1Input = document.createElement("input");
             var1Input.name = "var1";

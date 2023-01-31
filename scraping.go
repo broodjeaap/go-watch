@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
@@ -125,6 +126,14 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 	case filter.Type == "gurls":
 		{
 			getFilterResultURLs(filter, web.urlCache, debug)
+		}
+	case filter.Type == "bgurl":
+		{
+			getFilterResultBrowserlessURL(filter, web.urlCache, debug)
+		}
+	case filter.Type == "bgurls":
+		{
+			getFilterResultBrowserlessURLs(filter, web.urlCache, debug)
 		}
 	case filter.Type == "xpath":
 		{
@@ -250,6 +259,8 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, debug bool) 
 	}
 	str, err := getURLContent(filter, fetchURL)
 	if err != nil {
+		log.Println("Could not fetch url: ", fetchURL, " - ", err)
+		filter.log("Could not fetch url: ", fetchURL, " - ", err)
 		return
 	}
 	filter.Results = append(filter.Results, str)
@@ -270,6 +281,8 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 
 			str, err := getURLContent(filter, fetchURL)
 			if err != nil {
+				log.Println("Could not fetch url: ", fetchURL, " - ", err)
+				filter.log("Could not fetch url: ", fetchURL, " - ", err)
 				continue
 			}
 			filter.Results = append(filter.Results, str)
@@ -281,59 +294,99 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 }
 
 func getURLContent(filter *Filter, fetchURL string) (string, error) {
-	var body []byte
-	if viper.IsSet("browserless.url") {
-		browserlessURL := viper.GetString("browserless.url")
-		data := struct {
-			URL string `json:"url"`
-		}{
-			URL: fetchURL,
-		}
-		jsn, err := json.Marshal(data)
+	var httpClient *http.Client
+	if viper.IsSet("proxy.proxy_url") {
+		proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
 		if err != nil {
-			log.Println("Could not marshal url:", err)
-			filter.log("Could not marshal url:", err)
 			return "", err
 		}
-		resp, err := http.Post(browserlessURL, "application/json", bytes.NewBuffer(jsn))
-		if err != nil {
-			log.Println("Could not get browserless response content:", err)
-			filter.log("Could not get browserless response content:", err)
-			return "", err
-		}
-		body, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Println("Could not fetch url through browserless: ", fetchURL, " - ", err)
-			filter.log("Could not fetch url through browserless: ", fetchURL, " - ", err)
-			return "", err
-		}
+		httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
 	} else {
-		var httpClient *http.Client
-		if viper.IsSet("proxy.proxy_url") {
-			proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
-			if err != nil {
-				log.Println("Could not parse proxy url, check config")
-				filter.log("Could not parse proxy url, check config")
-				return "", err
-			}
-			httpClient = &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(proxyUrl)}}
-		} else {
-			httpClient = &http.Client{}
-		}
-		resp, err := httpClient.Get(fetchURL)
-		if err != nil {
-			log.Println("Could not fetch url: ", fetchURL, " - ", err)
-			filter.log("Could not fetch url: ", fetchURL, " - ", err)
-			return "", err
-		}
-		body, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Println("Could not fetch url: ", fetchURL, " - ", err)
-			filter.log("Could not fetch url: ", fetchURL, " - ", err)
-			return "", err
-		}
+		httpClient = &http.Client{}
+	}
+	resp, err := httpClient.Get(fetchURL)
+	if err != nil {
+		return "", err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
 	}
 
+	return string(body), nil
+}
+
+func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, debug bool) {
+	fetchURL := filter.Var1
+	val, exists := urlCache["b"+fetchURL]
+	if debug && exists {
+		filter.Results = append(filter.Results, val)
+		return
+	}
+	str, err := getBrowserlessURLContent(filter, fetchURL)
+	if err != nil {
+		log.Println("Could not fetch url: ", fetchURL, " - ", err)
+		filter.log("Could not fetch url: ", fetchURL, " - ", err)
+		return
+	}
+	filter.Results = append(filter.Results, str)
+	if debug {
+		urlCache["b"+fetchURL] = str
+	}
+}
+
+func getFilterResultBrowserlessURLs(filter *Filter, urlCache map[string]string, debug bool) {
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			fetchURL := result
+			val, exists := urlCache["b"+fetchURL]
+			if debug && exists {
+				filter.Results = append(filter.Results, val)
+				continue
+			}
+
+			str, err := getBrowserlessURLContent(filter, fetchURL)
+			if err != nil {
+				log.Println("Could not fetch url: ", fetchURL, " - ", err)
+				filter.log("Could not fetch url: ", fetchURL, " - ", err)
+				continue
+			}
+			filter.Results = append(filter.Results, str)
+			if debug {
+				urlCache["b"+fetchURL] = str
+			}
+		}
+	}
+}
+
+func getBrowserlessURLContent(filter *Filter, fetchURL string) (string, error) {
+	if !viper.IsSet("browserless.url") {
+		return "", errors.New("browserless.url not set")
+	}
+	browserlessURL := viper.GetString("browserless.url")
+	data := struct {
+		URL string `json:"url"`
+	}{
+		URL: fetchURL,
+	}
+	jsn, err := json.Marshal(data)
+	if err != nil {
+		log.Println("Could not marshal url:", err)
+		filter.log("Could not marshal url:", err)
+		return "", err
+	}
+	resp, err := http.Post(browserlessURL, "application/json", bytes.NewBuffer(jsn))
+	if err != nil {
+		log.Println("Could not get browserless response content:", err)
+		filter.log("Could not get browserless response content:", err)
+		return "", err
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Could not fetch url through browserless: ", fetchURL, " - ", err)
+		filter.log("Could not fetch url through browserless: ", fetchURL, " - ", err)
+		return "", err
+	}
 	return string(body), nil
 }
 
