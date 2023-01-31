@@ -8,3 +8,4 @@
 - browserless function filters
     - split get url http.get and browserless get into 2 filters
 - url path support
+- refactor project structure
