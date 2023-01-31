@@ -6,8 +6,15 @@
     - edit.ts
     - diagram.ts
 - browserless function filters
-    - ~~split get url http.get and browserless get into 2 filters~~
-        - ~~refactor amazon template~~
-    - ~~docs~~
+    - get url
+    - get urls
+    - goto url
+    - click elem
+    - basic auth
+    - set select
+    - set text input
+    - press key
+    - wait
+    - click x/y
 - url path support
 - refactor project structure
