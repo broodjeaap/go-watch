@@ -8,13 +8,19 @@
 - browserless function filters
     - get url
     - get urls
+    - session
+        - start
+        - end
     - goto url
     - click elem
+        - xpath
+        - css
     - basic auth
     - set select
     - set text input
     - press key
     - wait
-    - click x/y
+    - raw line
+    - just raw
 - url path support
 - refactor project structure
