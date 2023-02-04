@@ -244,6 +244,14 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 				{
 					getFilterResultBrowserlessURLs(filter, web.urlCache, debug)
 				}
+			case "func":
+				{
+					getBrowserlessFunctionResult(filter)
+				}
+			case "funcs":
+				{
+					getBrowserlessFunctionResults(filter)
+				}
 			}
 		}
 	case filter.Type == "echo":
@@ -384,6 +392,7 @@ func getBrowserlessURLContent(filter *Filter, fetchURL string) (string, error) {
 		filter.log("Could not marshal url:", err)
 		return "", err
 	}
+	browserlessURL = browserlessURL + "/content"
 	resp, err := http.Post(browserlessURL, "application/json", bytes.NewBuffer(jsn))
 	if err != nil {
 		log.Println("Could not get browserless response content:", err)
@@ -396,6 +405,74 @@ func getBrowserlessURLContent(filter *Filter, fetchURL string) (string, error) {
 		filter.log("Could not fetch url through browserless: ", fetchURL, " - ", err)
 		return "", err
 	}
+	return string(body), nil
+}
+
+func getBrowserlessFunctionResult(filter *Filter) {
+	result, err := getBrowserlessFunctionContent(filter, "")
+	if err != nil {
+		log.Println(err)
+		filter.log(err)
+		return
+	}
+	filter.Results = append(filter.Results, result)
+}
+
+func getBrowserlessFunctionResults(filter *Filter) {
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			fetchURL := result
+
+			str, err := getBrowserlessFunctionContent(filter, fetchURL)
+			if err != nil {
+				log.Println(err)
+				filter.log(err)
+				continue
+			}
+			filter.Results = append(filter.Results, str)
+		}
+	}
+}
+
+type BrowserlessContext struct {
+	Result string `json:"result"`
+}
+
+func getBrowserlessFunctionContent(filter *Filter, result string) (string, error) {
+	if !viper.IsSet("browserless.url") {
+
+		return "", errors.New("browserless.url not set")
+	}
+	browserlessURL := viper.GetString("browserless.url")
+	if filter.Var2 == nil {
+		return "", errors.New("filter.Var2 == nil")
+	}
+	code := *filter.Var2
+	data := struct {
+		Code     string             `json:"code"`
+		Context  BrowserlessContext `json:"context"`
+		Detached bool               `json:"detached"`
+	}{
+		Code:     code,
+		Context:  BrowserlessContext{Result: result},
+		Detached: false,
+	}
+	jsn, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	browserlessURL = browserlessURL + "/function"
+	resp, err := http.Post(browserlessURL, "application/json", bytes.NewBuffer(jsn))
+	if err != nil {
+		return "", err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
 	return string(body), nil
 }
 

@@ -614,65 +614,15 @@ function onTypeChange(node: DiagramNode | null = null){
             gurlsOption.innerHTML = "Get URLs";
             browserlessSelect.appendChild(gurlsOption);
             
-            let startOption = document.createElement("option");
-            startOption.value = "start"
-            startOption.innerHTML = "Start Session";
-            browserlessSelect.appendChild(startOption);
+            let funcOption = document.createElement("option");
+            funcOption.value = "func"
+            funcOption.innerHTML = "Function";
+            browserlessSelect.appendChild(funcOption);
             
-            let endOption = document.createElement("option");
-            endOption.value = "end"
-            endOption.innerHTML = "End Session";
-            browserlessSelect.appendChild(endOption);
-            
-            let gotoOption = document.createElement("option");
-            gotoOption.value = "go"
-            gotoOption.innerHTML = "Goto URL";
-            browserlessSelect.appendChild(gotoOption);
-            
-            let cssOption = document.createElement("option");
-            cssOption.value = "css"
-            cssOption.innerHTML = "Click CSS Element";
-            browserlessSelect.appendChild(cssOption);
-
-            let xpathOption = document.createElement("option");
-            xpathOption.value = "xpath"
-            xpathOption.innerHTML = "Click XPath Element";
-            browserlessSelect.appendChild(xpathOption);
-
-            let authOption = document.createElement("option");
-            authOption.value = "auth"
-            authOption.innerHTML = "Authenticate";
-            browserlessSelect.appendChild(authOption);
-
-            let selectOption = document.createElement("option");
-            selectOption.value = "select"
-            selectOption.innerHTML = "Set Dropdown";
-            browserlessSelect.appendChild(selectOption);
-
-            let inputOption = document.createElement("option");
-            inputOption.value = "input"
-            inputOption.innerHTML = "Set Input";
-            browserlessSelect.appendChild(inputOption);
-
-            let keyOption = document.createElement("option");
-            keyOption.value = "key"
-            keyOption.innerHTML = "Press Key";
-            browserlessSelect.appendChild(keyOption);
-
-            let waitOption = document.createElement("option");
-            waitOption.value = "wait"
-            waitOption.innerHTML = "Wait";
-            browserlessSelect.appendChild(waitOption);
-
-            let lineOption = document.createElement("option");
-            lineOption.value = "line"
-            lineOption.innerHTML = "Raw Line";
-            browserlessSelect.appendChild(lineOption);
-
-            let rawOption = document.createElement("option");
-            rawOption.value = "raw"
-            rawOption.innerHTML = "Raw Function";
-            browserlessSelect.appendChild(rawOption);
+            let funcsOption = document.createElement("option");
+            funcsOption.value = "funcs"
+            funcsOption.innerHTML = "Function on results";
+            browserlessSelect.appendChild(funcsOption);
             
             var1Div.appendChild(browserlessSelect);
 
@@ -885,7 +835,8 @@ end
                 gap.classList.add("m-1", "xs");
                 snippetDiv.appendChild(gap);
             }
-            var1Div.appendChild(snippetDiv);
+            var2Label.innerHTML = "Snippets";
+            var2Div.appendChild(snippetDiv);
 
             let var2Input = document.createElement("input");
             var2Input.name = "var2";
@@ -954,7 +905,6 @@ function onConditionChange(node: DiagramNode | null = null){
     let var1Value = "";
     let var2Value = "";
     let var3Value = "";
-    console.log(node, var1Input.value)
     if (node != null){
         // @ts-ignore
         var1Value = node.meta.var1;
@@ -1029,11 +979,11 @@ function onBrowserlessChange(node: DiagramNode | null = null){
     let var3Input = document.getElementById("var3Input") as HTMLInputElement;
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
     let var3Div = document.getElementById("var3Div") as HTMLDivElement;
+    var3Div.innerHTML = "";
 
     let var1Value = "";
     let var2Value = "";
     let var3Value = "";
-    console.log(node, var1Input.value)
     if (node != null){
         // @ts-ignore
         var1Value = node.meta.var1;
@@ -1056,10 +1006,109 @@ function onBrowserlessChange(node: DiagramNode | null = null){
             var2Input.value = var2Value;
             var2Input.classList.add("form-control")
             var2Label.innerHTML = "URL";
-            var2Div.appendChild(var2Input)
+            var2Div.appendChild(var2Input);
             break;
         }
         case "gurls": {
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = "";
+            var2Input.disabled = true;
+            var2Input.classList.add("form-control")
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            break;
+        }
+        case "func": {
+            let var2Input = document.createElement("textarea");
+            var2Input.name = "var2Input";
+            var2Input.id = "var2Input";
+            var2Input.value = `module.exports = async ({ page, context }) => {
+  await page.goto("https://192.168.178.254:8000");
+
+  const data = await page.content();
+
+  return {
+    data,
+    type: 'text/plain', // 'application/html' 'application/json'
+  };
+};`;
+            var2Input.classList.add("form-control");
+            var2Input.rows = 15;
+            var2Label.innerHTML = "Code";
+            var2Div.appendChild(var2Input);
+
+            if (var2Value != ""){
+                var2Input.value = var2Value;
+            }
+
+            let var3Input = document.createElement("input");
+            var3Input.type = "hidden";
+            var3Input.id = "var3Input";
+            var3Input.name = "var3Input";
+            var3Div.appendChild(var3Input);
+
+            var3Label.innerHTML = "Help";
+            let helpLink1 = document.createElement("a");
+            helpLink1.href = "https://www.browserless.io/docs/function";
+            helpLink1.innerHTML = "Browserless /Funcion";
+            helpLink1.target = "_blank";
+            helpLink1.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink1);
+
+            let helpLink2 = document.createElement("a");
+            helpLink2.href = "https://pptr.dev/api/puppeteer.page";
+            helpLink2.innerHTML = "Puppeteer Page";
+            helpLink2.target = "_blank";
+            helpLink2.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink2);
+            break;
+        }
+        case "funcs":{
+            let var2Input = document.createElement("textarea");
+            var2Input.name = "var2Input";
+            var2Input.id = "var2Input";
+            var2Input.value = `module.exports = async ({ page, context }) => {
+  const { result } = context;
+  await page.goto(result);
+
+  const data = await page.content();
+
+  return {
+    data,
+    type: 'text/plain', // 'application/html' 'application/json'
+  };
+};`;
+            var2Input.classList.add("form-control");
+            var2Input.rows = 15;
+            var2Label.innerHTML = "Code";
+            var2Div.appendChild(var2Input);
+
+            if (var2Value != ""){
+                var2Input.value = var2Value;
+            }
+
+            let var3Input = document.createElement("input");
+            var3Input.type = "hidden";
+            var3Input.id = "var3Input";
+            var3Input.name = "var3Input";
+            var3Div.appendChild(var3Input);
+
+            var3Label.innerHTML = "Help";
+            let helpLink1 = document.createElement("a");
+            helpLink1.href = "https://www.browserless.io/docs/function";
+            helpLink1.innerHTML = "Browserless /Funcion";
+            helpLink1.target = "_blank";
+            helpLink1.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink1);
+
+            let helpLink2 = document.createElement("a");
+            helpLink2.href = "https://pptr.dev/api/puppeteer.page";
+            helpLink2.innerHTML = "Puppeteer Page";
+            helpLink2.target = "_blank";
+            helpLink2.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink2);
             break;
         }
     }

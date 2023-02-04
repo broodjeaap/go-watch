@@ -626,54 +626,14 @@ function onTypeChange(node) {
             gurlsOption.value = "gurls";
             gurlsOption.innerHTML = "Get URLs";
             browserlessSelect.appendChild(gurlsOption);
-            var startOption = document.createElement("option");
-            startOption.value = "start";
-            startOption.innerHTML = "Start Session";
-            browserlessSelect.appendChild(startOption);
-            var endOption = document.createElement("option");
-            endOption.value = "end";
-            endOption.innerHTML = "End Session";
-            browserlessSelect.appendChild(endOption);
-            var gotoOption = document.createElement("option");
-            gotoOption.value = "go";
-            gotoOption.innerHTML = "Goto URL";
-            browserlessSelect.appendChild(gotoOption);
-            var cssOption = document.createElement("option");
-            cssOption.value = "css";
-            cssOption.innerHTML = "Click CSS Element";
-            browserlessSelect.appendChild(cssOption);
-            var xpathOption = document.createElement("option");
-            xpathOption.value = "xpath";
-            xpathOption.innerHTML = "Click XPath Element";
-            browserlessSelect.appendChild(xpathOption);
-            var authOption = document.createElement("option");
-            authOption.value = "auth";
-            authOption.innerHTML = "Authenticate";
-            browserlessSelect.appendChild(authOption);
-            var selectOption = document.createElement("option");
-            selectOption.value = "select";
-            selectOption.innerHTML = "Set Dropdown";
-            browserlessSelect.appendChild(selectOption);
-            var inputOption = document.createElement("option");
-            inputOption.value = "input";
-            inputOption.innerHTML = "Set Input";
-            browserlessSelect.appendChild(inputOption);
-            var keyOption = document.createElement("option");
-            keyOption.value = "key";
-            keyOption.innerHTML = "Press Key";
-            browserlessSelect.appendChild(keyOption);
-            var waitOption = document.createElement("option");
-            waitOption.value = "wait";
-            waitOption.innerHTML = "Wait";
-            browserlessSelect.appendChild(waitOption);
-            var lineOption = document.createElement("option");
-            lineOption.value = "line";
-            lineOption.innerHTML = "Raw Line";
-            browserlessSelect.appendChild(lineOption);
-            var rawOption = document.createElement("option");
-            rawOption.value = "raw";
-            rawOption.innerHTML = "Raw Function";
-            browserlessSelect.appendChild(rawOption);
+            var funcOption = document.createElement("option");
+            funcOption.value = "func";
+            funcOption.innerHTML = "Function";
+            browserlessSelect.appendChild(funcOption);
+            var funcsOption = document.createElement("option");
+            funcsOption.value = "funcs";
+            funcsOption.innerHTML = "Function on results";
+            browserlessSelect.appendChild(funcsOption);
             var1Div.appendChild(browserlessSelect);
             if (var1Value == "") {
                 browserlessSelect.value = "gurl";
@@ -754,7 +714,8 @@ function onTypeChange(node) {
                 }
                 finally { if (e_2) throw e_2.error; }
             }
-            var1Div.appendChild(snippetDiv);
+            var2Label.innerHTML = "Snippets";
+            var2Div.appendChild(snippetDiv);
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
@@ -820,7 +781,6 @@ function onConditionChange(node) {
     var var1Value = "";
     var var2Value = "";
     var var3Value = "";
-    console.log(node, var1Input.value);
     if (node != null) {
         // @ts-ignore
         var1Value = node.meta.var1;
@@ -903,10 +863,10 @@ function onBrowserlessChange(node) {
     var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
     var var3Div = document.getElementById("var3Div");
+    var3Div.innerHTML = "";
     var var1Value = "";
     var var2Value = "";
     var var3Value = "";
-    console.log(node, var1Input.value);
     if (node != null) {
         // @ts-ignore
         var1Value = node.meta.var1;
@@ -932,6 +892,78 @@ function onBrowserlessChange(node) {
             break;
         }
         case "gurls": {
+            var var2Input_4 = document.createElement("input");
+            var2Input_4.name = "var2";
+            var2Input_4.id = "var2Input";
+            var2Input_4.value = "";
+            var2Input_4.disabled = true;
+            var2Input_4.classList.add("form-control");
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input_4);
+            break;
+        }
+        case "func": {
+            var var2Input_5 = document.createElement("textarea");
+            var2Input_5.name = "var2Input";
+            var2Input_5.id = "var2Input";
+            var2Input_5.value = "module.exports = async ({ page, context }) => {\n  await page.goto(\"https://192.168.178.254:8000\");\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
+            var2Input_5.classList.add("form-control");
+            var2Input_5.rows = 15;
+            var2Label.innerHTML = "Code";
+            var2Div.appendChild(var2Input_5);
+            if (var2Value != "") {
+                var2Input_5.value = var2Value;
+            }
+            var var3Input_1 = document.createElement("input");
+            var3Input_1.type = "hidden";
+            var3Input_1.id = "var3Input";
+            var3Input_1.name = "var3Input";
+            var3Div.appendChild(var3Input_1);
+            var3Label.innerHTML = "Help";
+            var helpLink1 = document.createElement("a");
+            helpLink1.href = "https://www.browserless.io/docs/function";
+            helpLink1.innerHTML = "Browserless /Funcion";
+            helpLink1.target = "_blank";
+            helpLink1.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink1);
+            var helpLink2 = document.createElement("a");
+            helpLink2.href = "https://pptr.dev/api/puppeteer.page";
+            helpLink2.innerHTML = "Puppeteer Page";
+            helpLink2.target = "_blank";
+            helpLink2.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink2);
+            break;
+        }
+        case "funcs": {
+            var var2Input_6 = document.createElement("textarea");
+            var2Input_6.name = "var2Input";
+            var2Input_6.id = "var2Input";
+            var2Input_6.value = "module.exports = async ({ page, context }) => {\n  const { result } = context;\n  await page.goto(result);\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
+            var2Input_6.classList.add("form-control");
+            var2Input_6.rows = 15;
+            var2Label.innerHTML = "Code";
+            var2Div.appendChild(var2Input_6);
+            if (var2Value != "") {
+                var2Input_6.value = var2Value;
+            }
+            var var3Input_2 = document.createElement("input");
+            var3Input_2.type = "hidden";
+            var3Input_2.id = "var3Input";
+            var3Input_2.name = "var3Input";
+            var3Div.appendChild(var3Input_2);
+            var3Label.innerHTML = "Help";
+            var helpLink1 = document.createElement("a");
+            helpLink1.href = "https://www.browserless.io/docs/function";
+            helpLink1.innerHTML = "Browserless /Funcion";
+            helpLink1.target = "_blank";
+            helpLink1.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink1);
+            var helpLink2 = document.createElement("a");
+            helpLink2.href = "https://pptr.dev/api/puppeteer.page";
+            helpLink2.innerHTML = "Puppeteer Page";
+            helpLink2.target = "_blank";
+            helpLink2.classList.add("btn", "btn-outline-secondary", "btn-sm", "xs");
+            var3Div.appendChild(helpLink2);
             break;
         }
     }
