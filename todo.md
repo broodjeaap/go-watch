@@ -6,4 +6,8 @@
     - edit.ts
     - diagram.ts
 - config in config?
+    - gin
+        - router
+    - logging?
 - refactor project structure
+- need var3? 
