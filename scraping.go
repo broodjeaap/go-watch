@@ -63,8 +63,9 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 		currentFilters = append(currentFilters, filter)
 	}
 
-	// collect 'store' filters so we can process them separately  at the end
-	storeFilters := make([]*Filter, 0)
+	// collect 'store' and 'notify' filters so we can process them separately  at the end
+	storeFilters := make([]*Filter, 0, 5)
+	notifyFilters := make([]*Filter, 0, 5)
 
 	for {
 		nextFilters := make([]*Filter, 0, len(currentFilters))
@@ -87,6 +88,9 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 				getFilterResultEcho(filter)
 				processedMap[filter.ID] = true
 				continue
+			}
+			if debug && filter.Type == "notify" {
+				notifyFilters = append(notifyFilters, filter)
 			}
 			if len(filter.Parents) == 0 && !debug {
 				continue
@@ -114,6 +118,16 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 	// process the store filters last
 	for _, storeFilter := range storeFilters {
 		getFilterResult(filters, storeFilter, watch, web, debug)
+	}
+
+	// process the notify filters when editing, so it still logs and can put the message in results
+	if debug {
+		for _, nFilter := range notifyFilters {
+			if len(nFilter.Results) == 0 {
+				notifyFilter(filters, nFilter, watch, web, debug)
+				log.Println(nFilter.Results)
+			}
+		}
 	}
 }
 
@@ -1086,7 +1100,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 			haveResults = true
 		}
 	}
-	if !haveResults {
+	if !debug && !haveResults {
 		return
 	}
 	tmpl, err := template.New("notify").Parse(filter.Var1)
@@ -1099,6 +1113,10 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 	dataMap := make(map[string]any, 20)
 	for _, f := range filters {
 		dataMap[f.Name] = template.HTML(strings.Join(f.Results, ", "))
+		dataMap[f.Name+"_Type"] = f.Type
+		dataMap[f.Name+"_Var1"] = f.Var1
+		dataMap[f.Name+"_Var2"] = f.Var2
+		dataMap[f.Name+"_Var3"] = f.Var3
 	}
 
 	dataMap["WatchName"] = template.HTML(watch.Name)
@@ -1106,7 +1124,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 	var buffer bytes.Buffer
 	tmpl.Execute(&buffer, dataMap)
 	if debug {
-		log.Println(buffer.String())
+		filter.Results = append(filter.Results, buffer.String())
 	} else {
 		notifier := filter.Var2
 		if notifier == nil {
