@@ -696,7 +696,7 @@ func getFilterResultSubstring(filter *Filter) {
 }
 
 func getFilterResultContains(filter *Filter) {
-	substring := filter.Var1
+	r, err := regexp.Compile(filter.Var1)
 	invert, err := strconv.ParseBool(*filter.Var2)
 	if err != nil {
 		invert = false
@@ -704,7 +704,7 @@ func getFilterResultContains(filter *Filter) {
 
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			contains := strings.Contains(result, substring)
+			contains := r.MatchString(result)
 			if contains && !invert {
 				filter.Results = append(filter.Results, result)
 			} else if !contains && invert {
