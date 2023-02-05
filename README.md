@@ -124,7 +124,7 @@ docker run \
 ```
 ### Compose templates
 
-There are a few docker-compose templates in the [docs/compose](https://github.com/broodjeaap/go-watch/tree/master/docs/compose) directory that can downloaded and used as starting points.  
+There are a few docker-compose templates in the [docs/compose](https://github.com/broodjeaap/go-watch/tree/master/docs/compose) directory that can be downloaded and used as starting points.  
 For example, if you want to set up GoWatch with Browserless, Apprise and a PostgreSQL database backend:  
 `wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/docs/compose/apprise-browserless-postgresql.yml -O ./docker-compose.yml`
 
@@ -193,7 +193,7 @@ The config can be used to proxy HTTP/HTTPS requests through a proxy:
 proxy:
   proxy_url: http://proxy.com:1234
 ```
-This will not work for requests made through Lua filters, but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
+This will not work for requests made through Lua filters or Browserless but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
 ```
 services:
   app:
@@ -230,7 +230,7 @@ An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squ
 
 ## Reverse Proxy
 
-GoWatch can be run behind a reverse proxy, if it's hosted under a subdomain (https://gowatch.domain.tld), not changes to the config are needed.  
+GoWatch can be run behind a reverse proxy, if it's hosted under a subdomain (https://gowatch.domain.tld), no changes to the config are needed.  
 But if you want to run GoWatch under a path (https://domain.tld/gowatch), you can set the `gin.urlprefix` value in the config or the `GOWATCH_URLPREFIX` environment variable can be used.  
 ```
 gin:
@@ -240,10 +240,10 @@ gin:
 ## Browserless
 
 Some websites (Amazon for example) don't send all content on the first request, it's added later through javascript.  
-To still be able to watch products from these websites, GoWatch supports [Browserless](https://www.browserless.io/), the Browserless URL can be added to the config:  
+To still be able to watch products from these types of websites, GoWatch supports [Browserless](https://www.browserless.io/), the Browserless URL can be added to the config:  
 ```
 browserless:
-  url: http://your.browserless:3000/content
+  url: http://your.browserless:3000
 ```
 
 Or as an environment variable, for example in a docker-compose:  
@@ -255,7 +255,7 @@ services:
     image: ghcr.io/broodjeaap/go-watch:latest
     container_name: go-watch
     environment:
-    - GOWATCH_BROWSERLESS_URL=http://browserless:3000/content
+    - GOWATCH_BROWSERLESS_URL=http://browserless:3000
     volumes:
     - /host/path/to/config:/config
     ports:
@@ -326,7 +326,7 @@ GoWatch comes with many filters that cover most typical use cases.
 The `cron` filter is used to schedule when your watch will run.  
 It uses the [cron](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0#section-readme) package to schedule Go routines, some common examples would be:  
 - `@every 15m`: will trigger every 15 minutes starting on server start.
-- `@hourly`: will trigger every beginning of hour.
+- `@hourly`: will trigger on the hour.
 - `30 * * * *`: will trigger every hour on the half hour.  
 
 More detailed instructions can be found in its documentation.
@@ -334,7 +334,7 @@ More detailed instructions can be found in its documentation.
 ## Get URL
 
 Fetches the given URL and outputs the HTTP response.  
-For more complicated requests, POSTing/headers/login, use the [HTTP functionality](https://github.com/vadv/gopher-lua-libs/tree/master/http#client-1) in the Lua filter.  
+For more complicated requests, POSTing/headers/login, use the [HTTP functionality](https://github.com/vadv/gopher-lua-libs/tree/master/http#client-1) in the Lua filter (snippets for these requests are availble from the web UI).  
 During editing, http requests are cached, so not to trigger any DOS protection on your sources.
 
 ## Get URLs
@@ -356,9 +356,9 @@ The [XPath](https://github.com/antchfx/xpath) package is used for this filter, c
 
 Use a this to filter your JSON responses, the [gjson](https://github.com/tidwall/gjson) package is used for this filter.  
 Some common examples would be:  
-- product.price
-- items.3
-- products.#.price
+- `product.price`
+- `items.3`
+- `products.#.price`
 
 ## Replace
 
@@ -381,7 +381,7 @@ For the input string 'Hello World!':
 
 ## Contains
 
-Inputs pass if they contain the given value.
+Inputs pass if they contain the given regex.
 
 ## Store
 
@@ -391,9 +391,12 @@ It's recommended to do this after reducing inputs to a single value (Minimum/Max
 ## Notify
 
 Executes the given template and sends the resulting string as a message to the given notifier(s).  
-It uses the [Golang templating language](https://pkg.go.dev/text/template), the outputs of all the filters can be used by the name of the filters.  
-So if you have a `Min` filter like in the example, it can be referenced in the template by using `{{ .Min }}`.  
-The name of the watch is also included under `.WatchName`.  
+It uses the [Golang templating language](https://pkg.go.dev/text/template), filters are available by their name, so for the filter named `Min` in the intro:  
+- `{{ .Min }}` gets the results (Multiple values get joined by `, `)
+- `{{ .Min_Type }}` gets the type of the filter
+- `{{ .Min_Var1 }}` gets the first variable, useful for Get URL filters or Schedule filters
+- `{{ .Min_Var2 }}` gets the second variable
+- `{{ .Min_Var3 }}` gets the third variable
 
 To configure notifiers see the [notifiers](#notifiers) section.
 
@@ -413,7 +416,7 @@ Outputs the average of the inputs, nonnumerical values are skipped.
 ### Count
 Outputs the number of inputs.
 ### Round
-Outputs the inputs rounded to the given decimals, nonnumerical valuesa are skipped.
+Outputs the inputs rounded to the given decimals, nonnumerical values are skipped.
 ## Condition
 
 ### Different Than Last
