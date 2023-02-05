@@ -44,6 +44,11 @@ A change detection server that can notify through various services, written in G
     - [Higher Than Last](#higher-than-last)
     - [Highest](#highest)
     - [Higher Than](#higher-than)
+  - [Browserless](#browserless-1)
+    - [Browserless Get URL](#browserless-get-url)
+    - [Browserless Get URLs](#browserless-get-urls)
+    - [Browserless Function](#browserless-function)
+    - [Browserless Function On Results](#browserless-function-on-results)
   - [Lua](#lua)
 - [Notifiers](#notifiers)
   - [Shoutrrr](#shoutrrr)
@@ -259,7 +264,7 @@ services:
     image: browserless/chrome:latest
 ```
 
-To use Browserless, the [Browserless Get URL](#browserless-get-url) and [Browserless](#browserless-get-urls) filters must be used.  
+To use Browserless, the [Browserless Get URL](#browserless-get-url), [Browserless Get URLs](#browserless-get-urls), [Browserless Function](#browserless-function) or [Browserless Function on result](#browserless-function-on-results) filters must be used.  
 Note that the proxy environment variables can be added to the Browserless container to still allow for proxying.
 
 ## Authentication
@@ -336,16 +341,6 @@ During editing, http requests are cached, so not to trigger any DOS protection o
 
 Fetches every URL given as input and outputs every HTTP response.  
 During editing, http requests are cached, so not to trigger any DOS protection on your sources.
-
-## Browserless Get URL
-
-Fetches the given URL through [Browserless](#browserless) and outputs the HTTP response.  
-Will log an error if no Browserless instance is configured.
-
-## Browserless Get URLs
-
-Fetches every URL given as input through [Browserless](#browserless) and outputs every HTTP response.  
-Will log an error if no Browserless instance is configured.
 
 ## CSS
 
@@ -447,6 +442,26 @@ Passes an input if it is higher than all previous stored values.
 ### Higher Than
 
 Passes an input if it is higher than a given value.
+
+## Browserless
+
+
+### Browserless Get URL
+
+Fetches the given URL through [Browserless](#browserless) and outputs the HTTP response.  
+Will log an error if no Browserless instance is configured.
+
+### Browserless Get URLs
+
+Fetches every URL given as input through [Browserless](#browserless) and outputs every HTTP response.  
+Will log an error if no Browserless instance is configured.
+
+### Browserless Function
+
+Executes the given [Puppeteer](https://github.com/puppeteer/puppeteer) [function](https://www.browserless.io/docs/function) in a Browserless session.  
+
+### Browserless Function On Results
+Executes the given [Puppeteer](https://github.com/puppeteer/puppeteer) [function](https://www.browserless.io/docs/function) in a Browserless session for every result.  
 
 ## Lua
 
