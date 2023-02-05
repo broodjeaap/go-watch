@@ -5,5 +5,5 @@
     - util.go
     - edit.ts
     - diagram.ts
-- url path support
+- config in config?
 - refactor project structure

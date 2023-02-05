@@ -3,7 +3,7 @@ GoWatch Backups
 {{end}}
 
 {{define "head"}}
-<script src="/static/backup.js"></script>
+<script src="{{.urlPrefix}}static/backup.js"></script>
 {{ end }}
 
 {{define "content"}}
@@ -30,7 +30,7 @@ GoWatch Backups
         <tbody>
             <tr>
                 <td>
-                    <form id="uploadForm" action="/backup/restore" enctype="multipart/form-data" method="POST">
+                    <form id="uploadForm" action="{{.urlPrefix}}backup/restore" enctype="multipart/form-data" method="POST">
                         <input type="hidden" value="-1" name="id">
                         <input class="form-control" type="file" id="upload" name="upload">
                     </form>
@@ -48,25 +48,25 @@ GoWatch Backups
             <tr>
                 <td class="h5">{{ $backup }}</td>
                 <td>
-                    <form action="/backup/test" enctype="multipart/form-data" method="POST">
+                    <form action="{{$.urlPrefix}}backup/test" enctype="multipart/form-data" method="POST">
                         <input type="hidden" value="{{ $i }}" name="id">
                         <button class="btn btn-success">Test</button>
                     </form>
                 </td>
                 <td>
-                    <form action="/backup/restore" enctype="multipart/form-data" method="POST">
+                    <form action="{{$.urlPrefix}}backup/restore" enctype="multipart/form-data" method="POST">
                         <input type="hidden" value="{{ $i }}" name="id">
                         <button class="btn btn-warning">Restore</button>
                     </form>
                 </td>
                 <td>
-                    <form action="/backup/delete" enctype="multipart/form-data" method="POST">
+                    <form action="{{$.urlPrefix}}backup/delete" enctype="multipart/form-data" method="POST">
                         <input type="hidden" value="{{ $i }}" name="id">
                         <button class="btn btn-danger">Delete</button>
                     </form>
                 </td>
                 <td>
-                    <a href="/backup/download/{{ $i }}" class="btn btn-secondary">
+                    <a href="{{$.urlPrefix}}backup/download/{{ $i }}" class="btn btn-secondary">
                         Download
                     </a>
                 </td>
@@ -74,7 +74,7 @@ GoWatch Backups
             {{ end }}
         </tbody>
     </table>
-    <a href="/backup/create" class="btn btn-warning btn-lg">
+    <a href="{{.urlPrefix}}backup/create" class="btn btn-warning btn-lg">
         Backup Now
     </a>
 </div>

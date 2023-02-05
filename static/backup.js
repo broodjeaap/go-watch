@@ -1,11 +1,13 @@
+// @ts-ignore
+var urlPrefix = getURLPrefix();
 function testSubmit() {
     var form = document.getElementById("uploadForm");
-    form.action = "/backup/test";
+    form.action = urlPrefix + "backup/test";
     form.submit();
 }
 function restoreSubmit() {
     var form = document.getElementById("uploadForm");
-    form.action = "/backup/restore";
+    form.action = urlPrefix + "backup/restore";
     form.submit();
 }
 function initUploadSubmit() {

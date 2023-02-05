@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -46,6 +47,7 @@ type Web struct {
 	db              *gorm.DB                      // gorm db instance
 	notifiers       map[string]notifiers.Notifier // holds notifierName -> notifier
 	startupWarnings []string                      // simple list of warnings/errors found during startup, displayed on / page
+	urlPrefix       string                        // allows gowatch to run behind a reverse proxy on a subpath
 }
 
 // NewWeb creates a new web instance and calls .init() before returning it
@@ -168,39 +170,49 @@ func (web *Web) initDB() {
 func (web *Web) initRouter() {
 	web.router = gin.Default()
 
+	web.initTemplates()
+	web.router.HTMLRender = web.templates
+
+	if viper.IsSet("gin.urlprefix") {
+		urlPrefix := viper.GetString("gin.urlprefix")
+		urlPrefix = path.Join("/", urlPrefix) + "/"
+		web.urlPrefix = urlPrefix
+		log.Println("Running under path: " + web.urlPrefix)
+	} else {
+		web.urlPrefix = "/"
+	}
+
 	staticFS, err := fs.Sub(EMBED_FS, "static")
 	if err != nil {
 		log.Fatalln("Could not load static embed fs")
 	}
-	web.router.StaticFS("/static", http.FS(staticFS))
-	web.router.StaticFileFS("/favicon.ico", "favicon.ico", http.FS(staticFS))
+	web.router.StaticFS(web.urlPrefix+"static", http.FS(staticFS))
+	web.router.StaticFileFS(web.urlPrefix+"favicon.ico", "favicon.ico", http.FS(staticFS))
 
-	web.initTemplates()
-	web.router.HTMLRender = web.templates
+	gowatch := web.router.Group(web.urlPrefix)
 
-	web.router.GET("/", web.index)
+	gowatch.GET("", web.index)
+	gowatch.GET("watch/view/:id", web.watchView)
+	gowatch.GET("watch/edit/:id", web.watchEdit)
+	gowatch.GET("watch/create", web.watchCreate)
+	gowatch.POST("watch/create", web.watchCreatePost)
+	gowatch.POST("watch/update", web.watchUpdate)
+	gowatch.POST("watch/delete", web.deleteWatch)
+	gowatch.GET("watch/export/:id", web.exportWatch)
+	gowatch.POST("watch/import/:id", web.importWatch)
 
-	web.router.GET("/watch/view/:id", web.watchView)
-	web.router.GET("/watch/edit/:id", web.watchEdit)
-	web.router.GET("/watch/create", web.watchCreate)
-	web.router.POST("/watch/create", web.watchCreatePost)
-	web.router.POST("/watch/update", web.watchUpdate)
-	web.router.POST("/watch/delete", web.deleteWatch)
-	web.router.GET("/watch/export/:id", web.exportWatch)
-	web.router.POST("/watch/import/:id", web.importWatch)
+	gowatch.GET("cache/view", web.cacheView)
+	gowatch.POST("cache/clear", web.cacheClear)
 
-	web.router.GET("/cache/view", web.cacheView)
-	web.router.POST("/cache/clear", web.cacheClear)
+	gowatch.GET("notifiers/view", web.notifiersView)
+	gowatch.POST("notifiers/test", web.notifiersTest)
 
-	web.router.GET("/notifiers/view", web.notifiersView)
-	web.router.POST("/notifiers/test", web.notifiersTest)
-
-	web.router.GET("/backup/view", web.backupView)
-	web.router.GET("/backup/create", web.backupCreate)
-	web.router.POST("/backup/test", web.backupTest)
-	web.router.POST("/backup/restore", web.backupRestore)
-	web.router.POST("/backup/delete", web.backupDelete)
-	web.router.GET("/backup/download/:id", web.backupDownload)
+	gowatch.GET("backup/view", web.backupView)
+	gowatch.GET("backup/create", web.backupCreate)
+	gowatch.POST("backup/test", web.backupTest)
+	gowatch.POST("backup/restore", web.backupRestore)
+	gowatch.POST("backup/delete", web.backupDelete)
+	gowatch.GET("backup/download/:id", web.backupDownload)
 
 	web.router.SetTrustedProxies(nil)
 }
@@ -448,14 +460,18 @@ func (web *Web) index(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "index", gin.H{
-		"watches":  watches,
-		"warnings": web.startupWarnings,
+		"watches":   watches,
+		"warnings":  web.startupWarnings,
+		"urlPrefix": web.urlPrefix,
 	})
 }
 
 // notifiersView (/notifiers/view) shows the notifiers and a test button
 func (web *Web) notifiersView(c *gin.Context) {
-	c.HTML(http.StatusOK, "notifiersView", web.notifiers)
+	c.HTML(http.StatusOK, "notifiersView", gin.H{
+		"notifiers": web.notifiers,
+		"urlPrefix": web.urlPrefix,
+	})
 }
 
 // notifiersTest (/notifiers/test) sends a test message to notifier_name
@@ -463,11 +479,11 @@ func (web *Web) notifiersTest(c *gin.Context) {
 	notifierName := c.PostForm("notifier_name")
 	notifier, exists := web.notifiers[notifierName]
 	if !exists {
-		c.Redirect(http.StatusSeeOther, "/notifiers/view")
+		c.Redirect(http.StatusSeeOther, web.urlPrefix+"notifiers/view")
 		return
 	}
 	notifier.Message("GoWatch Test")
-	c.Redirect(http.StatusSeeOther, "/notifiers/view")
+	c.Redirect(http.StatusSeeOther, web.urlPrefix+"notifiers/view")
 }
 
 // watchCreate (/watch/create) allows user to create a new watch
@@ -486,6 +502,7 @@ func (web *Web) watchCreate(c *gin.Context) {
 	}
 	c.HTML(http.StatusOK, "watchCreate", gin.H{
 		"templates": templates,
+		"urlPrefix": web.urlPrefix,
 	})
 }
 
@@ -506,7 +523,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 
 	if templateID == 0 { // empty new watch
 		web.db.Create(&watch)
-		c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
+		c.Redirect(http.StatusSeeOther, fmt.Sprintf(web.urlPrefix+"watch/edit/%d", watch.ID))
 		return // nothing else to do
 	}
 
@@ -552,7 +569,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		}
 
 		if templateID > len(templateFiles) {
-			log.Println("/watch/create POSTed with", templateID, "but only", len(templateFiles), "templates")
+			log.Println(web.urlPrefix+"watch/create POSTed with", templateID, "but only", len(templateFiles), "templates")
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
@@ -621,7 +638,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 		}
 	}
 
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf(web.urlPrefix+"watch/edit/%d", watch.ID))
 }
 
 // deleteWatch (/watch/delete) removes a watch and it's cronjobs
@@ -629,7 +646,7 @@ func (web *Web) deleteWatch(c *gin.Context) {
 	id, err := strconv.Atoi(c.PostForm("watch_id"))
 	if err != nil {
 		log.Println(err)
-		c.Redirect(http.StatusSeeOther, "/")
+		c.Redirect(http.StatusSeeOther, web.urlPrefix)
 		return
 	}
 
@@ -648,7 +665,7 @@ func (web *Web) deleteWatch(c *gin.Context) {
 	web.db.Delete(&Filter{}, "watch_id = ?", id)
 
 	web.db.Delete(&Watch{}, id)
-	c.Redirect(http.StatusSeeOther, "/")
+	c.Redirect(http.StatusSeeOther, web.urlPrefix)
 }
 
 // watchView (/watch/view) shows the watch page with a graph and/or a table of stored values
@@ -703,6 +720,7 @@ func (web *Web) watchView(c *gin.Context) {
 		"numericalMap":   numericalMap,
 		"categoricalMap": categoricalMap,
 		"colorMap":       colorMap,
+		"urlPrefix":      web.urlPrefix,
 	})
 }
 
@@ -734,6 +752,7 @@ func (web *Web) watchEdit(c *gin.Context) {
 		"Filters":     filters,
 		"Connections": connections,
 		"Notifiers":   notifiers,
+		"urlPrefix":   web.urlPrefix,
 	})
 }
 
@@ -803,12 +822,15 @@ func (web *Web) watchUpdate(c *gin.Context) {
 		web.db.Create(&newConnections)
 	}
 
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watch.ID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf(web.urlPrefix+"watch/edit/%d", watch.ID))
 }
 
 // cacheView (/cache/view) shows the items in the web.urlCache
 func (web *Web) cacheView(c *gin.Context) {
-	c.HTML(http.StatusOK, "cacheView", web.urlCache)
+	c.HTML(http.StatusOK, "cacheView", gin.H{
+		"cache":     web.urlCache,
+		"urlPrefix": web.urlPrefix,
+	})
 }
 
 // cacheClear (/cache/clear) clears all items in web.urlCache
@@ -820,15 +842,24 @@ func (web *Web) cacheClear(c *gin.Context) {
 // backupView (/backup/view) lists the stored backups
 func (web *Web) backupView(c *gin.Context) {
 	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.schedule") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.schedule not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup.schedule not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.path not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup.path not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -836,13 +867,19 @@ func (web *Web) backupView(c *gin.Context) {
 
 	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
 	filesInBackupDir, err := ioutil.ReadDir(backupDir)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -852,7 +889,10 @@ func (web *Web) backupView(c *gin.Context) {
 		filePaths = append(filePaths, fullPath)
 	}
 
-	c.HTML(http.StatusOK, "backupView", gin.H{"Backups": filePaths})
+	c.HTML(http.StatusOK, "backupView", gin.H{
+		"Backups":   filePaths,
+		"urlPrefix": web.urlPrefix,
+	})
 }
 
 // backupCreate (/backup/create) creates a new backup
@@ -875,7 +915,7 @@ func (web *Web) backupCreate(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": err})
 		return
 	}
-	c.Redirect(http.StatusSeeOther, "/backup/view")
+	c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 }
 
 func (web *Web) scheduledBackup() {
@@ -984,7 +1024,7 @@ func (web *Web) backupTest(c *gin.Context) {
 		return
 	}
 	if importID < -1 {
-		c.Redirect(http.StatusSeeOther, "/backup/view")
+		c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 		return
 	}
 	if !viper.IsSet("database.backup") {
@@ -1016,6 +1056,7 @@ func (web *Web) backupTest(c *gin.Context) {
 	c.HTML(http.StatusOK, "backupTest", gin.H{
 		"Backup":     backup,
 		"BackupPath": backupFullPath,
+		"urlPrefix":  web.urlPrefix,
 	})
 }
 
@@ -1091,20 +1132,29 @@ func (web *Web) backupRestore(c *gin.Context) {
 		return
 	}
 	if importID < -1 {
-		c.Redirect(http.StatusSeeOther, "/backup/view")
+		c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 		return
 	}
 
 	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": "database.backup not set"})
+		c.HTML(http.StatusOK, "backupRestore", gin.H{
+			"Error":     "database.backup not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.schedule") {
-		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": "database.backup.schedule not set"})
+		c.HTML(http.StatusOK, "backupRestore", gin.H{
+			"Error":     "database.backup.schedule not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": "database.backup.path not set"})
+		c.HTML(http.StatusOK, "backupRestore", gin.H{
+			"Error":     "database.backup.path not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -1117,7 +1167,10 @@ func (web *Web) backupRestore(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupRestore", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -1149,13 +1202,17 @@ func (web *Web) backupRestore(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
-		c.HTML(http.StatusOK, "backupRestore", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupRestore", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
 	c.HTML(http.StatusOK, "backupRestore", gin.H{
 		"Backup":     backup,
 		"BackupPath": backupFullPath,
+		"urlPrefix":  web.urlPrefix,
 	})
 }
 
@@ -1167,7 +1224,7 @@ func (web *Web) backupDelete(c *gin.Context) {
 		return
 	}
 	if importID <= 0 {
-		c.Redirect(http.StatusSeeOther, "/backup/view")
+		c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 		return
 	}
 
@@ -1210,7 +1267,7 @@ func (web *Web) backupDelete(c *gin.Context) {
 		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
 		return
 	}
-	c.Redirect(http.StatusSeeOther, "/backup/view")
+	c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 }
 
 // backupDownload (/backup/download) serves the backup file in index 'id'
@@ -1221,7 +1278,7 @@ func (web *Web) backupDownload(c *gin.Context) {
 		return
 	}
 	if importID < 0 {
-		c.Redirect(http.StatusSeeOther, "/backup/view")
+		c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 		return
 	}
 
@@ -1397,7 +1454,7 @@ func (web *Web) importWatch(c *gin.Context) {
 		}
 	}
 
-	c.Redirect(http.StatusSeeOther, fmt.Sprintf("/watch/edit/%d", watchID))
+	c.Redirect(http.StatusSeeOther, fmt.Sprintf(web.urlPrefix+"watch/edit/%d", watchID))
 }
 
 func main() {

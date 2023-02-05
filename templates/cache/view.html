@@ -3,11 +3,11 @@ GoWatch URL Cache
 {{end}}
 
 {{define "content"}}
-{{ range $url, $content := . }}
+{{ range $url, $content := .cache }}
 <div class="card text-center">
     <div class="card-header">
         {{ $url }}
-        <form action="/cache/clear" method="post">
+        <form action="{{$.urlPrefix}}cache/clear" method="post">
             <input type="hidden" name="url" value="{{ $url }}">
             <input type="submit" class="btn btn-danger btn-sm" value="Clear">
         </form>

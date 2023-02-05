@@ -4,9 +4,13 @@
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="/static/bootstrap.5.2.0.min.css" rel="stylesheet">
-    <link href="/static/style.css" rel="stylesheet">
-    
+    <link href="{{.urlPrefix}}static/bootstrap.5.2.0.min.css" rel="stylesheet">
+    <link href="{{.urlPrefix}}static/style.css" rel="stylesheet">
+    <script>
+      function getURLPrefix() {
+        return "{{.urlPrefix}}";
+      }
+    </script>
     <title>{{ template "title" .}}</title>
     {{ template "head" .}}
 </head>
@@ -21,21 +25,21 @@
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav me-auto mb-2 mb-md-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="/">Home</a>
+            <a class="nav-link active" aria-current="page" href="{{.urlPrefix}}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="/notifiers/view">Notifiers</a>
+            <a class="nav-link" aria-current="page" href="{{.urlPrefix}}notifiers/view">Notifiers</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" id="newWatchLink" href="/watch/create">New</a>
+            <a class="nav-link" aria-current="page" id="newWatchLink" href="{{.urlPrefix}}watch/create">New</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="/backup/view">Backups</a>
+            <a class="nav-link" aria-current="page" href="{{.urlPrefix}}backup/view">Backups</a>
           </li>
           {{ template "navbar" .}}
         </ul>
         <div class="d-flex">
-          <a class="nav-link btn" href="/config">Config</a>
+          <a class="nav-link btn" href="{{.urlPrefix}}config">Config</a>
         </div>
       </div>
     </div>
@@ -64,8 +68,8 @@
         <span class="text-muted">Broodjeaap 2023</span>
       </div>
     </footer>
-    <script src="/static/bootstrap.5.2.0.bundle.min.js"></script>
-    <script src="/static/script.js"></script>
+    <script src="{{.urlPrefix}}static/bootstrap.5.2.0.bundle.min.js"></script>
+    <script src="{{.urlPrefix}}static/script.js"></script>
     {{ template "scripts" .}}
   </body>
 </html>

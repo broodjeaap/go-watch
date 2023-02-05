@@ -13,7 +13,7 @@ GoWatch {{ .Watch.Name }}
             <div class="card-body">
                 <div class="card-title text-center h4">
                     {{ .Watch.Name }}
-                    <a href="/watch/edit/{{ .Watch.ID }}" class="btn btn-sm btn-success">Edit</a>
+                    <a href="{{.urlPrefix}}watch/edit/{{ .Watch.ID }}" class="btn btn-sm btn-success">Edit</a>
                 </div>
                 {{ if not .Watch.CronEntry }}
                 <h5>No Schedule</h5>

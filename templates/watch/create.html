@@ -3,12 +3,12 @@ GoWatch Create
 {{end}}
 
 {{define "head"}}
-<script src="/static/create.js"></script>
+<script src="{{.urlPrefix}}static/create.js"></script>
 {{ end }}
 
 {{define "content"}}
 
-<form action="/watch/create" enctype="multipart/form-data" method="POST">
+<form action="{{.urlPrefix}}watch/create" enctype="multipart/form-data" method="POST">
     <div class="container">
         <div class="row g-3 justify-content-center">
             <div class="col-auto">

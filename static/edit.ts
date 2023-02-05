@@ -1,4 +1,7 @@
+
 function onTypeChange(node: DiagramNode | null = null){
+    // @ts-ignore
+    let urlPrefix = getURLPrefix();
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     let type = select.value;
     
@@ -1325,7 +1328,7 @@ function clearCache(){
         return // do nothing
     }
     let data = new URLSearchParams();
-    fetch("/cache/clear", {
+    fetch(urlPrefix+"cache/clear", {
             method: "POST"
     }).then((response) => {
         if(response.ok){

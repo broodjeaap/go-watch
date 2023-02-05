@@ -32,6 +32,8 @@ var __spread = (this && this.__spread) || function () {
 function onTypeChange(node) {
     var e_1, _a, e_2, _b;
     if (node === void 0) { node = null; }
+    // @ts-ignore
+    var urlPrefix = getURLPrefix();
     var select = document.getElementById("typeInput");
     var type = select.value;
     var var1Div = document.getElementById("var1Div");
@@ -1189,7 +1191,7 @@ function clearCache() {
         return; // do nothing
     }
     var data = new URLSearchParams();
-    fetch("/cache/clear", {
+    fetch(urlPrefix + "cache/clear", {
         method: "POST"
     }).then(function (response) {
         if (response.ok) {

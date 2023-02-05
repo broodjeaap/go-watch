@@ -1,6 +1,6 @@
 {{define "head"}}
-<script src="/static/diagram.js"></script>
-<script src="/static/edit.js"></script>
+<script src="{{.urlPrefix}}static/diagram.js"></script>
+<script src="{{.urlPrefix}}static/edit.js"></script>
 {{ end }}
 {{define "content"}}
 <div class="canvas_parent">
@@ -34,7 +34,7 @@ GoWatch Edit {{ .Watch.Name }}
             </button>
         </td>
         <td> 
-            <a href="/watch/export/{{ .Watch.ID }}" class="btn btn-success btn-sm">
+            <a href="{{.urlPrefix}}watch/export/{{ .Watch.ID }}" class="btn btn-success btn-sm">
                 Export Watch
             </a>
         </td>
@@ -49,7 +49,7 @@ GoWatch Edit {{ .Watch.Name }}
             </button>
         </td>
         <td> 
-            <a href="/watch/view/{{ .Watch.ID }}" class="btn btn-outline-secondary btn-sm">
+            <a href="{{.urlPrefix}}watch/view/{{ .Watch.ID }}" class="btn btn-outline-secondary btn-sm">
                 View Watch
             </a>
         </td>
@@ -66,7 +66,7 @@ GoWatch Edit {{ .Watch.Name }}
             </div>
             <div class="modal-body">
                 <div>
-                    <form action="/filter/create" method="post">
+                    <form action="{{.urlPrefix}}filter/create" method="post">
                         <div class="mb-3 m-3 row">
                             <label for="nameInput" class="col-sm-2 col-form-label">Name:</label>
                             <div class="col-sm-10 p-2">
@@ -136,7 +136,7 @@ GoWatch Edit {{ .Watch.Name }}
             </div>
             <div class="modal-body">
                 <div>
-                    <form action="/watch/update" id="saveWatchForm" method="post">
+                    <form action="{{.urlPrefix}}watch/update" id="saveWatchForm" method="post">
                         <div class="mb-3 m-3 row">
                             <input type="hidden" id="watch_id" name="watch_id" value="{{ .Watch.ID }}">
                             <label for="watchNameInput" class="col-sm-2 col-form-label">Name:</label>
@@ -148,7 +148,7 @@ GoWatch Edit {{ .Watch.Name }}
                         </div>
                     </form>
                     <button class="btn btn-primary mt-4 float-start" id="saveButtonModal" data-bs-dismiss="modal" id="submitWatchButton">Save</button>
-                    <form action="/watch/delete" method="post">
+                    <form action="{{.urlPrefix}}watch/delete" method="post">
                         <input type="hidden" name="watch_id" value="{{ .Watch.ID }}">
                         <button class="btn btn-danger mt-4 float-end"  data-bs-dismiss="modal" id="deleteFilterButton">Delete Watch</button>
                     </form>
@@ -166,7 +166,7 @@ GoWatch Edit {{ .Watch.Name }}
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="/watch/import/{{ .Watch.ID }}" enctype="multipart/form-data" method="post" class="row g-3">
+                <form action="{{.urlPrefix}}watch/import/{{ .Watch.ID }}" enctype="multipart/form-data" method="post" class="row g-3">
                     <div class="mb-3">
                         <label for="json" class="form-label">Upload JSON to import</label>
                         <input class="form-control" type="file" id="json" name="json">

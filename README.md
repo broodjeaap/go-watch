@@ -13,6 +13,7 @@ A change detection server that can notify through various services, written in G
     - [Pruning](#pruning)
   - [Proxy](#proxy)
   - [Proxy Pools](#proxy-pools)
+  - [Reverse Proxy](#reverse-proxy)
   - [Browserless](#browserless)
   - [Authentication](#Authentication)
 - [Filters](#filters)
@@ -221,6 +222,15 @@ cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 ```
 
 An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squid-1.conf).
+
+## Reverse Proxy
+
+GoWatch can be run behind a reverse proxy, if it's hosted under a subdomain (https://gowatch.domain.tld), not changes to the config are needed.  
+But if you want to run GoWatch under a path (https://domain.tld/gowatch), you can set the `gin.urlprefix` value in the config or the `GOWATCH_URLPREFIX` environment variable can be used.  
+```
+gin:
+  urlprefix: "/gowatch"
+```
 
 ## Browserless
 
