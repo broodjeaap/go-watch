@@ -175,7 +175,9 @@ func (web *Web) initRouter() {
 
 	if viper.IsSet("gin.urlprefix") {
 		urlPrefix := viper.GetString("gin.urlprefix")
-		urlPrefix = path.Join("/", urlPrefix) + "/"
+		if urlPrefix != "/" {
+			urlPrefix = path.Join("/", urlPrefix) + "/"
+		}
 		web.urlPrefix = urlPrefix
 		log.Println("Running under path: " + web.urlPrefix)
 	} else {
