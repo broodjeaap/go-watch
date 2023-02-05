@@ -737,13 +737,12 @@ func (web *Web) watchEdit(c *gin.Context) {
 	var connections []FilterConnection
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
-	notifiers := make([]string, 1)
+	notifiers := make([]string, 0, len(web.notifiers)+1)
 	notifiers = append(notifiers, "All")
 	for notifier := range web.notifiers {
 		notifiers = append(notifiers, notifier)
 	}
 
-	// add all the filters to
 	buildFilterTree(filters, connections)
 	processFilters(filters, web, &watch, true, nil)
 
