@@ -3,6 +3,12 @@
 
 A change detection server that can notify through various services, written in Go
 
+Some out-of-the-box highlights:  
+- A small runtime footprint, a basic instance uses around 20MB of memory
+- Lua scripting enables GoWatch to do anything you want it to do
+- Send notifications through Discord, Matrix, Slack, Telegram and many more services
+
+# Index
 - [Intro](#intro)
 - [Run](#run)
   - [Binary](#binary)
