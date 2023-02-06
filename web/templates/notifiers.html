@@ -15,7 +15,7 @@ GoWatch
         <tr>
             <td class="h3">{{ $name }}</td>
             <td>
-                <form action="{{.urlPrefix}}notifiers/test" method="post">
+                <form action="{{$.urlPrefix}}notifiers/test" method="post">
                     <input type="hidden" name="notifier_name" value="{{ $name }}">
                     <input type="submit" class="btn btn-primary" value="Test">
                 </form>
