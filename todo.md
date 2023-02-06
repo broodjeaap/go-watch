@@ -4,8 +4,3 @@
     - scraping.go
     - util.go
     - edit.ts
-    - diagram.ts
-- config in config?
-    - gin
-        - router
-    - logging?
