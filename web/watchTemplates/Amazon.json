@@ -1,1 +1,120 @@
-{"filters":[{"filter_id":41,"filter_watch_id":6,"filter_name":"Fetch","x":144,"y":242,"filter_type":"bgurl","var1":"-","var2":"","var3":"","Parents":null,"Children":null,"Results":null,"Logs":null},{"filter_id":42,"filter_watch_id":6,"filter_name":"XPath","x":362,"y":245,"filter_type":"xpath","var1":"//div[@id='corePrice_feature_div']/div/span/span[@aria-hidden='true']","var2":"","var3":"","Parents":null,"Children":null,"Results":null,"Logs":null},{"filter_id":43,"filter_watch_id":6,"filter_name":"Sanitize","x":584,"y":244,"filter_type":"match","var1":"[0-9]+.[0-9]+","var2":"","var3":"","Parents":null,"Children":null,"Results":null,"Logs":null},{"filter_id":44,"filter_watch_id":6,"filter_name":"Price","x":815,"y":245,"filter_type":"store","var1":"","var2":"","var3":"","Parents":null,"Children":null,"Results":null,"Logs":null},{"filter_id":45,"filter_watch_id":6,"filter_name":"Diff","x":813,"y":379,"filter_type":"condition","var1":"diff","var2":"Price","var3":"","Parents":null,"Children":null,"Results":null,"Logs":null},{"filter_id":46,"filter_watch_id":6,"filter_name":"Schedule","x":104,"y":70,"filter_type":"cron","var1":"@every 30m","var2":"no","var3":"","Parents":null,"Children":null,"Results":null,"Logs":null}],"connections":[{"filter_connection_id":37,"connection_watch_id":6,"filter_output_id":41,"filter_input_id":42},{"filter_connection_id":38,"connection_watch_id":6,"filter_output_id":42,"filter_input_id":43},{"filter_connection_id":39,"connection_watch_id":6,"filter_output_id":43,"filter_input_id":44},{"filter_connection_id":40,"connection_watch_id":6,"filter_output_id":44,"filter_input_id":45},{"filter_connection_id":41,"connection_watch_id":6,"filter_output_id":46,"filter_input_id":41}]}
+{
+    "filters": [
+      {
+        "filter_id": 1,
+        "filter_watch_id": 1,
+        "filter_name": "Fetch",
+        "x": 144,
+        "y": 242,
+        "filter_type": "brow",
+        "var1": "gurl",
+        "var2": "-",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null
+      },
+      {
+        "filter_id": 2,
+        "filter_watch_id": 1,
+        "filter_name": "XPath",
+        "x": 362,
+        "y": 245,
+        "filter_type": "xpath",
+        "var1": "//div[@id='corePrice_feature_div']//span[@class='a-price-whole']",
+        "var2": "inner",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null
+      },
+      {
+        "filter_id": 3,
+        "filter_watch_id": 1,
+        "filter_name": "Sanitize",
+        "x": 584,
+        "y": 244,
+        "filter_type": "match",
+        "var1": "[0-9]+",
+        "var2": "",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null
+      },
+      {
+        "filter_id": 4,
+        "filter_watch_id": 1,
+        "filter_name": "Price",
+        "x": 815,
+        "y": 245,
+        "filter_type": "store",
+        "var1": "",
+        "var2": "",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null
+      },
+      {
+        "filter_id": 5,
+        "filter_watch_id": 1,
+        "filter_name": "Diff",
+        "x": 813,
+        "y": 379,
+        "filter_type": "condition",
+        "var1": "diff",
+        "var2": "Price",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null
+      },
+      {
+        "filter_id": 6,
+        "filter_watch_id": 1,
+        "filter_name": "Schedule",
+        "x": 104,
+        "y": 70,
+        "filter_type": "cron",
+        "var1": "@every 30m",
+        "var2": "no",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null
+      }
+    ],
+    "connections": [
+      {
+        "filter_connection_id": 1,
+        "connection_watch_id": 1,
+        "filter_output_id": 1,
+        "filter_input_id": 2
+      },
+      {
+        "filter_connection_id": 2,
+        "connection_watch_id": 1,
+        "filter_output_id": 2,
+        "filter_input_id": 3
+      },
+      {
+        "filter_connection_id": 3,
+        "connection_watch_id": 1,
+        "filter_output_id": 3,
+        "filter_input_id": 4
+      },
+      {
+        "filter_connection_id": 4,
+        "connection_watch_id": 1,
+        "filter_output_id": 4,
+        "filter_input_id": 5
+      },
+      {
+        "filter_connection_id": 5,
+        "connection_watch_id": 1,
+        "filter_output_id": 6,
+        "filter_input_id": 1
+      }
+    ]
+  }
