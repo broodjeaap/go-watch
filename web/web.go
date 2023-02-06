@@ -1029,15 +1029,24 @@ func (web *Web) backupTest(c *gin.Context) {
 		return
 	}
 	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": "database.backup not set"})
+		c.HTML(http.StatusOK, "backupTest", gin.H{
+			"Error":     "database.backup not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.schedule") {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": "database.backup.schedule not set"})
+		c.HTML(http.StatusOK, "backupTest", gin.H{
+			"Error":     "database.backup.schedule not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": "database.backup.path not set"})
+		c.HTML(http.StatusOK, "backupTest", gin.H{
+			"Error":     "database.backup.path not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -1050,7 +1059,10 @@ func (web *Web) backupTest(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.HTML(http.StatusOK, "backupTest", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupTest", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
