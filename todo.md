@@ -9,5 +9,4 @@
     - gin
         - router
     - logging?
-- refactor project structure
 - need var3? 
