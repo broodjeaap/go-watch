@@ -29,6 +29,8 @@ var __spread = (this && this.__spread) || function () {
     for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
     return ar;
 };
+// @ts-ignore
+var urlPrefix = getURLPrefix();
 function onTypeChange(node) {
     var e_1, _a, e_2, _b;
     if (node === void 0) { node = null; }
@@ -47,14 +49,11 @@ function onTypeChange(node) {
     var var3Label = document.getElementById("var3Label");
     var var1Value = "";
     var var2Value = "";
-    var var3Value = "";
     if (node != null) {
         // @ts-ignore
         var1Value = node.meta.var1;
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     }
     switch (type) {
         case "gurl": {
@@ -75,15 +74,6 @@ function onTypeChange(node) {
             var2Input.placeholder = "";
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = "";
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "gurls": {
@@ -105,15 +95,6 @@ function onTypeChange(node) {
             var2Input.placeholder = "";
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = "";
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "xpath": {
@@ -149,15 +130,6 @@ function onTypeChange(node) {
             else {
                 select_1.value = var2Value;
             }
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = "";
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "json": {
@@ -177,14 +149,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "css": {
@@ -220,14 +184,6 @@ function onTypeChange(node) {
             else {
                 select_2.value = var2Value;
             }
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "replace": {
@@ -247,14 +203,6 @@ function onTypeChange(node) {
             var2Input.disabled = false;
             var2Label.innerHTML = "With";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "match": {
@@ -274,14 +222,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "substring": {
@@ -301,14 +241,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "contains": {
@@ -340,14 +272,6 @@ function onTypeChange(node) {
             else {
                 notSelect.value = "false";
             }
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "math": {
@@ -403,15 +327,6 @@ function onTypeChange(node) {
                 var2Label.innerHTML = "-";
             }
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = "";
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "store": {
@@ -432,14 +347,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "unique": {
@@ -460,14 +367,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "condition": {
@@ -513,14 +412,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             onConditionChange(node);
             break;
         }
@@ -565,14 +456,6 @@ function onTypeChange(node) {
             }
             var2Div.appendChild(var2Input);
             var2Label.innerHTML = "Notify";
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "cron": {
@@ -604,14 +487,6 @@ function onTypeChange(node) {
             }
             var2Div.appendChild(enabledSelect);
             var2Label.innerHTML = "Enabled";
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "brow": {
@@ -717,7 +592,7 @@ function onTypeChange(node) {
                 finally { if (e_2) throw e_2.error; }
             }
             var2Label.innerHTML = "Snippets";
-            var2Div.appendChild(snippetDiv);
+            var3Div.appendChild(snippetDiv);
             var var2Input = document.createElement("input");
             var2Input.name = "var2";
             var2Input.id = "var2Input";
@@ -726,14 +601,6 @@ function onTypeChange(node) {
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            var var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
     }
@@ -744,15 +611,11 @@ function onMathChange(node) {
     var var1Label = document.getElementById("var1Label");
     var var2Input = document.getElementById("var2Input");
     var var2Label = document.getElementById("var2Label");
-    var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
     var var2Value = "";
-    var var3Value = "";
     if (node != null) {
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     }
     if (var1Input.value == "round") {
         var2Input.disabled = false;
@@ -777,20 +640,16 @@ function onConditionChange(node) {
     var var2Label = document.getElementById("var2Label");
     var var2Div = document.getElementById("var2Div");
     var2Div.innerHTML = "";
-    var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
     var var3Div = document.getElementById("var3Div");
     var var1Value = "";
     var var2Value = "";
-    var var3Value = "";
     if (node != null) {
         // @ts-ignore
         var1Value = node.meta.var1;
         var1Input.value = var1Value;
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     }
     else {
         var1Value = var1Input.value;
@@ -862,21 +721,17 @@ function onBrowserlessChange(node) {
     var var2Label = document.getElementById("var2Label");
     var var2Div = document.getElementById("var2Div");
     var2Div.innerHTML = "";
-    var var3Input = document.getElementById("var3Input");
     var var3Label = document.getElementById("var3Label");
     var var3Div = document.getElementById("var3Div");
     var3Div.innerHTML = "";
     var var1Value = "";
     var var2Value = "";
-    var var3Value = "";
     if (node != null) {
         // @ts-ignore
         var1Value = node.meta.var1;
         var1Input.value = var1Value;
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     }
     else {
         var1Value = var1Input.value;
@@ -916,11 +771,6 @@ function onBrowserlessChange(node) {
             if (var2Value != "") {
                 var2Input_5.value = var2Value;
             }
-            var var3Input_1 = document.createElement("input");
-            var3Input_1.type = "hidden";
-            var3Input_1.id = "var3Input";
-            var3Input_1.name = "var3Input";
-            var3Div.appendChild(var3Input_1);
             var3Label.innerHTML = "Help";
             var helpLink1 = document.createElement("a");
             helpLink1.href = "https://www.browserless.io/docs/function";
@@ -948,11 +798,6 @@ function onBrowserlessChange(node) {
             if (var2Value != "") {
                 var2Input_6.value = var2Value;
             }
-            var var3Input_2 = document.createElement("input");
-            var3Input_2.type = "hidden";
-            var3Input_2.id = "var3Input";
-            var3Input_2.name = "var3Input";
-            var3Div.appendChild(var3Input_2);
             var3Label.innerHTML = "Help";
             var helpLink1 = document.createElement("a");
             helpLink1.href = "https://www.browserless.io/docs/function";
@@ -977,12 +822,10 @@ function onSubmitNewFilter() {
     var type = selectType.value;
     var var1Input = document.getElementById("var1Input");
     var var2Input = document.getElementById("var2Input");
-    var var3Input = document.getElementById("var3Input");
     _diagram.addNode(Math.max.apply(Math, __spread(Array.from(_diagram.nodes.values()).map(function (n) { return n.id; }), [0])) + 1, _diagram.canvas.width / 2 - _diagram.mouseState.offset.x, _diagram.canvas.height / 2 - _diagram.mouseState.offset.y, name, {
         type: type,
         var1: var1Input.value,
         var2: var2Input.value,
-        var3: var3Input.value,
     });
 }
 function editNode(node) {
@@ -998,11 +841,6 @@ function editNode(node) {
     var var2 = node.meta.var2;
     if (var2 === undefined) {
         var2 = "";
-    }
-    // @ts-ignore
-    var var3 = node.meta.var3;
-    if (var3 === undefined) {
-        var3 = "";
     }
     var nameInput = document.getElementById("nameInput");
     nameInput.value = name;
@@ -1096,9 +934,6 @@ function submitEditNode(node) {
     var var2Input = document.getElementById("var2Input");
     // @ts-ignore
     node.meta.var2 = var2Input.value;
-    var var3Input = document.getElementById("var3Input");
-    // @ts-ignore
-    node.meta.var3 = var3Input.value;
     node.fixType();
     node.resize(_diagram.ctx);
     var saveWatchButton = document.getElementById("saveButtonMain");
@@ -1125,8 +960,6 @@ function saveWatch() {
                 var1: filter.meta.var1,
                 // @ts-ignore
                 var2: filter.meta.var2,
-                // @ts-ignore
-                var3: filter.meta.var3,
             });
         }
     }

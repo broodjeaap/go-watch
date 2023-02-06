@@ -1,4 +1,6 @@
 
+// @ts-ignore
+let urlPrefix = getURLPrefix();
 function onTypeChange(node: DiagramNode | null = null){
     // @ts-ignore
     let urlPrefix = getURLPrefix();
@@ -19,14 +21,11 @@ function onTypeChange(node: DiagramNode | null = null){
 
     let var1Value = "";
     let var2Value = "";
-    let var3Value = "";
     if (node != null){
         // @ts-ignore
         var1Value = node.meta.var1;
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     }
     
     switch(type){
@@ -49,16 +48,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.placeholder = ""
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-            
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = ""
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "gurls": {
@@ -81,16 +70,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.placeholder = ""
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = ""
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "xpath": {
@@ -126,16 +105,6 @@ function onTypeChange(node: DiagramNode | null = null){
             } else {
                 select.value = var2Value;
             }
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = ""
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "json": {
@@ -156,15 +125,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "css": {
@@ -200,15 +160,6 @@ function onTypeChange(node: DiagramNode | null = null){
             } else {
                 select.value = var2Value;
             }
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "replace": {
@@ -229,15 +180,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = false;
             var2Label.innerHTML = "With";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "match": {
@@ -258,15 +200,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "substring": {
@@ -287,15 +220,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "contains": {
@@ -327,15 +251,6 @@ function onTypeChange(node: DiagramNode | null = null){
             } else {
                 notSelect.value = "false";
             }
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "math": {
@@ -390,16 +305,6 @@ function onTypeChange(node: DiagramNode | null = null){
                 var2Label.innerHTML = "-";
             }
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Input.placeholder = ""
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "store": {
@@ -421,15 +326,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "unique": {
@@ -451,15 +347,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "condition":{
@@ -506,15 +393,6 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             onConditionChange(node);
             break;
         }
@@ -549,15 +427,6 @@ function onTypeChange(node: DiagramNode | null = null){
             }
             var2Div.appendChild(var2Input);
             var2Label.innerHTML = "Notify";
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "cron":{
@@ -589,15 +458,6 @@ function onTypeChange(node: DiagramNode | null = null){
             }
             var2Div.appendChild(enabledSelect);
             var2Label.innerHTML = "Enabled"
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
         case "brow":{
@@ -839,7 +699,7 @@ end
                 snippetDiv.appendChild(gap);
             }
             var2Label.innerHTML = "Snippets";
-            var2Div.appendChild(snippetDiv);
+            var3Div.appendChild(snippetDiv);
 
             let var2Input = document.createElement("input");
             var2Input.name = "var2";
@@ -849,15 +709,6 @@ end
             var2Input.disabled = true;
             var2Label.innerHTML = "-";
             var2Div.appendChild(var2Input);
-
-            let var3Input = document.createElement("input");
-            var3Input.name = "var3";
-            var3Input.id = "var3Input";
-            var3Input.value = var3Value;
-            var3Input.classList.add("form-control");
-            var3Input.disabled = true;
-            var3Label.innerHTML = "-";
-            var3Div.appendChild(var3Input);
             break;
         }
     }
@@ -868,16 +719,12 @@ function onMathChange(node: DiagramNode | null = null){
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
     let var2Input = document.getElementById("var2Input") as HTMLInputElement;
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
 
     let var2Value = "";
-    let var3Value = "";
     if (node != null){
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     }
 
     if (var1Input.value == "round"){
@@ -901,21 +748,17 @@ function onConditionChange(node: DiagramNode | null = null){
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
     let var2Div = document.getElementById("var2Div") as HTMLDivElement;
     var2Div.innerHTML = "";
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
     let var3Div = document.getElementById("var3Div") as HTMLDivElement;
 
     let var1Value = "";
     let var2Value = "";
-    let var3Value = "";
     if (node != null){
         // @ts-ignore
         var1Value = node.meta.var1;
         var1Input.value = var1Value;
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     } else {
         var1Value = var1Input.value;
     }
@@ -979,22 +822,18 @@ function onBrowserlessChange(node: DiagramNode | null = null){
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
     let var2Div = document.getElementById("var2Div") as HTMLDivElement;
     var2Div.innerHTML = "";
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
     let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
     let var3Div = document.getElementById("var3Div") as HTMLDivElement;
     var3Div.innerHTML = "";
 
     let var1Value = "";
     let var2Value = "";
-    let var3Value = "";
     if (node != null){
         // @ts-ignore
         var1Value = node.meta.var1;
         var1Input.value = var1Value;
         // @ts-ignore
         var2Value = node.meta.var2;
-        // @ts-ignore
-        var3Value = node.meta.var3;
     } else {
         var1Value = var1Input.value;
     }
@@ -1046,12 +885,6 @@ function onBrowserlessChange(node: DiagramNode | null = null){
                 var2Input.value = var2Value;
             }
 
-            let var3Input = document.createElement("input");
-            var3Input.type = "hidden";
-            var3Input.id = "var3Input";
-            var3Input.name = "var3Input";
-            var3Div.appendChild(var3Input);
-
             var3Label.innerHTML = "Help";
             let helpLink1 = document.createElement("a");
             helpLink1.href = "https://www.browserless.io/docs/function";
@@ -1092,12 +925,6 @@ function onBrowserlessChange(node: DiagramNode | null = null){
                 var2Input.value = var2Value;
             }
 
-            let var3Input = document.createElement("input");
-            var3Input.type = "hidden";
-            var3Input.id = "var3Input";
-            var3Input.name = "var3Input";
-            var3Div.appendChild(var3Input);
-
             var3Label.innerHTML = "Help";
             let helpLink1 = document.createElement("a");
             helpLink1.href = "https://www.browserless.io/docs/function";
@@ -1127,7 +954,6 @@ function onSubmitNewFilter(){
     
     let var2Input = document.getElementById("var2Input") as HTMLInputElement;
 
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
 
     _diagram.addNode(
         Math.max(...Array.from(_diagram.nodes.values()).map(n => n.id), 0) + 1,
@@ -1137,7 +963,6 @@ function onSubmitNewFilter(){
             type: type,
             var1: var1Input.value,
             var2: var2Input.value,
-            var3: var3Input.value,
     })
 }
 
@@ -1154,11 +979,6 @@ function editNode(node: DiagramNode){
     let var2 = node.meta.var2;
     if (var2 === undefined){
         var2 = "";
-    }
-    // @ts-ignore
-    let var3 = node.meta.var3;
-    if (var3 === undefined){
-        var3 = "";
     }
 
     let nameInput = document.getElementById("nameInput") as HTMLInputElement;
@@ -1241,10 +1061,6 @@ function submitEditNode(node: DiagramNode){
     // @ts-ignore
     node.meta.var2 = var2Input.value;
 
-    let var3Input = document.getElementById("var3Input") as HTMLInputElement;
-    // @ts-ignore
-    node.meta.var3 = var3Input.value;
-
     node.fixType();
     node.resize(_diagram.ctx);
     let saveWatchButton = document.getElementById("saveButtonMain") as HTMLButtonElement;
@@ -1269,8 +1085,6 @@ function saveWatch(){
             var1: filter.meta.var1,
             // @ts-ignore
             var2: filter.meta.var2,
-            // @ts-ignore
-            var3: filter.meta.var3,
         })
     }
     let filtersInput = document.getElementById("filtersInput") as HTMLInputElement;

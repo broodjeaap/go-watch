@@ -103,9 +103,9 @@ GoWatch Edit {{ .Watch.Name }}
                             <div class="col-sm-10 p-2" id="var2Div">
                                 <input type="text" class="form-control" name="var2" id="var2Input" placeholder="" disabled>
                             </div>
-                            <label for="var3" id="var3Label" class="col-sm-2 col-form-label">-</label>
+                            <label for="var3" id="var3Label" class="col-sm-2 col-form-label"></label>
                             <div class="col-sm-10 p-2" id="var3Div">
-                                <input type="text" class="form-control" name="var3" id="var3Input" placeholder="" disabled>
+                            
                             </div>
                         </div>
                     </form>
@@ -203,7 +203,6 @@ function canvasInit() {
                 type: "{{ .Type }}",
                 var1: "{{ .Var1 }}",
                 var2: "{{ .Var2 }}",
-                var3: "{{ .Var3 }}",
             },
             [
                 {{ range .Results }}

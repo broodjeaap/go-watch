@@ -402,7 +402,6 @@ It uses the [Golang templating language](https://pkg.go.dev/text/template), filt
 - `{{ .Min_Type }}` gets the type of the filter
 - `{{ .Min_Var1 }}` gets the first variable, useful for Get URL filters or Schedule filters
 - `{{ .Min_Var2 }}` gets the second variable
-- `{{ .Min_Var3 }}` gets the third variable
 
 To configure notifiers see the [notifiers](#notifiers) section.
 

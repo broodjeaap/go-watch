@@ -1118,7 +1118,6 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 		dataMap[f.Name+"_Type"] = f.Type
 		dataMap[f.Name+"_Var1"] = f.Var1
 		dataMap[f.Name+"_Var2"] = f.Var2
-		dataMap[f.Name+"_Var3"] = f.Var3
 	}
 
 	dataMap["WatchName"] = template.HTML(watch.Name)

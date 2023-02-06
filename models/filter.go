@@ -14,7 +14,6 @@ type Filter struct {
 	Type     string    `form:"filter_type" yaml:"filter_type" json:"filter_type" binding:"required" validate:"oneof=url xpath json css replace match substring math store condition cron"`
 	Var1     string    `form:"var1" yaml:"var1" json:"var1" binding:"required"`
 	Var2     *string   `form:"var2" yaml:"var2" json:"var2"`
-	Var3     *string   `form:"var3" yaml:"var3" json:"var3"`
 	Parents  []*Filter `gorm:"-:all"`
 	Children []*Filter `gorm:"-:all"`
 	Results  []string  `gorm:"-:all"`
