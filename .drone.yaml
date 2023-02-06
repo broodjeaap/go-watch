@@ -6,7 +6,7 @@ steps:
     image: golang
     commands:
       - go build
-      - go test -v
+      - go test -v github.com/broodjeaap/go-watch/web
 trigger:
   branch:
     - master
