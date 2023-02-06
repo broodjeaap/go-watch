@@ -32,7 +32,7 @@ import (
 	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 
-	"broodjeaap.net/go-watch/notifiers"
+	"github.com/broodjeaap/go-watch/notifiers"
 )
 
 //go:embed templates static watchTemplates config.tmpl

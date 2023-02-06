@@ -1,4 +1,4 @@
-module broodjeaap.net/go-watch
+module github.com/broodjeaap/go-watch
 
 go 1.18
 
