@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"bytes"
@@ -25,9 +25,11 @@ import (
 	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/net/html"
 	"gorm.io/gorm"
+
+	. "github.com/broodjeaap/go-watch/models"
 )
 
-func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *uint) {
+func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *uint) {
 	processedMap := make(map[uint]bool, len(filters))
 	if scheduleID != nil {
 		processedMap[*scheduleID] = true
@@ -52,7 +54,7 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 			}
 		}
 		if cronParentCount > 1 {
-			filter.log("Multiple schedules on the same filter is not supported!")
+			filter.Log("Multiple schedules on the same filter is not supported!")
 			return
 		}
 	}
@@ -78,7 +80,7 @@ func processFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 			}
 			if debug && filter.Type == "cron" {
 				if filter.Var2 != nil && *filter.Var2 == "no" {
-					filter.log("Schedule is disabled")
+					filter.Log("Schedule is disabled")
 				}
 				processedMap[filter.ID] = true
 				getCronDebugResult(filter)
@@ -273,7 +275,7 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 			getFilterResultEcho(filter)
 		}
 	default:
-		filter.log("getFilterResult called with filter.Type == '", filter.Type, "'")
+		filter.Log("getFilterResult called with filter.Type == '", filter.Type, "'")
 	}
 }
 
@@ -287,7 +289,7 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, debug bool) 
 	str, err := getURLContent(filter, fetchURL)
 	if err != nil {
 		log.Println("Could not fetch url: ", fetchURL, " - ", err)
-		filter.log("Could not fetch url: ", fetchURL, " - ", err)
+		filter.Log("Could not fetch url: ", fetchURL, " - ", err)
 		return
 	}
 	filter.Results = append(filter.Results, str)
@@ -309,7 +311,7 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 			str, err := getURLContent(filter, fetchURL)
 			if err != nil {
 				log.Println("Could not fetch url: ", fetchURL, " - ", err)
-				filter.log("Could not fetch url: ", fetchURL, " - ", err)
+				filter.Log("Could not fetch url: ", fetchURL, " - ", err)
 				continue
 			}
 			filter.Results = append(filter.Results, str)
@@ -345,7 +347,7 @@ func getURLContent(filter *Filter, fetchURL string) (string, error) {
 
 func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, debug bool) {
 	if filter.Var2 == nil {
-		filter.log("filter.Var2 == nil")
+		filter.Log("filter.Var2 == nil")
 		return
 	}
 	fetchURL := *filter.Var2
@@ -357,7 +359,7 @@ func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, d
 	str, err := getBrowserlessURLContent(filter, fetchURL)
 	if err != nil {
 		log.Println("Could not fetch url: ", fetchURL, " - ", err)
-		filter.log("Could not fetch url: ", fetchURL, " - ", err)
+		filter.Log("Could not fetch url: ", fetchURL, " - ", err)
 		return
 	}
 	filter.Results = append(filter.Results, str)
@@ -379,7 +381,7 @@ func getFilterResultBrowserlessURLs(filter *Filter, urlCache map[string]string, 
 			str, err := getBrowserlessURLContent(filter, fetchURL)
 			if err != nil {
 				log.Println("Could not fetch url: ", fetchURL, " - ", err)
-				filter.log("Could not fetch url: ", fetchURL, " - ", err)
+				filter.Log("Could not fetch url: ", fetchURL, " - ", err)
 				continue
 			}
 			filter.Results = append(filter.Results, str)
@@ -403,20 +405,20 @@ func getBrowserlessURLContent(filter *Filter, fetchURL string) (string, error) {
 	jsn, err := json.Marshal(data)
 	if err != nil {
 		log.Println("Could not marshal url:", err)
-		filter.log("Could not marshal url:", err)
+		filter.Log("Could not marshal url:", err)
 		return "", err
 	}
 	browserlessURL = browserlessURL + "/content"
 	resp, err := http.Post(browserlessURL, "application/json", bytes.NewBuffer(jsn))
 	if err != nil {
 		log.Println("Could not get browserless response content:", err)
-		filter.log("Could not get browserless response content:", err)
+		filter.Log("Could not get browserless response content:", err)
 		return "", err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Could not fetch url through browserless: ", fetchURL, " - ", err)
-		filter.log("Could not fetch url through browserless: ", fetchURL, " - ", err)
+		filter.Log("Could not fetch url through browserless: ", fetchURL, " - ", err)
 		return "", err
 	}
 	return string(body), nil
@@ -426,7 +428,7 @@ func getBrowserlessFunctionResult(filter *Filter) {
 	result, err := getBrowserlessFunctionContent(filter, "")
 	if err != nil {
 		log.Println(err)
-		filter.log(err)
+		filter.Log(err)
 		return
 	}
 	filter.Results = append(filter.Results, result)
@@ -440,7 +442,7 @@ func getBrowserlessFunctionResults(filter *Filter) {
 			str, err := getBrowserlessFunctionContent(filter, fetchURL)
 			if err != nil {
 				log.Println(err)
-				filter.log(err)
+				filter.Log(err)
 				continue
 			}
 			filter.Results = append(filter.Results, str)
@@ -499,7 +501,7 @@ func getFilterResultXPath(filter *Filter) {
 		for _, result := range parent.Results {
 			doc, err := htmlquery.Parse(strings.NewReader(result))
 			if err != nil {
-				filter.log(err)
+				filter.Log(err)
 				continue
 			}
 			nodes, _ := htmlquery.QueryAll(doc, filter.Var1)
@@ -560,12 +562,12 @@ func getFilterResultCSS(filter *Filter) {
 		for _, result := range parent.Results {
 			doc, err := html.Parse(strings.NewReader(result))
 			if err != nil {
-				filter.log(err)
+				filter.Log(err)
 				continue
 			}
 			sel, err := cascadia.Parse(filter.Var1)
 			if err != nil {
-				filter.log(err)
+				filter.Log(err)
 				continue
 			}
 			for _, node := range cascadia.QueryAll(doc, sel) {
@@ -609,7 +611,7 @@ func getFilterResultCSS(filter *Filter) {
 func getFilterResultReplace(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
 	if err != nil {
-		filter.log(err)
+		filter.Log(err)
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -626,7 +628,7 @@ func getFilterResultReplace(filter *Filter) {
 func getFilterResultMatch(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
 	if err != nil {
-		filter.log("Could not compile regex: ", err)
+		filter.Log("Could not compile regex: ", err)
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -647,7 +649,7 @@ func getFilterResultSubstring(filter *Filter) {
 				if strings.Contains(substring, ":") {
 					from_to := strings.Split(substring, ":")
 					if len(from_to) != 2 {
-						filter.log("Missing value in range: '", substring, "'")
+						filter.Log("Missing value in range: '", substring, "'")
 						return
 					}
 					fromStr := from_to[0]
@@ -658,13 +660,13 @@ func getFilterResultSubstring(filter *Filter) {
 					from64, err := strconv.ParseInt(fromStr, 10, 32)
 					var from = int(from64)
 					if hasFrom && err != nil {
-						filter.log("Could not parse left side of: '", substring, "'")
+						filter.Log("Could not parse left side of: '", substring, "'")
 						return
 					} else if from < 0 {
 						from = len(asRunes) + from
 					}
 					if from < 0 {
-						filter.log("Out of bounds:", from_to)
+						filter.Log("Out of bounds:", from_to)
 						continue
 					}
 
@@ -676,19 +678,19 @@ func getFilterResultSubstring(filter *Filter) {
 					to64, err := strconv.ParseInt(toStr, 10, 32)
 					var to = int(to64)
 					if hasTo && err != nil {
-						filter.log("Could not parse right side of: '", substring, "'")
+						filter.Log("Could not parse right side of: '", substring, "'")
 						return
 					} else if to < 0 {
 						to = len(asRunes) + to
 					}
 					if to < 0 {
-						filter.log("Out of bounds:", from_to)
+						filter.Log("Out of bounds:", from_to)
 						continue
 					}
 					if hasFrom && hasTo {
 						_, err := sb.WriteString(string(asRunes[from:to]))
 						if err != nil {
-							filter.log("Could not substring: ", err)
+							filter.Log("Could not substring: ", err)
 						}
 					} else if hasFrom {
 						sb.WriteString(string(asRunes[from:]))
@@ -698,7 +700,7 @@ func getFilterResultSubstring(filter *Filter) {
 				} else {
 					pos, err := strconv.ParseInt(substring, 10, 32)
 					if err != nil || pos < 0 {
-						filter.log("Could not parse: '", substring, "'")
+						filter.Log("Could not parse: '", substring, "'")
 						return
 					}
 					sb.WriteRune(asRunes[pos])
@@ -736,9 +738,9 @@ func getFilterResultSum(filter *Filter) {
 				sum += number
 			} else {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 			}
 		}
@@ -758,10 +760,10 @@ func getFilterResultMin(filter *Filter) {
 				}
 			} else {
 				if len(result) > 50 {
-					filter.log("Could not convert value, '", result, "', to number")
-					//filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, '", result, "', to number")
+					//filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 			}
 		}
@@ -784,9 +786,9 @@ func getFilterResultMax(filter *Filter) {
 				}
 			} else {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 			}
 		}
@@ -807,9 +809,9 @@ func getFilterResultAverage(filter *Filter) {
 				count++
 			} else {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 			}
 		}
@@ -855,9 +857,9 @@ func getFilterResultRound(filter *Filter) {
 				filter.Results = append(filter.Results, fmt.Sprintf("%f", rounded))
 			} else {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 			}
 		}
@@ -904,7 +906,7 @@ func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
 	lastValue, lastValueErr := strconv.ParseFloat(previousOutput.Value, 64)
 	if lastValueErr != nil {
-		filter.log("Could not convert previous value to number all will pass: '", previousOutput.Value, "'")
+		filter.Log("Could not convert previous value to number all will pass: '", previousOutput.Value, "'")
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -914,9 +916,9 @@ func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 				number, err := strconv.ParseFloat(result, 64)
 				if err != nil {
 					if len(result) > 50 {
-						filter.log("Could not convert value, with length ", len(result), ", to number")
+						filter.Log("Could not convert value, with length ", len(result), ", to number")
 					} else {
-						filter.log("Could not convert value, '", result, "', to number")
+						filter.Log("Could not convert value, '", result, "', to number")
 					}
 					continue
 				}
@@ -947,9 +949,9 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 				continue
 			}
@@ -962,12 +964,12 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 
 func getFilterResultConditionLowerThan(filter *Filter) {
 	if filter.Var2 == nil {
-		filter.log("No threshold given")
+		filter.Log("No threshold given")
 		return
 	}
 	threshold, err := strconv.ParseFloat(*filter.Var2, 64)
 	if err != nil {
-		filter.log("Could not convert convert threshold to number: '", *filter.Var2, "'")
+		filter.Log("Could not convert convert threshold to number: '", *filter.Var2, "'")
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -975,9 +977,9 @@ func getFilterResultConditionLowerThan(filter *Filter) {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 				continue
 			}
@@ -993,7 +995,7 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
 	lastValue, lastValueErr := strconv.ParseFloat(previousOutput.Value, 64)
 	if lastValueErr != nil {
-		filter.log("Could not convert previous value to number all will pass: '", previousOutput.Value, "'")
+		filter.Log("Could not convert previous value to number all will pass: '", previousOutput.Value, "'")
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -1003,9 +1005,9 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 				number, err := strconv.ParseFloat(result, 64)
 				if err != nil {
 					if len(result) > 50 {
-						filter.log("Could not convert value, with length ", len(result), ", to number")
+						filter.Log("Could not convert value, with length ", len(result), ", to number")
 					} else {
-						filter.log("Could not convert value, '", result, "', to number")
+						filter.Log("Could not convert value, '", result, "', to number")
 					}
 					continue
 				}
@@ -1038,9 +1040,9 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 				continue
 			}
@@ -1053,12 +1055,12 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 
 func getFilterResultConditionHigherThan(filter *Filter) {
 	if filter.Var2 == nil {
-		filter.log("No threshold given for Higher Than Filter")
+		filter.Log("No threshold given for Higher Than Filter")
 		return
 	}
 	threshold, err := strconv.ParseFloat(*filter.Var2, 64)
 	if err != nil {
-		filter.log("Could not convert convert threshold to number: '", *filter.Var2, "'")
+		filter.Log("Could not convert convert threshold to number: '", *filter.Var2, "'")
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -1066,9 +1068,9 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 			number, err := strconv.ParseFloat(result, 64)
 			if err != nil {
 				if len(result) > 50 {
-					filter.log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
-					filter.log("Could not convert value, '", result, "', to number")
+					filter.Log("Could not convert value, '", result, "', to number")
 				}
 				continue
 			}
@@ -1105,7 +1107,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 	}
 	tmpl, err := template.New("notify").Parse(filter.Var1)
 	if err != nil {
-		filter.log("Could not parse template: ", err)
+		filter.Log("Could not parse template: ", err)
 		log.Println("Could not parse template: ", err)
 		return
 	}
@@ -1135,7 +1137,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 
 }
 
-func triggerSchedule(watchID uint, web *Web, scheduleID *uint) {
+func TriggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 	var watch *Watch
 	web.db.Model(&Watch{}).First(&watch, watchID)
 
@@ -1146,13 +1148,13 @@ func triggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 	web.db.Model(&FilterConnection{}).Where("watch_id = ?", watch.ID).Find(&connections)
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, web, watch, false, scheduleID)
+	ProcessFilters(filters, web, watch, false, scheduleID)
 }
 
 func getCronDebugResult(filter *Filter) {
 	_, err := cron.ParseStandard(filter.Var1)
 	if err != nil {
-		filter.log(err)
+		filter.Log(err)
 	}
 }
 
@@ -1178,7 +1180,7 @@ func getFilterResultLua(filter *Filter) {
 
 	err := L.DoString(filter.Var1)
 	if err != nil {
-		filter.log(err)
+		filter.Log(err)
 		return
 	}
 	outputs.ForEach(

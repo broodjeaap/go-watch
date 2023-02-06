@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"fmt"
@@ -10,6 +10,8 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	. "github.com/broodjeaap/go-watch/models"
 )
 
 const HTML_STRING = `<html>
@@ -1494,7 +1496,7 @@ func TestEchoFilter(t *testing.T) {
 	filter1 := &filters[0]
 	connections := []FilterConnection{}
 	buildFilterTree(filters, connections)
-	processFilters(filters, nil, nil, false, nil)
+	ProcessFilters(filters, nil, nil, false, nil)
 
 	if !DeepEqualStringSlice(filter1.Results, []string{helloWorld}) {
 		t.Errorf("%s did not match %s", helloWorld, filter1.Results)
@@ -1558,7 +1560,7 @@ func TestSimpleWatch(t *testing.T) {
 	}
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, nil, nil, false, nil)
+	ProcessFilters(filters, nil, nil, false, nil)
 
 	if !reflect.DeepEqual(minFilter.Results, []string{"100.000000"}) {
 		t.Errorf("%s did not match '100'", minFilter.Results)
@@ -1624,7 +1626,7 @@ func TestSimpleIDOrderWatch(t *testing.T) {
 	}
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, nil, nil, false, nil)
+	ProcessFilters(filters, nil, nil, false, nil)
 
 	if !reflect.DeepEqual(minFilter.Results, []string{"100.000000"}) {
 		t.Errorf("%s did not match '100'", minFilter.Results)
@@ -1690,7 +1692,7 @@ func TestSimpleDebugWatch(t *testing.T) {
 	}
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, nil, nil, true, nil)
+	ProcessFilters(filters, nil, nil, true, nil)
 
 	if !reflect.DeepEqual(minFilter.Results, []string{"100.000000"}) {
 		t.Errorf("%s did not match '100'", minFilter.Results)
@@ -1806,7 +1808,7 @@ func TestSimpleTriggeredWatch(t *testing.T) {
 
 	log.Println(connections[0])
 
-	triggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
 
 	var filterOutputs []FilterOutput
 	db.Model(&FilterOutput{}).Find(&filterOutputs, fmt.Sprintf("watch_id = %d", watch.ID))
@@ -1866,7 +1868,7 @@ func TestDontAllowMultipleCronOnSingleFilter(t *testing.T) {
 	}
 
 	buildFilterTree(filters, connections)
-	processFilters(filters, nil, nil, false, nil)
+	ProcessFilters(filters, nil, nil, false, nil)
 
 	if len(filter.Logs) == 0 {
 		t.Errorf("Expected error message in filter log, found empty log: %s", filter.Logs)

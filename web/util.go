@@ -1,10 +1,12 @@
-package main
+package web
 
 import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
+	. "github.com/broodjeaap/go-watch/models"
 )
 
 func bindAndValidateWatch(watch *Watch, c *gin.Context) (map[string]string, error) {
