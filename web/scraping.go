@@ -883,7 +883,10 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 		}
 	}
 	if len(filterOutputs) > 0 {
-		db.Create(&filterOutputs)
+		tx := db.Create(&filterOutputs)
+		if tx.Error != nil {
+			log.Println("Could not store value:", tx.Error)
+		}
 	}
 }
 
