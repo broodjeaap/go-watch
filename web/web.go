@@ -1243,7 +1243,7 @@ func (web *Web) backupDelete(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if importID <= 0 {
+	if importID < 0 {
 		c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 		return
 	}
