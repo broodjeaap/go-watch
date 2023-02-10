@@ -123,47 +123,48 @@ func (web *Web) initDB() {
 
 	conf := &gorm.Config{}
 	conf.PrepareStmt = true
-
-	var db *gorm.DB
-	var err error
+	var dialector gorm.Dialector
 	if strings.HasPrefix(dsn, "sqlserver") {
-		db, err = gorm.Open(sqlserver.Open(dsn), conf)
-		log.Println("Using SQLServer database")
+		dialector = sqlserver.Open(dsn)
 	} else if strings.HasPrefix(dsn, "postgres") {
-		db, err = gorm.Open(postgres.Open(dsn), conf)
-		log.Println("Using PostgreSQL database")
+		dialector = postgres.Open(dsn)
 	} else if strings.HasPrefix(dsn, "mysql") {
-		db, err = gorm.Open(mysql.Open(dsn), conf)
-		log.Println("Using MySQL database")
+		dialector = mysql.Open(dsn)
 	} else {
-		db, err = gorm.Open(sqlite.Open(dsn), conf)
-		log.Println("Using sqlite database at:", dsn)
-	}
-	if db == nil {
-		log.Panicln("Could not recognize database.dsn: ", dsn)
-	}
-	if err != nil {
-		log.Panicln("Could not start DB: ", err)
+		dialector = sqlite.Open(dsn)
 	}
 
 	// retry connection to the db a couple times with exp retry time
-	web.db = db
+	var err error
 	delay := time.Duration(1) * time.Second
-	maxDelay := time.Duration(8) * time.Second
+	maxDelay := time.Duration(32) * time.Second
 	for {
-		err := web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
-		if err == nil {
-			log.Println("Connected to DB!")
-			break
-		}
-		if delay >= maxDelay {
-			web.startupWarning("Could not initialize database", err)
-			break
-		}
-		log.Println("Could not connect to DB, retry in:", delay.String())
 		time.Sleep(delay)
 		delay *= 2
+		if delay >= maxDelay {
+			os.Exit(1)
+		}
+
+		web.db, err = gorm.Open(dialector, conf)
+		if err != nil {
+			log.Println("Could not open db connection, retry in:", delay.String(), err)
+			continue
+		}
+
+		db, err := web.db.DB()
+		if err != nil {
+			log.Println("Could not get DB, retry in:", delay.String(), err)
+			continue
+		}
+
+		err = db.Ping()
+		if err != nil {
+			log.Println("Could not ping db, retry in:", delay.String(), err)
+			continue
+		}
+		break
 	}
+	web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
 }
 
 // initRouer initializes the GoWatch routes, binding web.func to a url path
@@ -279,7 +280,12 @@ func (web *Web) initCronJobs() {
 
 	// add some delay to cron jobs, so watches with the same schedule don't
 	// 'burst' at the same time after restarting GoWatch
-	cronDelayStr := viper.GetString("schedule.delay")
+	var cronDelayStr string
+	if viper.IsSet("schedule.delay") {
+		cronDelayStr = viper.GetString("schedule.delay")
+	} else {
+		cronDelayStr = "100ms"
+	}
 	cronDelay, delayErr := time.ParseDuration(cronDelayStr)
 	if delayErr == nil {
 		log.Println("Delaying job startup by:", cronDelay.String())
