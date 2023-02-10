@@ -908,11 +908,17 @@ func (web *Web) backupView(c *gin.Context) {
 // backupCreate (/backup/create) creates a new backup
 func (web *Web) backupCreate(c *gin.Context) {
 	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": "database.backup not set"})
+		c.HTML(http.StatusBadRequest, "backupView", gin.H{
+			"Error":     "database.backup not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": "database.backup.path not set"})
+		c.HTML(http.StatusBadRequest, "backupView", gin.H{
+			"Error":     "database.backup.path not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	backupDir := filepath.Dir(viper.GetString("database.backup.path"))
@@ -922,7 +928,10 @@ func (web *Web) backupCreate(c *gin.Context) {
 	backupPath := filepath.Join(backupDir, backupName)
 	err := web.createBackup(backupPath)
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusBadRequest, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
@@ -1251,15 +1260,23 @@ func (web *Web) backupDelete(c *gin.Context) {
 	}
 
 	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.schedule") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.schedule not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup.schedule not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.path not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup.path not set",
+			"urlPrefix": web.urlPrefix})
 		return
 	}
 
@@ -1267,17 +1284,25 @@ func (web *Web) backupDelete(c *gin.Context) {
 
 	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
 	filesInBackupDir, err := ioutil.ReadDir(backupDir)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if importID >= len(filesInBackupDir) {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "Wut you doin?",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -1286,7 +1311,10 @@ func (web *Web) backupDelete(c *gin.Context) {
 
 	err = os.Remove(backupFullPath)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
@@ -1305,15 +1333,24 @@ func (web *Web) backupDownload(c *gin.Context) {
 	}
 
 	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.schedule") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.schedule not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup.schedule not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": "database.backup.path not set"})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     "database.backup.path not set",
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -1321,17 +1358,26 @@ func (web *Web) backupDownload(c *gin.Context) {
 
 	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
 	filesInBackupDir, err := ioutil.ReadDir(backupDir)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	if importID >= len(filesInBackupDir) {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
@@ -1340,14 +1386,20 @@ func (web *Web) backupDownload(c *gin.Context) {
 
 	backupFile, err := os.Open(backupFullPath)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 	defer backupFile.Close()
 
 	rawBytes, err := io.ReadAll(backupFile)
 	if err != nil {
-		c.HTML(http.StatusOK, "backupView", gin.H{"Error": err})
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
 		return
 	}
 
