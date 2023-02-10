@@ -1046,27 +1046,6 @@ func (web *Web) backupTest(c *gin.Context) {
 		c.Redirect(http.StatusSeeOther, web.urlPrefix+"backup/view")
 		return
 	}
-	if !viper.IsSet("database.backup") {
-		c.HTML(http.StatusOK, "backupTest", gin.H{
-			"Error":     "database.backup not set",
-			"urlPrefix": web.urlPrefix,
-		})
-		return
-	}
-	if !viper.IsSet("database.backup.schedule") {
-		c.HTML(http.StatusOK, "backupTest", gin.H{
-			"Error":     "database.backup.schedule not set",
-			"urlPrefix": web.urlPrefix,
-		})
-		return
-	}
-	if !viper.IsSet("database.backup.path") {
-		c.HTML(http.StatusOK, "backupTest", gin.H{
-			"Error":     "database.backup.path not set",
-			"urlPrefix": web.urlPrefix,
-		})
-		return
-	}
 
 	backupFullPath := ""
 	var backup Backup
@@ -1093,6 +1072,16 @@ func (web *Web) backupTest(c *gin.Context) {
 
 func (web *Web) backupFromFile(importID int, backup *Backup) (string, error) {
 	backupPath := viper.GetString("database.backup.path")
+
+	if !viper.IsSet("database.backup") {
+		return "", errors.New("database.backup not set")
+	}
+	if !viper.IsSet("database.backup.schedule") {
+		return "", errors.New("database.backup.schedule not set")
+	}
+	if !viper.IsSet("database.backup.path") {
+		return "", errors.New("database.backup.path not set")
+	}
 
 	backupDir, err := filepath.Abs(filepath.Dir(backupPath))
 	if err != nil {
