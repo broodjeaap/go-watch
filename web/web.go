@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"compress/gzip"
+	"database/sql"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -456,14 +457,16 @@ func (web *Web) index(c *gin.Context) {
 	} else {
 		for rows.Next() {
 			var watchID uint
-			var _time string
-			var value string
+			var _time sql.NullString
+			var value sql.NullString
 			err := rows.Scan(&watchID, &_time, &value)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
-			watchMap[watchID].LastValue = value
+			if value.Valid {
+				watchMap[watchID].LastValue = value.String
+			}
 		}
 	}
 
