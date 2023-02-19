@@ -239,7 +239,7 @@ An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squ
 ## Reverse Proxy
 
 GoWatch can be run behind a reverse proxy, if it's hosted under a subdomain (https://gowatch.domain.tld), no changes to the config are needed.  
-But if you want to run GoWatch under a path (https://domain.tld/gowatch), you can set the `gin.urlprefix` value in the config or the `GOWATCH_URLPREFIX` environment variable can be used.  
+But if you want to run GoWatch under a path (https://domain.tld/gowatch), you can set the `gin.urlprefix` value in the config or the `GOWATCH_GIN_URLPREFIX` environment variable can be used.  
 ```
 gin:
   urlprefix: "/gowatch"
