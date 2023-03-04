@@ -879,26 +879,34 @@ function editNode(node) {
     }
     var filterModalFooter = document.getElementById("filterResultsDiv");
     filterModalFooter.innerHTML = "";
+    var _loop_2 = function (result) {
+        var cardDiv = document.createElement("div");
+        cardDiv.classList.add("card", "my-2");
+        var cardBody = document.createElement("div");
+        cardBody.classList.add("card-body", "text-center");
+        var pre = document.createElement("pre");
+        var code = document.createElement("code");
+        if (result.length > 1500) {
+            var showResultLink_1 = document.createElement("a");
+            showResultLink_1.href = "#";
+            showResultLink_1.onclick = function () { showResultLink_1.innerHTML = result; };
+            showResultLink_1.innerHTML = "String of length >1500";
+            code = showResultLink_1;
+            console.log("code");
+        }
+        else {
+            result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            code.innerHTML = "'" + result + "'";
+        }
+        cardDiv.appendChild(cardBody);
+        pre.appendChild(code);
+        cardBody.appendChild(pre);
+        filterModalFooter.appendChild(cardDiv);
+    };
     try {
         for (var _e = __values(node.results), _f = _e.next(); !_f.done; _f = _e.next()) {
             var result = _f.value;
-            var cardDiv = document.createElement("div");
-            cardDiv.classList.add("card", "my-2");
-            var cardBody = document.createElement("div");
-            cardBody.classList.add("card-body", "text-center");
-            var pre = document.createElement("pre");
-            var code = document.createElement("code");
-            if (result.length > 1500) {
-                code.innerHTML = "String of length >1500";
-            }
-            else {
-                result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                code.innerHTML = "'" + result + "'";
-            }
-            cardDiv.appendChild(cardBody);
-            pre.appendChild(code);
-            cardBody.appendChild(pre);
-            filterModalFooter.appendChild(cardDiv);
+            _loop_2(result);
         }
     }
     catch (e_5_1) { e_5 = { error: e_5_1 }; }

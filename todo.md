@@ -9,5 +9,4 @@
     - compose example
     - readme
 - list of urls on watch view page?
-- view long results
 - add types to readme code blocks

@@ -1019,7 +1019,12 @@ function editNode(node: DiagramNode){
         let pre = document.createElement("pre");
         let code = document.createElement("code");
         if (result.length > 1500){
-            code.innerHTML = `String of length >1500`;
+            let showResultLink = document.createElement("a");
+            showResultLink.href = "#";
+            showResultLink.onclick = function() {showResultLink.innerHTML = result};
+            showResultLink.innerHTML = `String of length >1500`;
+            code = showResultLink;
+            console.log("code");
         } else {
             result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             code.innerHTML = `'${result}'`;
