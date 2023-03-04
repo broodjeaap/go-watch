@@ -4,3 +4,10 @@
     - scraping.go
     - util.go
     - edit.ts
+- trigger button on index/watch page
+- tor as proxy
+    - compose example
+    - readme
+- list of urls on watch view page?
+- view long results
+- add types to readme code blocks
