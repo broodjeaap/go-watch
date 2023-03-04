@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/broodjeaap/go-watch:latest
+    container_name: go-watch
+    environment:
+    - GOWATCH_PROXY_URL=http://tor-privoxy:8118
+    - GOWATCH_BROWSERLESS_URL=http://browserless:3000/content
+    volumes:
+    - /host/path/to/config:/config
+    ports:
+    - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:15
+    environment:
+    - POSTGRES_USER=gorm
+    - POSTGRES_PASSWORD=gorm
+    - POSTGRES_DB=gorm
+    volumes:
+    - /host/path/to/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  apprise:
+    image: caronc/apprise:latest
+  browserless:
+    image: browserless/chrome:latest
+    environment:
+    - DEFAULT_LAUNCH_ARGS=["--proxy-server=socks5://tor-privoxy:9050"]
+  tor-privoxy:
+    image: dockage/tor-privoxy
