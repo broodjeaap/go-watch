@@ -196,10 +196,10 @@ schedule:
 
 ## Proxy
 
-The config can be used to proxy HTTP/HTTPS requests through a proxy:  
+An HTTP/HTTPS proxy can be configured in the config or through the `GOWATCH_PROXY_URL` environment variable:  
 ```
 proxy:
-  proxy_url: http://proxy.com:1234
+  url: http://proxy.com:1234
 ```
 This will not work for requests made through Lua filters or Browserless but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
 ```

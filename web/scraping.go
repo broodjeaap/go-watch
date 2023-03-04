@@ -324,8 +324,8 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 
 func getURLContent(filter *Filter, fetchURL string) (string, error) {
 	var httpClient *http.Client
-	if viper.IsSet("proxy.proxy_url") {
-		proxyUrl, err := url.Parse(viper.GetString("proxy.proxy_url"))
+	if viper.IsSet("proxy.url") {
+		proxyUrl, err := url.Parse(viper.GetString("proxy.url"))
 		if err != nil {
 			return "", err
 		}

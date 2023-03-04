@@ -104,10 +104,10 @@ func (web *Web) addCronJobIfCronFilter(filter *Filter, startup bool) {
 	web.cronWatch[filter.ID] = entryID
 }
 
-// validateProxyURL calls url.Parse with the proxy.proxy_url, if there is an error, it's added to startupWarnings
+// validateProxyURL calls url.Parse with the proxy.url, if there is an error, it's added to startupWarnings
 func (web *Web) validateProxyURL() {
-	if viper.IsSet("proxy.proxy_url") {
-		_, err := url.Parse(viper.GetString("proxy.proxy_url"))
+	if viper.IsSet("proxy.url") {
+		_, err := url.Parse(viper.GetString("proxy.url"))
 		if err != nil {
 			web.startupWarning("Could not parse proxy url, check config")
 			return
