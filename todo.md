@@ -4,4 +4,3 @@
     - scraping.go
     - util.go
     - edit.ts
-- add types to readme code blocks

@@ -106,7 +106,7 @@ Download the config template:
 `wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/config.tmpl -O ./config.yaml`
 
 Or use the binary to generate it:  
-```
+```bash
 ./gowatch -printConfig 2> config.yaml
 # or 
 ./gowatch -writeConfig config.yaml
@@ -124,7 +124,7 @@ Or:
 `docker run --rm -v $PWD:/config ghcr.io/broodjeaap/go-watch:latest -writeConfig /config/config.yaml`
 
 After modifying the config to fit your needs, start the docker container
-```
+```bash
 docker run \
     -p 8080:8080 \
     -v $PWD/:/config \
@@ -145,7 +145,7 @@ But with more watches, especially with shorter schedules, Gorm will start loggin
 Which are just warnings, but at that point it's probably better to switch to another database.
 
 You can use another database by changing the `database.dsn` value in the config or `GOWATCH_DATABASE_DSN` environment variable, for example with a PostgreSQL database:  
-```
+```yaml
 version: "3"
 
 services:
@@ -179,7 +179,7 @@ services:
 ### Pruning
 
 An automatic database prune job that removes repeating values, this can be scheduled by adding a cron schedule to the config or with the `GOWATCH_SCHEDULE_DELAY` environment variable:  
-```
+```yaml
 database:
   dsn: "/config/watch.db"
   prune: "@every 1h"
@@ -190,7 +190,7 @@ database:
 
 If there are multiple watches set up with the same schedule then if GoWatch is restarted, all these watches will trigger at the same time, which causes a short burst of activity.  
 It might be preferable to spread out these schedules a bit, this can be done by setting `schedule.delay` in the config or with the `GOWATCH_SCHEDULE_DELAY` environment variable:  
-```
+```yaml
 schedule:
   delay: "5s"
 ```
@@ -198,12 +198,12 @@ schedule:
 ## Proxy
 
 An HTTP/HTTPS proxy can be configured in the config or through the `GOWATCH_PROXY_URL` environment variable:  
-```
+```yaml
 proxy:
   url: http://proxy.com:1234
 ```
 This will not work automatically for requests made through Lua filters, but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
-```
+```yaml
 version: "3"
 
 services:
@@ -217,7 +217,7 @@ services:
 ### Proxy pools
 
 Proxy 'pools' can be created by configuring the proxy that GoWatch points to, for example with [Squid](http://www.squid-cache.org/):  
-```
+```yaml
 version: "3"
 
 services:
@@ -234,7 +234,7 @@ services:
 ```
 
 And in the `squid.conf` the proxy pool would be defined with [cache_peer](http://www.squid-cache.org/Doc/config/cache_peer/)s like this:  
-```
+```conf
 cache_peer proxy1.com parent 3128 0 round-robin no-query
 cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 ```
@@ -244,7 +244,7 @@ An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squ
 ### Tor
 
 [Tor](https://www.torproject.org/) can also be used to proxy your requests, for example with the [tor-privoxy](https://github.com/dockage/tor-privoxy) container:  
-```
+```yaml
 version: "3"
 
 services:
@@ -267,7 +267,7 @@ To test if it's working, add a [Get URL](#get-url) filter with a `https://check.
 
 GoWatch can be run behind a reverse proxy, if it's hosted under a subdomain (https://gowatch.domain.tld), no changes to the config are needed.  
 But if you want to run GoWatch under a path (https://domain.tld/gowatch), you can set the `gin.urlprefix` value in the config or the `GOWATCH_GIN_URLPREFIX` environment variable can be used.  
-```
+```yaml
 gin:
   urlprefix: "/gowatch"
 ```
@@ -276,13 +276,13 @@ gin:
 
 Some websites (Amazon for example) don't send all content on the first request, it's added later through javascript.  
 To still be able to watch products from these types of websites, GoWatch supports [Browserless](https://www.browserless.io/), the Browserless URL can be added to the config:  
-```
+```yaml
 browserless:
   url: http://your.browserless:3000
 ```
 
 Or as an environment variable, for example in a docker-compose:  
-```
+```yaml
 version: "3"
 
 services:
@@ -302,7 +302,7 @@ services:
 To use Browserless, the [Browserless Get URL](#browserless-get-url), [Browserless Get URLs](#browserless-get-urls), [Browserless Function](#browserless-function) or [Browserless Function on result](#browserless-function-on-results) filters must be used. 
 
 Note that for Browserless request to be proxied, Browserless needs to be configured to do so:  
-```
+```yaml
 version: "3"
 
 services:
@@ -327,7 +327,7 @@ services:
 ## Authentication
 
 GoWatch doesn't have built in authentication, but we can use a reverse proxy for that, for example through Traefik:  
-```
+```yaml
 version: "3"
 
 services:
@@ -526,7 +526,7 @@ Executes the given [Puppeteer](https://github.com/puppeteer/puppeteer) [function
 
 The Lua filter wraps [gopher-lua](https://github.com/yuin/gopher-lua), with [gopher-lua-libs](https://github.com/vadv/gopher-lua-libs) to greatly extend the capabilities of the Lua VM.  
 A basic script that just passes all inputs to the output looks like this:  
-```
+```lua
 for i,input in pairs(inputs) do
 	table.insert(outputs, input)
 end
@@ -544,7 +544,7 @@ The gopher-lua-libs provide an [http](https://github.com/vadv/gopher-lua-libs/tr
 
 [Shoutrrr](https://containrrr.dev/shoutrrr/v0.5/) can be used to notify many different services, check their docs for a [list](https://containrrr.dev/shoutrrr/v0.5/services/overview/) of which ones.  
 An example config for sending notifications through Shoutrrr:   
-```
+```yaml
 notifiers:
   Shoutrrr-telegram-discord:
     type: "shoutrrr"
@@ -561,7 +561,7 @@ database:
 
 [Apprise](https://github.com/caronc/apprise) is another option to send notifications, it supports many different services/protocols, but it requires access to an [Apprise API](https://github.com/caronc/apprise-api).  
 Luckily there is a [docker image](https://hub.docker.com/r/caronc/apprise) available that we can add to our compose:  
-```
+```yaml
 version: "3"
 
 services:
@@ -577,7 +577,7 @@ services:
 ```
 
 And the notifier config:  
-```
+```yaml
 notifiers:
   apprise:
     type: "apprise"
@@ -593,7 +593,7 @@ database:
 ## File
 
 GoWatch can also simply append your notification text to a file:
-```
+```yaml
 notifiers:
   File:
     type: "file"
