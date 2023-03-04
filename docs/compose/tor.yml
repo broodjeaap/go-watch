@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/broodjeaap/go-watch:latest
+    container_name: go-watch
+    environment:
+    - HTTP_PROXY=http://tor-privoxy:8118
+    - HTTPS_PROXY=http://tor-privoxy:8118
+    volumes:
+    - ./tmp:/config
+    ports:
+    - "8080:8080"
+  tor-privoxy:
+    image: dockage/tor-privoxy
+    container_name: tor-privoxy
