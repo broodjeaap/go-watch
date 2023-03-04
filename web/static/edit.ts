@@ -2,6 +2,8 @@
 // @ts-ignore
 let urlPrefix = getURLPrefix();
 function onTypeChange(node: DiagramNode | null = null){
+    // onTypeChange handles changing of the type of a DiagramNode while editing or creating a new Node
+    // It removes all input elements and each case is responsible for adding the input it needs
     // @ts-ignore
     let urlPrefix = getURLPrefix();
     let select = document.getElementById("typeInput") as HTMLSelectElement;
@@ -715,6 +717,7 @@ end
 }
 
 function onMathChange(node: DiagramNode | null = null){
+    // onMatchChange handles the changing of the inputs when type == math
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
     let var2Input = document.getElementById("var2Input") as HTMLInputElement;
@@ -741,6 +744,7 @@ function onMathChange(node: DiagramNode | null = null){
 }
 
 function onConditionChange(node: DiagramNode | null = null){
+    // onConditionChange handles the changing of the inputs when type == condition
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
     let var1Div = document.getElementById("var1Div") as HTMLDivElement;
@@ -815,6 +819,8 @@ function onConditionChange(node: DiagramNode | null = null){
 }
 
 function onBrowserlessChange(node: DiagramNode | null = null){
+    // onBrowserlessChange handles the changing of the inputs when type == browserless
+
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
     let var1Div = document.getElementById("var1Div") as HTMLDivElement;
@@ -909,6 +915,15 @@ function onBrowserlessChange(node: DiagramNode | null = null){
   const { result } = context;
   await page.goto(result);
 
+  // click something
+  //await page.click("#elem");
+  
+  // fill input
+  //await page.$eval('#elem', el => el.value = 'some text');
+  
+  // select dropdown
+  // await page.select('#elem', 'value')
+
   const data = await page.content();
 
   return {
@@ -945,6 +960,7 @@ function onBrowserlessChange(node: DiagramNode | null = null){
 }
 
 function onSubmitNewFilter(){
+    // onSubmitNewFilter collects all the values from the input elements, and calls _diagram.addNode() with it
     let nameInput = document.getElementById("nameInput") as HTMLInputElement;
     let name = nameInput.value;
     let selectType = document.getElementById("typeInput") as HTMLSelectElement;
@@ -967,6 +983,7 @@ function onSubmitNewFilter(){
 }
 
 function editNode(node: DiagramNode){
+    // editNode resets the edit/new Node modal to reflect the values of 'node'
     let addFilterButton = document.getElementById("filterButton") as HTMLButtonElement;
     addFilterButton.click();
 
@@ -1038,6 +1055,7 @@ function editNode(node: DiagramNode){
 }
 
 function deleteNode(node: DiagramNode){
+    // deleteNode deletes a node from _diagram and removes all connections to/from it
     _diagram.nodes.delete(node.id)
     for (let i = 0; i < _diagram.connections.length; i++){
         let connection = _diagram.connections[i];
@@ -1051,6 +1069,7 @@ function deleteNode(node: DiagramNode){
 }
 
 function submitEditNode(node: DiagramNode){
+    // submitEditNode saves the changes to the input elements to the underlying node
     let nameInput = document.getElementById("nameInput") as HTMLInputElement;
     node.label = nameInput.value;
 
@@ -1074,6 +1093,7 @@ function submitEditNode(node: DiagramNode){
 }
 
 function saveWatch(){
+    // saveWatch collects all the state (nodes/connections), turns it into JSON and submits it through a hidden form
     let watchIdInput = document.getElementById("watch_id") as HTMLInputElement;
     let watchId = Number(watchIdInput.value);
     let filters = new Array<Object>();
@@ -1113,6 +1133,7 @@ function saveWatch(){
 }
 
 function addFilterButtonClicked(){
+    // addFilterButtonClicked opens up the new/edit filter modal and empties it
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.onclick = onSubmitNewFilter
     submitButton.innerHTML = "Add Filter"
@@ -1126,6 +1147,7 @@ function addFilterButtonClicked(){
 }
 
 function pageInit(){
+    // pageInit sets all the onclick/onchange trigger events
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     select.onchange = function () {onTypeChange()};
 
@@ -1142,6 +1164,7 @@ function pageInit(){
 document.addEventListener('DOMContentLoaded', pageInit, false);
 
 function clearCache(){
+    // POSTs to cache/clear and reloads if clearing the cache was succesful
     let confirmed = confirm("Do you want to clear the URL cache?");
     if (!confirmed){
         return // do nothing
