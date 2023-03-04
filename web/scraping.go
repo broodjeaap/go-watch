@@ -29,12 +29,18 @@ import (
 	. "github.com/broodjeaap/go-watch/models"
 )
 
+// ProcessFilters takes the filters of a watch, already 'connected' with buildFilterTree(), and processes the filters in the right order.
 func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *uint) {
+	// set of watch.IDs that have been processed
+	// filters will only be processed if all their parents are processed
 	processedMap := make(map[uint]bool, len(filters))
+
+	// if this function is called from a schedule, add the schedule filter to the processed set
 	if scheduleID != nil {
 		processedMap[*scheduleID] = true
 	}
 
+	// print out the name of the watch and schedule filter that called this function
 	for _, filter := range filters {
 		if scheduleID != nil && filter.ID == *scheduleID {
 			log.Println(fmt.Sprintf("Scheduled Watch for '%s', triggered by schedule '%s'", watch.Name, filter.Name))
@@ -59,6 +65,7 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 		}
 	}
 
+	// create a queue with all filters
 	currentFilters := make([]*Filter, 0, len(filters))
 	for i := range filters {
 		filter := &filters[i]
@@ -69,15 +76,26 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 	storeFilters := make([]*Filter, 0, 5)
 	notifyFilters := make([]*Filter, 0, 5)
 
+	// loop through current filters until it's empty
 	for {
+		// empty queue that will replace 'currentFilters' every outer iteration
 		nextFilters := make([]*Filter, 0, len(currentFilters))
 		for i := range currentFilters {
 			filter := currentFilters[i]
+
+			// handle store filters at the end, so everything has a value
 			if filter.Type == "store" {
 				storeFilters = append(storeFilters, filter)
 				processedMap[filter.ID] = true
 				continue
 			}
+
+			// handle notify filters at the end, so everything has a value
+			if debug && filter.Type == "notify" {
+				notifyFilters = append(notifyFilters, filter)
+			}
+
+			// for schedule filters during editing, just check the schedule string and set to processed
 			if debug && filter.Type == "cron" {
 				if filter.Var2 != nil && *filter.Var2 == "no" {
 					filter.Log("Schedule is disabled")
@@ -86,17 +104,20 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 				getCronDebugResult(filter)
 				continue
 			}
+
+			// for testing, allows bootstrapping test cases
 			if filter.Type == "echo" {
 				getFilterResultEcho(filter)
 				processedMap[filter.ID] = true
 				continue
 			}
-			if debug && filter.Type == "notify" {
-				notifyFilters = append(notifyFilters, filter)
-			}
+
+			// no parents nothing to do, unless editing
 			if len(filter.Parents) == 0 && !debug {
 				continue
 			}
+
+			// loop through parent filters to see if they're all processed
 			var allParentsProcessed = true
 			for _, parent := range filter.Parents {
 				if _, contains := processedMap[parent.ID]; !contains {
@@ -104,10 +125,14 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 					break
 				}
 			}
+
+			// if not all parents are processed, add to queue for next outer iteration
 			if !allParentsProcessed {
 				nextFilters = append(nextFilters, filter)
 				continue
 			}
+
+			// get the result of the filter
 			getFilterResult(filters, filter, watch, web, debug)
 			processedMap[filter.ID] = true
 		}
@@ -133,6 +158,7 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 	}
 }
 
+// getFilterResult is just a big switch case handling passing the filter to the right filter function
 func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, debug bool) {
 	switch {
 	case filter.Type == "gurl":
@@ -279,6 +305,7 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 	}
 }
 
+// getFilterResultURL Fetches the given URL and outputs the HTTP response.
 func getFilterResultURL(filter *Filter, urlCache map[string]string, debug bool) {
 	fetchURL := filter.Var1
 	val, exists := urlCache[fetchURL]
@@ -298,6 +325,7 @@ func getFilterResultURL(filter *Filter, urlCache map[string]string, debug bool) 
 	}
 }
 
+// getFilterResultURLs Fetches every URL given by its parents and outputs every HTTP response.
 func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool) {
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -322,6 +350,7 @@ func getFilterResultURLs(filter *Filter, urlCache map[string]string, debug bool)
 	}
 }
 
+// getURLContent actually handles the HTTP GET for getFilterResultURL and getFilterResultURLs
 func getURLContent(filter *Filter, fetchURL string) (string, error) {
 	var httpClient *http.Client
 	if viper.IsSet("proxy.url") {
@@ -345,6 +374,7 @@ func getURLContent(filter *Filter, fetchURL string) (string, error) {
 	return string(body), nil
 }
 
+// getFilterResultBrowserlessURL Fetches the given URL and outputs the HTTP response through Browserless
 func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, debug bool) {
 	if filter.Var2 == nil {
 		filter.Log("filter.Var2 == nil")
@@ -368,6 +398,7 @@ func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, d
 	}
 }
 
+// getFilterResultBrowserlessURLs Fetches every URL given by its parents and outputs every HTTP response through Browserless.
 func getFilterResultBrowserlessURLs(filter *Filter, urlCache map[string]string, debug bool) {
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -392,6 +423,7 @@ func getFilterResultBrowserlessURLs(filter *Filter, urlCache map[string]string, 
 	}
 }
 
+// getBrowserlessURLContent actually handles the request for getFilterResultBrowserlessURL and getFilterResultBrowserlessURLs
 func getBrowserlessURLContent(filter *Filter, fetchURL string) (string, error) {
 	if !viper.IsSet("browserless.url") {
 		return "", errors.New("browserless.url not set")
@@ -424,6 +456,7 @@ func getBrowserlessURLContent(filter *Filter, fetchURL string) (string, error) {
 	return string(body), nil
 }
 
+// getBrowserlessFunctionResult Executes the Puppeteer function through Browserless
 func getBrowserlessFunctionResult(filter *Filter) {
 	result, err := getBrowserlessFunctionContent(filter, "")
 	if err != nil {
@@ -434,6 +467,7 @@ func getBrowserlessFunctionResult(filter *Filter) {
 	filter.Results = append(filter.Results, result)
 }
 
+// getBrowserlessFunctionResult Executes the Puppeteer function through Browserless for every parents result
 func getBrowserlessFunctionResults(filter *Filter) {
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -454,6 +488,7 @@ type BrowserlessContext struct {
 	Result string `json:"result"`
 }
 
+// getBrowserlessFunctionContent actually handles Browserless request for getBrowserlessFunctionResult and getBrowserlessFunctionResults
 func getBrowserlessFunctionContent(filter *Filter, result string) (string, error) {
 	if !viper.IsSet("browserless.url") {
 
@@ -492,6 +527,7 @@ func getBrowserlessFunctionContent(filter *Filter, result string) (string, error
 	return string(body), nil
 }
 
+// getFilterResultXPath Filters the results of its parents based on an XPath query
 func getFilterResultXPath(filter *Filter) {
 	selectType := "node"
 	if filter.Var2 != nil {
@@ -543,6 +579,7 @@ func getFilterResultXPath(filter *Filter) {
 	}
 }
 
+// getFilterResultJSON Filters the results of its parents based on an JSON query
 func getFilterResultJSON(filter *Filter) {
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -553,6 +590,7 @@ func getFilterResultJSON(filter *Filter) {
 	}
 }
 
+// getFilterResultCSS Filters the results of its parents based on an CSS query
 func getFilterResultCSS(filter *Filter) {
 	selectType := "node"
 	if filter.Var2 != nil {
@@ -608,6 +646,7 @@ func getFilterResultCSS(filter *Filter) {
 	}
 }
 
+// getFilterResultReplace performs a regex replace on all the results of its parents
 func getFilterResultReplace(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
 	if err != nil {
@@ -625,6 +664,7 @@ func getFilterResultReplace(filter *Filter) {
 	}
 }
 
+// getFilterResultReplace performs a regex match on all the results of its parents
 func getFilterResultMatch(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
 	if err != nil {
@@ -638,6 +678,7 @@ func getFilterResultMatch(filter *Filter) {
 	}
 }
 
+// getFilterResultSubstring performs a substring selection on all the results of its parents
 func getFilterResultSubstring(filter *Filter) {
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -711,6 +752,7 @@ func getFilterResultSubstring(filter *Filter) {
 	}
 }
 
+// getFilterResultContains performs a regex contains on all the results of its parents
 func getFilterResultContains(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
 	invert, err := strconv.ParseBool(*filter.Var2)
@@ -730,6 +772,7 @@ func getFilterResultContains(filter *Filter) {
 	}
 }
 
+// getFilterResultSum sums all the numerical values passed from its parents
 func getFilterResultSum(filter *Filter) {
 	var sum float64 = 0.0
 	for _, parent := range filter.Parents {
@@ -748,6 +791,7 @@ func getFilterResultSum(filter *Filter) {
 	filter.Results = append(filter.Results, fmt.Sprintf("%f", sum))
 }
 
+// getFilterResultMin outputs the minimum value of all the numerical values passed from its parents
 func getFilterResultMin(filter *Filter) {
 	var min = math.MaxFloat64
 	var setMin = false
@@ -774,6 +818,7 @@ func getFilterResultMin(filter *Filter) {
 	}
 }
 
+// getFilterResultMax outputs the maximum value of all the numerical values passed from its parents
 func getFilterResultMax(filter *Filter) {
 	var max = -math.MaxFloat64
 	var setMax = false
@@ -799,6 +844,7 @@ func getFilterResultMax(filter *Filter) {
 	}
 }
 
+// getFilterResultAverage outputs the average value of all the numerical values passed from its parents
 func getFilterResultAverage(filter *Filter) {
 	var sum float64 = 0.0
 	var count float64 = 0.0
@@ -821,6 +867,7 @@ func getFilterResultAverage(filter *Filter) {
 	}
 }
 
+// getFilterResultCount outputs the count of the number of inputs it gets from its parents
 func getFilterResultCount(filter *Filter) {
 	var count = 0
 	for _, parent := range filter.Parents {
@@ -839,6 +886,7 @@ func roundFloat(val float64, precision uint) float64 {
 	return rounded
 }
 
+// getFilterResultRound outputs the rounded value of every numerical input
 func getFilterResultRound(filter *Filter) {
 	var decimals int64 = 0
 	if filter.Var2 != nil {
@@ -866,6 +914,7 @@ func getFilterResultRound(filter *Filter) {
 	}
 }
 
+// storeFilterResult stores the results of its parents in the database
 func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 	if debug {
 		return
@@ -890,6 +939,7 @@ func storeFilterResult(filter *Filter, db *gorm.DB, debug bool) {
 	}
 }
 
+// getFilterResultConditionDiff outputs any input that is different from the last stored value of a specific store filter
 func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Limit(1).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Find(&previousOutput)
@@ -904,6 +954,7 @@ func getFilterResultConditionDiff(filter *Filter, db *gorm.DB) {
 	}
 }
 
+// getFilterResultConditionLowerLast outputs any input that is lower from the last stored value of a specific store filter
 func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
@@ -933,6 +984,7 @@ func getFilterResultConditionLowerLast(filter *Filter, db *gorm.DB) {
 	}
 }
 
+// getFilterResultConditionLowest outputs any input that is lower than all values of a specific store filter
 func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 	var previousOutputs []FilterOutput
 	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Name).Find(&previousOutputs)
@@ -965,6 +1017,7 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 	}
 }
 
+// getFilterResultConditionLowerThan outputs any input that is lower than a given value
 func getFilterResultConditionLowerThan(filter *Filter) {
 	if filter.Var2 == nil {
 		filter.Log("No threshold given")
@@ -993,6 +1046,7 @@ func getFilterResultConditionLowerThan(filter *Filter) {
 	}
 }
 
+// getFilterResultConditionHigherLast outputs any input that is higher from the last stored value of a specific store filter
 func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 	var previousOutput FilterOutput
 	db.Model(&FilterOutput{}).Order("time desc").Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Limit(1).Find(&previousOutput)
@@ -1022,6 +1076,7 @@ func getFilterResultConditionHigherLast(filter *Filter, db *gorm.DB) {
 	}
 }
 
+// getFilterResultConditionHighest outputs any input that is higher than all values of a specific store filter
 func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 	var previousOutputs []FilterOutput
 	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Find(&previousOutputs)
@@ -1056,6 +1111,7 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 	}
 }
 
+// getFilterResultConditionHigherThan outputs any input that is higher than a given value
 func getFilterResultConditionHigherThan(filter *Filter) {
 	if filter.Var2 == nil {
 		filter.Log("No threshold given for Higher Than Filter")
@@ -1084,6 +1140,7 @@ func getFilterResultConditionHigherThan(filter *Filter) {
 	}
 }
 
+// getFilterResultUnique outputs the unique values
 func getFilterResultUnique(filter *Filter) {
 	valueMap := make(map[string]bool)
 
@@ -1098,6 +1155,7 @@ func getFilterResultUnique(filter *Filter) {
 	}
 }
 
+// notifyFilter creates a notification string, and sends it to web.notify
 func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debug bool) {
 	haveResults := false
 	for _, parent := range filter.Parents {
@@ -1115,6 +1173,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 		return
 	}
 
+	// add convenience values for all filters
 	dataMap := make(map[string]any, 20)
 	for _, f := range filters {
 		dataMap[f.Name] = template.HTML(strings.Join(f.Results, ", "))
@@ -1123,6 +1182,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 		dataMap[f.Name+"_Var2"] = f.Var2
 	}
 
+	// add the watch name
 	dataMap["WatchName"] = template.HTML(watch.Name)
 
 	var buffer bytes.Buffer
@@ -1139,6 +1199,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 
 }
 
+// TriggerSchedule gets called by the cronjob scheduler to start a watch execution
 func TriggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 	var watch *Watch
 	web.db.Model(&Watch{}).First(&watch, watchID)
@@ -1153,6 +1214,7 @@ func TriggerSchedule(watchID uint, web *Web, scheduleID *uint) {
 	ProcessFilters(filters, web, watch, false, scheduleID)
 }
 
+// getCronDebugResult parses the cron schedule string and logs any errors
 func getCronDebugResult(filter *Filter) {
 	_, err := cron.ParseStandard(filter.Var1)
 	if err != nil {
@@ -1160,12 +1222,14 @@ func getCronDebugResult(filter *Filter) {
 	}
 }
 
+// getFilterResultLua executes a given Lua script
 func getFilterResultLua(filter *Filter) {
 	L := lua.NewState()
 	defer L.Close()
 
 	lualibs.Preload(L)
 
+	// add all parent results to the 'inputs' table
 	inputs := L.CreateTable(10, 0)
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
@@ -1174,9 +1238,11 @@ func getFilterResultLua(filter *Filter) {
 	}
 	L.SetGlobal("inputs", inputs)
 
+	// create the 'outputs' table
 	outputs := L.CreateTable(10, 0)
 	L.SetGlobal("outputs", outputs)
 
+	// create the 'logs' table
 	logs := L.CreateTable(10, 0)
 	L.SetGlobal("logs", logs)
 
@@ -1185,11 +1251,14 @@ func getFilterResultLua(filter *Filter) {
 		filter.Log(err)
 		return
 	}
+
+	// add all the values from the 'outputs' table to this filters results
 	outputs.ForEach(
 		func(key lua.LValue, value lua.LValue) {
 			filter.Results = append(filter.Results, value.String())
 		},
 	)
+	// add all the messages from the 'logs' table to this filters logs
 	logs.ForEach(
 		func(key lua.LValue, value lua.LValue) {
 			filter.Logs = append(filter.Logs, value.String())
@@ -1197,6 +1266,7 @@ func getFilterResultLua(filter *Filter) {
 	)
 }
 
+// getFilterResultEcho is a debug filter type, used to bootstrap some tests
 func getFilterResultEcho(filter *Filter) {
 	filter.Results = append(filter.Results, filter.Var1)
 }
