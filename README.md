@@ -19,7 +19,8 @@ Some out-of-the-box highlights:
   - [Database](#database)
     - [Pruning](#pruning)
   - [Proxy](#proxy)
-  - [Proxy Pools](#proxy-pools)
+    - [Proxy Pools](#proxy-pools)
+    - [Tor](#tor)
   - [Reverse Proxy](#reverse-proxy)
   - [Browserless](#browserless)
   - [Authentication](#Authentication)
@@ -201,8 +202,10 @@ An HTTP/HTTPS proxy can be configured in the config or through the `GOWATCH_PROX
 proxy:
   url: http://proxy.com:1234
 ```
-This will not work for requests made through Lua filters or Browserless but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
+This will not work automatically for requests made through Lua filters, but when using the docker image, the `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used which will route all traffic through the proxy:  
 ```
+version: "3"
+
 services:
   app:
     image: ghcr.io/broodjeaap/go-watch:latest
@@ -211,10 +214,12 @@ services:
     - HTTP_PROXY=http://proxy.com:1234
     - HTTPS_PROXY=http://proxy.com:1234
 ```
-## Proxy pools
+### Proxy pools
 
 Proxy 'pools' can be created by configuring the proxy that GoWatch points to, for example with [Squid](http://www.squid-cache.org/):  
 ```
+version: "3"
+
 services:
   app:
     image: ghcr.io/broodjeaap/go-watch:latest
@@ -235,6 +240,28 @@ cache_peer proxy2.com parent 3128 0 round-robin no-query login=user:pass
 ```
 
 An example `squid.conf` can be found in [docs/proxy/squid-1.conf](docs/proxy/squid-1.conf).
+
+### Tor
+
+[Tor](https://www.torproject.org/) can also be used to proxy your requests, for example with the [tor-privoxy](https://github.com/dockage/tor-privoxy) container:  
+```
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/broodjeaap/go-watch:latest
+    environment:
+    - HTTP_PROXY=http://tor-privoxy:8118
+    - HTTPS_PROXY=http://tor-privoxy:8118
+    volumes:
+    - ./tmp:/config
+    ports:
+    - "8080:8080"
+  tor-privoxy:
+    image: dockage/tor-privoxy
+```
+
+To test if it's working, add a [Get URL](#get-url) filter with a `https://check.torproject.org/api/ip` value, and check the result.
 
 ## Reverse Proxy
 
@@ -272,8 +299,30 @@ services:
     image: browserless/chrome:latest
 ```
 
-To use Browserless, the [Browserless Get URL](#browserless-get-url), [Browserless Get URLs](#browserless-get-urls), [Browserless Function](#browserless-function) or [Browserless Function on result](#browserless-function-on-results) filters must be used.  
-Note that the proxy environment variables can be added to the Browserless container to still allow for proxying.
+To use Browserless, the [Browserless Get URL](#browserless-get-url), [Browserless Get URLs](#browserless-get-urls), [Browserless Function](#browserless-function) or [Browserless Function on result](#browserless-function-on-results) filters must be used. 
+
+Note that for Browserless request to be proxied, Browserless needs to be configured to do so:  
+```
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/broodjeaap/go-watch:latest
+    container_name: go-watch
+    environment:
+    - GOWATCH_PROXY_URL=http://tor-privoxy:8118 
+    - GOWATCH_BROWSERLESS_URL=http://browserless:3000
+    volumes:
+    - /host/path/to/config:/config
+    ports:
+    - "8080:8080"
+  tor-privoxy:
+    image: dockage/tor-privoxy
+  browserless:
+    image: browserless/chrome:latest
+    environment:
+    - DEFAULT_LAUNCH_ARGS=["--proxy-server=socks5://tor-privoxy:9050"]
+```
 
 ## Authentication
 

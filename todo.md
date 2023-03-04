@@ -5,8 +5,5 @@
     - util.go
     - edit.ts
 - trigger button on index/watch page
-- tor as proxy
-    - compose example
-    - readme
 - list of urls on watch view page?
 - add types to readme code blocks
