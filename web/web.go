@@ -714,7 +714,10 @@ func (web *Web) watchView(c *gin.Context) {
 			numericalMap[value.Name] = append(numericalMap[value.Name], value)
 		} else {
 			// probably very inefficient to prepend, but want newest values at the top
-			categoricalMap[value.Name] = append([]*FilterOutput{value}, categoricalMap[value.Name]...)
+			valueName := strings.ReplaceAll(value.Name, " ", "_")
+			valueName = strings.ToLower(valueName)
+			categoricalMap[valueName] = append([]*FilterOutput{value}, categoricalMap[valueName]...)
+			log.Println(categoricalMap)
 		}
 	}
 
