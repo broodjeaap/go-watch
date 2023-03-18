@@ -699,7 +699,7 @@ func TestFilterRound(t *testing.T) {
 
 func getTestDB() *gorm.DB {
 	db, _ := gorm.Open(sqlite.Open("./test.db"))
-	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
+	db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{}, &ExpectFail{})
 	return db
 }
 
@@ -1765,8 +1765,6 @@ func TestSimpleTriggeredWatch(t *testing.T) {
 	maxFilter := &filters[6]
 	storeMaxFilter := &filters[7]
 
-	log.Println(scheduleFilter)
-
 	connections := []FilterConnection{
 		{
 			WatchID:  watch.ID,
@@ -1805,8 +1803,6 @@ func TestSimpleTriggeredWatch(t *testing.T) {
 		},
 	}
 	db.Create(&connections)
-
-	log.Println(connections[0])
 
 	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
 
@@ -1872,5 +1868,394 @@ func TestDontAllowMultipleCronOnSingleFilter(t *testing.T) {
 
 	if len(filter.Logs) == 0 {
 		t.Errorf("Expected error message in filter log, found empty log: %s", filter.Logs)
+	}
+}
+
+func TestWatchWithExpectNotTriggering(t *testing.T) {
+	db := getTestDB()
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Echo",
+			Type: "echo",
+			Var1: HTML_STRING,
+		},
+		{
+			ID:   1,
+			Name: "XPath",
+			Type: "xpath",
+			Var1: "//td[@class='price']",
+		},
+		{
+			ID:   2,
+			Name: "Expect",
+			Type: "expect",
+			Var1: "1",
+		},
+	}
+
+	expectFilter := &filters[2]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 0,
+			InputID:  1,
+		},
+		{
+			OutputID: 1,
+			InputID:  2,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+	ProcessFilters(filters, &Web{db: db}, nil, false, nil)
+
+	if len(expectFilter.Results) != 0 {
+		t.Error("Expect has results, should be empty:", expectFilter.Results)
+	}
+
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestWatchWithExpectTriggering(t *testing.T) {
+	db := getTestDB()
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Echo",
+			Type: "echo",
+			Var1: HTML_STRING,
+		},
+		{
+			ID:   1,
+			Name: "XPath",
+			Type: "xpath",
+			Var1: "//div[@class='price']",
+		},
+		{
+			ID:   2,
+			Name: "Expect",
+			Type: "expect",
+			Var1: "1",
+		},
+	}
+
+	expectFilter := &filters[2]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 0,
+			InputID:  1,
+		},
+		{
+			OutputID: 1,
+			InputID:  2,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+	ProcessFilters(filters, &Web{db: db}, nil, false, nil)
+
+	if len(expectFilter.Results) != 1 {
+		t.Error("Expect has no results, should have 'expected'")
+	}
+
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+func TestWatchWithExpect3Triggering(t *testing.T) {
+	db := getTestDB()
+	filters := []Filter{
+		{
+			ID:   0,
+			Name: "Echo",
+			Type: "echo",
+			Var1: HTML_STRING,
+		},
+		{
+			ID:   1,
+			Name: "XPath",
+			Type: "xpath",
+			Var1: "//div[@class='price']",
+		},
+		{
+			ID:   2,
+			Name: "Expect",
+			Type: "expect",
+			Var1: "3",
+		},
+	}
+
+	expectFilter := &filters[2]
+
+	connections := []FilterConnection{
+		{
+			OutputID: 0,
+			InputID:  1,
+		},
+		{
+			OutputID: 1,
+			InputID:  2,
+		},
+	}
+
+	buildFilterTree(filters, connections)
+
+	ProcessFilters(filters, &Web{db: db}, nil, false, nil)
+
+	if len(expectFilter.Results) != 0 {
+		t.Error("Expect has results, should be empty:", expectFilter.Results)
+	}
+
+	ProcessFilters(filters, &Web{db: db}, nil, false, nil)
+
+	if len(expectFilter.Results) != 0 {
+		t.Error("Expect has results, should be empty:", expectFilter.Results)
+	}
+
+	ProcessFilters(filters, &Web{db: db}, nil, false, nil)
+
+	if len(expectFilter.Results) != 1 {
+		t.Error("Expect has no results, should have 'expected'")
+	}
+
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestWatchWithExpectNotTriggeringDB(t *testing.T) {
+	db := getTestDB()
+	watch := Watch{
+		Name: "Test",
+	}
+	db.Create(&watch)
+	filters := []Filter{
+		{
+			WatchID: watch.ID,
+			Name:    "Schedule",
+			Type:    "cron",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Echo",
+			Type:    "echo",
+			Var1:    HTML_STRING,
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "XPath",
+			Type:    "xpath",
+			Var1:    "//td[@class='price']",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Expect",
+			Type:    "expect",
+			Var1:    "1",
+		},
+	}
+	db.Create(&filters)
+	scheduleFilter := &filters[0]
+	echoFilter := &filters[1]
+	xpathFilter := &filters[2]
+	expectFilter := &filters[3]
+
+	connections := []FilterConnection{
+		{
+			WatchID:  watch.ID,
+			OutputID: scheduleFilter.ID,
+			InputID:  echoFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: echoFilter.ID,
+			InputID:  xpathFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: xpathFilter.ID,
+			InputID:  expectFilter.ID,
+		},
+	}
+	db.Create(&connections)
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	var expectFails []ExpectFail
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) > 0 {
+		t.Errorf("Found ExpectFail values expected none!")
+	}
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+func TestWatchWithExpectTriggeringDB(t *testing.T) {
+	db := getTestDB()
+	watch := Watch{
+		Name: "Test",
+	}
+	db.Create(&watch)
+	filters := []Filter{
+		{
+			WatchID: watch.ID,
+			Name:    "Schedule",
+			Type:    "cron",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Echo",
+			Type:    "echo",
+			Var1:    HTML_STRING,
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "XPath",
+			Type:    "xpath",
+			Var1:    "//div[@class='price']",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Expect",
+			Type:    "expect",
+			Var1:    "1",
+		},
+	}
+	db.Create(&filters)
+	scheduleFilter := &filters[0]
+	echoFilter := &filters[1]
+	xpathFilter := &filters[2]
+	expectFilter := &filters[3]
+
+	connections := []FilterConnection{
+		{
+			WatchID:  watch.ID,
+			OutputID: scheduleFilter.ID,
+			InputID:  echoFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: echoFilter.ID,
+			InputID:  xpathFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: xpathFilter.ID,
+			InputID:  expectFilter.ID,
+		},
+	}
+	db.Create(&connections)
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	var expectFails []ExpectFail
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 1 {
+		t.Errorf("Found no ExpectFail values expected 1!")
+	}
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+func TestWatchWithExpect3TriggeringDB(t *testing.T) {
+	db := getTestDB()
+	watch := Watch{
+		Name: "Test",
+	}
+	db.Create(&watch)
+	filters := []Filter{
+		{
+			WatchID: watch.ID,
+			Name:    "Schedule",
+			Type:    "cron",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Echo",
+			Type:    "echo",
+			Var1:    HTML_STRING,
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "XPath",
+			Type:    "xpath",
+			Var1:    "//div[@class='price']",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Expect",
+			Type:    "expect",
+			Var1:    "3",
+		},
+	}
+	db.Create(&filters)
+	scheduleFilter := &filters[0]
+	echoFilter := &filters[1]
+	xpathFilter := &filters[2]
+	expectFilter := &filters[3]
+
+	connections := []FilterConnection{
+		{
+			WatchID:  watch.ID,
+			OutputID: scheduleFilter.ID,
+			InputID:  echoFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: echoFilter.ID,
+			InputID:  xpathFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: xpathFilter.ID,
+			InputID:  expectFilter.ID,
+		},
+	}
+	db.Create(&connections)
+
+	var expectFails []ExpectFail
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 1 {
+		t.Errorf("Found %d ExpectFail values, expected 1!", len(expectFails))
+		log.Println(expectFails)
+	}
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 2 {
+		t.Errorf("Found %d ExpectFail values, expected 2!", len(expectFails))
+		log.Println(expectFails)
+	}
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 3 {
+		t.Errorf("Found %d ExpectFail values, expected 3! (1)", len(expectFails))
+		log.Println(expectFails)
+	}
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 3 {
+		t.Errorf("Found %d ExpectFail values, expected 3! (2)", len(expectFails))
+		log.Println(expectFails)
+	}
+
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
 	}
 }

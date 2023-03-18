@@ -36,6 +36,7 @@ Some out-of-the-box highlights:
   - [Substring](#substring)
   - [Contains](#contains)
   - [Store](#store)
+  - [Expect](#expect)
   - [Notify](#notify)
   - [Math](#math)
     - [Sum](#sum)
@@ -444,6 +445,11 @@ Inputs pass if they contain the given regex.
 
 Stores each input value in the database under its own name.  
 It's recommended to do this after reducing inputs to a single value (Minimum/Maximum/Average/etc).
+
+## Expect
+
+Outputs a value when it has no inputs, useful to do something (notify) when something goes wrong with your Watch.  
+Will only trigger once and can be set to wait multiple times before triggering.
 
 ## Notify
 

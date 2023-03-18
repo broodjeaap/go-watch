@@ -34,6 +34,8 @@ var urlPrefix = getURLPrefix();
 function onTypeChange(node) {
     var e_1, _a, e_2, _b;
     if (node === void 0) { node = null; }
+    // onTypeChange handles changing of the type of a DiagramNode while editing or creating a new Node
+    // It removes all input elements and each case is responsible for adding the input it needs
     // @ts-ignore
     var urlPrefix = getURLPrefix();
     var select = document.getElementById("typeInput");
@@ -415,6 +417,29 @@ function onTypeChange(node) {
             onConditionChange(node);
             break;
         }
+        case "expect": {
+            var var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.type = "number";
+            var1Input.value = "1";
+            var1Input.classList.add("form-control");
+            var1Label.innerHTML = "Threshold";
+            var1Input.placeholder = "1";
+            if (var1Value != "") {
+                var1Input.value = var1Value;
+            }
+            var1Div.appendChild(var1Input);
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            break;
+        }
         case "notify": {
             var var1Input = document.createElement("textarea");
             var1Input.name = "var1";
@@ -607,6 +632,7 @@ function onTypeChange(node) {
 }
 function onMathChange(node) {
     if (node === void 0) { node = null; }
+    // onMatchChange handles the changing of the inputs when type == math
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
     var var2Input = document.getElementById("var2Input");
@@ -633,6 +659,7 @@ function onMathChange(node) {
 function onConditionChange(node) {
     var e_3, _a;
     if (node === void 0) { node = null; }
+    // onConditionChange handles the changing of the inputs when type == condition
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
     var var1Div = document.getElementById("var1Div");
@@ -713,6 +740,7 @@ function onConditionChange(node) {
     }
 }
 function onBrowserlessChange(node) {
+    // onBrowserlessChange handles the changing of the inputs when type == browserless
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
@@ -790,7 +818,7 @@ function onBrowserlessChange(node) {
             var var2Input_6 = document.createElement("textarea");
             var2Input_6.name = "var2Input";
             var2Input_6.id = "var2Input";
-            var2Input_6.value = "module.exports = async ({ page, context }) => {\n  const { result } = context;\n  await page.goto(result);\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
+            var2Input_6.value = "module.exports = async ({ page, context }) => {\n  const { result } = context;\n  await page.goto(result);\n\n  // click something\n  //await page.click(\"#elem\");\n  \n  // fill input\n  //await page.$eval('#elem', el => el.value = 'some text');\n  \n  // select dropdown\n  // await page.select('#elem', 'value')\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
             var2Input_6.classList.add("form-control");
             var2Input_6.rows = 15;
             var2Label.innerHTML = "Code";
@@ -816,6 +844,7 @@ function onBrowserlessChange(node) {
     }
 }
 function onSubmitNewFilter() {
+    // onSubmitNewFilter collects all the values from the input elements, and calls _diagram.addNode() with it
     var nameInput = document.getElementById("nameInput");
     var name = nameInput.value;
     var selectType = document.getElementById("typeInput");
@@ -830,6 +859,7 @@ function onSubmitNewFilter() {
 }
 function editNode(node) {
     var e_4, _a, e_5, _b;
+    // editNode resets the edit/new Node modal to reflect the values of 'node'
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
@@ -919,6 +949,7 @@ function editNode(node) {
     submitButton.onclick = function () { submitEditNode(node); };
 }
 function deleteNode(node) {
+    // deleteNode deletes a node from _diagram and removes all connections to/from it
     _diagram.nodes.delete(node.id);
     for (var i = 0; i < _diagram.connections.length; i++) {
         var connection = _diagram.connections[i];
@@ -931,6 +962,7 @@ function deleteNode(node) {
     }
 }
 function submitEditNode(node) {
+    // submitEditNode saves the changes to the input elements to the underlying node
     var nameInput = document.getElementById("nameInput");
     node.label = nameInput.value;
     var selectType = document.getElementById("typeInput");
@@ -950,6 +982,7 @@ function submitEditNode(node) {
 }
 function saveWatch() {
     var e_6, _a, e_7, _b;
+    // saveWatch collects all the state (nodes/connections), turns it into JSON and submits it through a hidden form
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -1006,6 +1039,7 @@ function saveWatch() {
     saveWatchForm.submit();
 }
 function addFilterButtonClicked() {
+    // addFilterButtonClicked opens up the new/edit filter modal and empties it
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.onclick = onSubmitNewFilter;
     submitButton.innerHTML = "Add Filter";
@@ -1016,6 +1050,7 @@ function addFilterButtonClicked() {
     onTypeChange();
 }
 function pageInit() {
+    // pageInit sets all the onclick/onchange trigger events
     var select = document.getElementById("typeInput");
     select.onchange = function () { onTypeChange(); };
     var addFilterButton = document.getElementById("filterButton");
@@ -1027,6 +1062,7 @@ function pageInit() {
 }
 document.addEventListener('DOMContentLoaded', pageInit, false);
 function clearCache() {
+    // POSTs to cache/clear and reloads if clearing the cache was succesful
     var confirmed = confirm("Do you want to clear the URL cache?");
     if (!confirmed) {
         return; // do nothing

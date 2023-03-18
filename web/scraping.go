@@ -230,6 +230,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 		{
 			storeFilterResult(filter, web.db, debug)
 		}
+	case filter.Type == "expect":
+		{
+			getFilterResultExpect(filter, web, debug)
+		}
 	case filter.Type == "notify":
 		{
 			notifyFilter(filters, filter, watch, web, debug)
@@ -1264,6 +1268,53 @@ func getFilterResultLua(filter *Filter) {
 			filter.Logs = append(filter.Logs, value.String())
 		},
 	)
+}
+
+// getFilterResultExpect outputs once if there is no results from its parents a set number of times
+func getFilterResultExpect(filter *Filter, web *Web, debug bool) {
+	if len(filter.Parents) == 0 {
+		filter.Logs = append(filter.Logs, "Need Parents")
+		return
+	}
+	for i := range filter.Parents {
+		parent := filter.Parents[i]
+		if len(parent.Results) > 0 { // reset/delete expectFails
+			web.db.Delete(&ExpectFail{}, "watch_id = ? AND name = ?", filter.WatchID, filter.Name)
+			return
+		}
+	}
+	if debug {
+		filter.Results = append(filter.Results, "Expected")
+		return
+	}
+	expectThreshold, err := strconv.Atoi(filter.Var1)
+	if err != nil {
+		filter.Logs = append(filter.Logs, "Could not parse to int:", filter.Var1)
+		expectThreshold = 1
+	}
+	if expectThreshold <= 0 {
+		// 0 doesn't really make sense so just set to 1
+		expectThreshold = 1
+	}
+
+	var expectFails []ExpectFail
+	web.db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ? AND name = ?", filter.WatchID, filter.Name)
+
+	// +1 so this one is already counted
+	failCount := len(expectFails) + 1
+
+	if failCount > expectThreshold {
+		return
+	} else if expectThreshold == failCount {
+		filter.Results = append(filter.Results, "Expected")
+	}
+
+	expectFail := ExpectFail{
+		WatchID: filter.WatchID,
+		Name:    filter.Name,
+		Time:    time.Now(),
+	}
+	web.db.Create(&expectFail)
 }
 
 // getFilterResultEcho is a debug filter type, used to bootstrap some tests

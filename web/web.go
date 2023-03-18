@@ -165,7 +165,7 @@ func (web *Web) initDB() {
 		}
 		break
 	}
-	web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{})
+	web.db.AutoMigrate(&Watch{}, &Filter{}, &FilterConnection{}, &FilterOutput{}, ExpectFail{})
 }
 
 // initRouer initializes the GoWatch routes, binding web.func to a url path
@@ -663,6 +663,7 @@ func (web *Web) deleteWatch(c *gin.Context) {
 
 	web.db.Delete(&FilterConnection{}, "watch_id = ?", id)
 	web.db.Delete(&FilterOutput{}, "watch_id = ?", id)
+	web.db.Delete(&ExpectFail{}, "watch_id = ?", id)
 
 	var cronFilters []Filter
 	web.db.Model(&Filter{}).Find(&cronFilters, "watch_id = ? AND type = 'cron' AND var2 = 'yes'", id)
@@ -808,6 +809,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 	}
 
 	web.db.Delete(&Filter{}, "watch_id = ?", watch.ID)
+	web.db.Delete(&ExpectFail{}, "watch_id = ?", watch.ID)
 
 	filterMap := make(map[uint]*Filter)
 	if len(newFilters) > 0 {

@@ -398,6 +398,31 @@ function onTypeChange(node: DiagramNode | null = null){
             onConditionChange(node);
             break;
         }
+        case "expect": {
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.type = "number";
+            var1Input.value = "1";
+            var1Input.classList.add("form-control")
+            var1Label.innerHTML = "Threshold";
+            var1Input.placeholder = "1";
+            if (var1Value != ""){
+                var1Input.value = var1Value;
+            }
+            var1Div.appendChild(var1Input);
+
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            break;
+        }
         case "notify":{
             let var1Input = document.createElement("textarea");
             var1Input.name = "var1";
