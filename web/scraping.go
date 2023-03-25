@@ -30,10 +30,10 @@ import (
 )
 
 // ProcessFilters takes the filters of a watch, already 'connected' with buildFilterTree(), and processes the filters in the right order.
-func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *uint) {
+func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, scheduleID *FilterID) {
 	// set of watch.IDs that have been processed
 	// filters will only be processed if all their parents are processed
-	processedMap := make(map[uint]bool, len(filters))
+	processedMap := make(map[FilterID]bool, len(filters))
 
 	// if this function is called from a schedule, add the schedule filter to the processed set
 	if scheduleID != nil {
@@ -1204,7 +1204,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 }
 
 // TriggerSchedule gets called by the cronjob scheduler to start a watch execution
-func TriggerSchedule(watchID uint, web *Web, scheduleID *uint) {
+func TriggerSchedule(watchID WatchID, web *Web, scheduleID *FilterID) {
 	var watch *Watch
 	web.db.Model(&Watch{}).First(&watch, watchID)
 

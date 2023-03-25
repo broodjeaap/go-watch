@@ -44,7 +44,7 @@ type Web struct {
 	templates       multitemplate.Renderer        // multitemplate instance
 	cron            *cron.Cron                    // cron instance
 	urlCache        map[string]string             // holds url -> http response
-	cronWatch       map[uint]cron.EntryID         // holds cronFilter.ID -> EntryID
+	cronWatch       map[FilterID]cron.EntryID     // holds cronFilter.ID -> EntryID
 	db              *gorm.DB                      // gorm db instance
 	notifiers       map[string]notifiers.Notifier // holds notifierName -> notifier
 	startupWarnings []string                      // simple list of warnings/errors found during startup, displayed on / page
@@ -254,7 +254,7 @@ func (web *Web) initCronJobs() {
 	// type cron and enabled = yes
 	web.db.Model(&Filter{}).Find(&cronFilters, "type = 'cron' AND var2 = 'yes'")
 
-	web.cronWatch = make(map[uint]cron.EntryID, len(cronFilters))
+	web.cronWatch = make(map[FilterID]cron.EntryID, len(cronFilters))
 
 	web.cron = cron.New()
 	web.cron.Start()
@@ -378,7 +378,7 @@ func (web *Web) pruneDB() {
 		}
 
 		// a value can be deleted if it's the same as the previous and next value
-		IDs := make([]uint, 0, len(values))
+		IDs := make([]FilterOutputID, 0, len(values))
 		for i := range values {
 			if i > len(values)-3 {
 				break
@@ -426,7 +426,7 @@ func (web *Web) index(c *gin.Context) {
 	web.db.Find(&watches)
 
 	// make a map[watch.ID] -> watch so after this we can add data to watches in O(1)
-	watchMap := make(map[uint]*Watch, len(watches))
+	watchMap := make(map[WatchID]*Watch, len(watches))
 	for i := 0; i < len(watches); i++ {
 		watchMap[watches[i].ID] = &watches[i]
 	}
@@ -456,7 +456,7 @@ func (web *Web) index(c *gin.Context) {
 		log.Println(err)
 	} else {
 		for rows.Next() {
-			var watchID uint
+			var watchID WatchID
 			var _time sql.NullString
 			var value sql.NullString
 			err := rows.Scan(&watchID, &_time, &value)
@@ -609,7 +609,7 @@ func (web *Web) watchCreatePost(c *gin.Context) {
 	// the IDs of filters and connections have to be 0 when they are added to the database
 	// otherwise they will overwrite whatever filters/connections happened to have the same ID
 	// so we set them all to 0, but keep a map of 'old filter ID' -> filter
-	filterMap := make(map[uint]*Filter)
+	filterMap := make(map[FilterID]*Filter)
 	for i := range export.Filters {
 		filter := &export.Filters[i]
 		filterMap[filter.ID] = filter
@@ -811,7 +811,7 @@ func (web *Web) watchUpdate(c *gin.Context) {
 	web.db.Delete(&Filter{}, "watch_id = ?", watch.ID)
 	web.db.Delete(&ExpectFail{}, "watch_id = ?", watch.ID)
 
-	filterMap := make(map[uint]*Filter)
+	filterMap := make(map[FilterID]*Filter)
 	if len(newFilters) > 0 {
 		for i := range newFilters {
 			filter := &newFilters[i]
@@ -1478,14 +1478,14 @@ func (web *Web) importWatch(c *gin.Context) {
 		}
 	}
 
-	filterMap := make(map[uint]*Filter)
+	filterMap := make(map[FilterID]*Filter)
 	for i := range export.Filters {
 		filter := &export.Filters[i]
 		filterMap[filter.ID] = filter
 		filter.ID = 0
 		filter.X += offsetX
 		filter.Y += offsetY
-		filter.WatchID = uint(watchID)
+		filter.WatchID = WatchID(watchID)
 	}
 
 	if clearFilters {
@@ -1510,7 +1510,7 @@ func (web *Web) importWatch(c *gin.Context) {
 	for i := range export.Connections {
 		connection := &export.Connections[i]
 		connection.ID = 0
-		connection.WatchID = uint(watchID)
+		connection.WatchID = WatchID(watchID)
 		connection.OutputID = filterMap[connection.OutputID].ID
 		connection.InputID = filterMap[connection.InputID].ID
 	}

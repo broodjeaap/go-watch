@@ -37,7 +37,7 @@ func validate(err error) map[string]string {
 }
 
 func buildFilterTree(filters []Filter, connections []FilterConnection) {
-	filterMap := make(map[uint]*Filter, len(filters))
+	filterMap := make(map[FilterID]*Filter, len(filters))
 	for i := range filters {
 		filter := &filters[i]
 		filterMap[filter.ID] = filter

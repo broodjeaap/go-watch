@@ -717,7 +717,7 @@ func TestConditionDiff(t *testing.T) {
 	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
-		WatchID uint
+		WatchID WatchID
 		Input   []string
 		Want    []string
 	}{
@@ -825,7 +825,7 @@ func TestConditionLowerLast(t *testing.T) {
 	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
-		WatchID uint
+		WatchID WatchID
 		Input   []string
 		Want    []string
 	}{
@@ -936,7 +936,7 @@ func TestConditionLowest(t *testing.T) {
 	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
-		WatchID uint
+		WatchID WatchID
 		Input   []string
 		Want    []string
 	}{
@@ -1086,7 +1086,7 @@ func TestConditionHigherLast(t *testing.T) {
 	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
-		WatchID uint
+		WatchID WatchID
 		Input   []string
 		Want    []string
 	}{
@@ -1198,7 +1198,7 @@ func TestConditionHighest(t *testing.T) {
 	testName := "Test"
 	var tests = []struct {
 		dbInput []FilterOutput
-		WatchID uint
+		WatchID WatchID
 		Input   []string
 		Want    []string
 	}{
