@@ -1220,7 +1220,13 @@ func TriggerSchedule(watchID WatchID, web *Web, scheduleID *FilterID) {
 
 // getCronDebugResult parses the cron schedule string and logs any errors
 func getCronDebugResult(filter *Filter) {
-	_, err := cron.ParseStandard(filter.Var1)
+	scheduleSplit := strings.Split(filter.Var1, "+")
+	scheduleTrimmed := strings.TrimSpace(scheduleSplit[0])
+	_, err := cron.ParseStandard(scheduleTrimmed)
+	if err != nil {
+		filter.Log(err)
+	}
+	_, err = getJittersFromScheduleString(filter.Var1)
 	if err != nil {
 		filter.Log(err)
 	}

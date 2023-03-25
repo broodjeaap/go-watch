@@ -2,6 +2,9 @@ package web
 
 import (
 	"errors"
+	"math/rand"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -65,4 +68,28 @@ func buildFilterTree(filters []Filter, connections []FilterConnection) {
 			}
 		}
 	*/
+}
+
+func getJittersFromScheduleString(scheduleString string) ([]time.Duration, error) {
+	split := strings.Split(scheduleString, "+")
+	split = split[1:]
+	durations := []time.Duration{}
+	if len(split) == 0 {
+		return durations, nil
+	}
+
+	rand.Seed(time.Now().UnixMilli())
+
+	for _, jitter := range split {
+		trimmed := strings.TrimSpace(jitter)
+
+		duration, err := time.ParseDuration(trimmed)
+		if err != nil {
+			return durations, err
+		}
+
+		duration = time.Duration(float64(duration.Nanoseconds()) * rand.Float64())
+		durations = append(durations, duration)
+	}
+	return durations, nil
 }

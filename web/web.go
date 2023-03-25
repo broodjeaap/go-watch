@@ -91,7 +91,9 @@ func (web *Web) addCronJobIfCronFilter(filter *Filter, startup bool) {
 	if filter.Var2 != nil && *filter.Var2 == "no" {
 		return
 	}
-	entryID, err := web.cron.AddFunc(filter.Var1, func() { TriggerSchedule(filter.WatchID, web, &filter.ID) })
+	scheduleSplit := strings.Split(filter.Var1, "+")
+	scheduleTrimmed := strings.TrimSpace(scheduleSplit[0])
+	entryID, err := web.cron.AddFunc(scheduleTrimmed, func() { web.addCronJitter(filter.WatchID, filter) })
 	if err != nil {
 		if startup {
 			web.startupWarning("Could not start job for Watch: ", filter.WatchID)
@@ -102,6 +104,20 @@ func (web *Web) addCronJobIfCronFilter(filter *Filter, startup bool) {
 	}
 	log.Println("Started CronJob for WatchID", filter.WatchID, "with schedule:", filter.Var1)
 	web.cronWatch[filter.ID] = entryID
+}
+
+func (web *Web) addCronJitter(watchID WatchID, filter *Filter) {
+	durations, err := getJittersFromScheduleString(filter.Var1)
+	if err != nil {
+		log.Println("Could not parse Schedule string:", filter.Var1)
+		return
+	}
+
+	for _, duration := range durations {
+		log.Println("Delaying by:", duration)
+		time.Sleep(duration)
+	}
+	TriggerSchedule(filter.WatchID, web, &filter.ID)
 }
 
 // validateProxyURL calls url.Parse with the proxy.url, if there is an error, it's added to startupWarnings
