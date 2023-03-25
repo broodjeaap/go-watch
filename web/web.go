@@ -227,6 +227,9 @@ func (web *Web) initRouter() {
 	gowatch.GET("notifiers/view", web.notifiersView)
 	gowatch.POST("notifiers/test", web.notifiersTest)
 
+	gowatch.GET("schedules/view", web.schedulesView)
+	gowatch.POST("schedules/update", web.schedulesUpdate)
+
 	gowatch.GET("backup/view", web.backupView)
 	gowatch.GET("backup/create", web.backupCreate)
 	gowatch.POST("backup/test", web.backupTest)
@@ -255,6 +258,8 @@ func (web *Web) initTemplates() {
 	web.templates.Add("cacheView", template.Must(template.ParseFS(templatesFS, "base.html", "cache/view.html")))
 
 	web.templates.Add("notifiersView", template.Must(template.ParseFS(templatesFS, "base.html", "notifiers.html")))
+
+	web.templates.Add("schedulesView", template.Must(template.ParseFS(templatesFS, "base.html", "schedules.html")))
 
 	web.templates.Add("backupView", template.Must(template.ParseFS(templatesFS, "base.html", "backup/view.html")))
 	web.templates.Add("backupTest", template.Must(template.ParseFS(templatesFS, "base.html", "backup/test.html")))
@@ -511,6 +516,74 @@ func (web *Web) notifiersTest(c *gin.Context) {
 	}
 	notifier.Message("GoWatch Test")
 	c.Redirect(http.StatusSeeOther, web.urlPrefix+"notifiers/view")
+}
+
+func (web *Web) schedulesView(c *gin.Context) {
+	watches := []Watch{}
+	web.db.Find(&watches)
+
+	watchMap := make(map[WatchID]*Watch, len(watches))
+	for i := 0; i < len(watches); i++ {
+		watchMap[watches[i].ID] = &watches[i]
+	}
+
+	var filters []Filter
+	web.db.Model(&Filter{}).Find(&filters, "type = 'cron'")
+
+	watchSchedules := make(map[*Watch][]*Filter)
+	for i := range filters {
+		filter := &filters[i]
+		entryID, exists := web.cronWatch[filter.ID]
+
+		if exists {
+			entry := web.cron.Entry(entryID)
+			filter.CronEntry = &entry
+		}
+		filter.Enabled = *filter.Var2
+		watch := watchMap[filter.WatchID]
+		watchSchedules[watch] = append(watchSchedules[watch], filter)
+	}
+	c.HTML(http.StatusOK, "schedulesView", gin.H{
+		"watchSchedules": watchSchedules,
+		"urlPrefix":      web.urlPrefix,
+	})
+}
+
+func (web *Web) schedulesUpdate(c *gin.Context) {
+	scheduleStrings := c.PostFormArray("schedules")
+	scheduleIDs := make(map[FilterID]bool)
+	for _, scheduleString := range scheduleStrings {
+		scheduleID, err := strconv.Atoi(scheduleString)
+		if err != nil {
+			continue
+		}
+		scheduleIDs[FilterID(scheduleID)] = true
+	}
+
+	var cronFilters []Filter
+	web.db.Model(&Filter{}).Where("type = 'cron'").Find(&cronFilters)
+	for i := range cronFilters {
+		cronFilter := &cronFilters[i]
+		entryID, exist := web.cronWatch[cronFilter.ID]
+		_, checked := scheduleIDs[cronFilter.ID]
+		if exist && !checked {
+			web.cron.Remove(entryID)
+			delete(web.cronWatch, cronFilter.ID)
+		} else if !exist && checked {
+			yes := "yes"
+			cronFilter.Var2 = &yes
+			web.addCronJobIfCronFilter(cronFilter, false)
+		}
+	}
+
+	if len(scheduleStrings) > 0 {
+		web.db.Model(&Filter{}).Where("ID IN ?", scheduleStrings).Update("Var2", "yes")
+		web.db.Model(&Filter{}).Where("ID NOT IN ?", scheduleStrings).Update("Var2", "no")
+	} else {
+		web.db.Model(&Filter{}).Where("TRUE").Update("Var2", "no")
+	}
+
+	c.Redirect(http.StatusSeeOther, web.urlPrefix+"schedules/view")
 }
 
 // watchCreate (/watch/create) allows user to create a new watch

@@ -1,0 +1,49 @@
+{{define "title"}}
+GoWatch
+{{end}}
+
+{{define "content"}}
+<form action="{{.urlPrefix}}schedules/update" method="POST">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>WatchID</th>
+                <th>Watch</th>
+                <th>Schedule</th>
+                <th>Last</th>
+                <th>Next</th>
+                <th>Enabled</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range $watch, $scheduleFilters := .watchSchedules }}
+                {{ range $i, $scheduleFilter := $scheduleFilters }}
+                    <tr>
+                        <td class="h3">{{ $watch.ID }}</td>
+                        <td class="h3">{{ $watch.Name }}</td>
+                        <td class="h3">{{ $scheduleFilter.Name }}</td>
+                        {{ if $scheduleFilter.CronEntry }}
+                            <td class="h3">{{ $scheduleFilter.CronEntry.Prev.Format "2006-01-02 15:04:05" }}</td>
+                            <td class="h3">{{ $scheduleFilter.CronEntry.Next.Format "2006-01-02 15:04:05" }}</td>
+                        {{ else }}
+                            <td colspan="2" class="h3">Not scheduled</td>
+                        {{ end }}
+                        {{ if eq $scheduleFilter.Enabled "yes" }}
+                            <td class="h2">
+                                <input class="form-check-input" id="schedules_{{ $scheduleFilter.ID }}" type="checkbox" value="{{ $scheduleFilter.ID }}" name="schedules" checked>
+                            </td>
+                            {{ else }}
+                            <td class="h2">
+                                <input class="form-check-input" id="schedules_{{ $scheduleFilter.ID }}" type="checkbox" value="{{ $scheduleFilter.ID }}" name="schedules">
+                            </td>
+                        {{ end}}
+                    </tr>
+                {{ end }}
+            {{ end }}
+        </tbody>
+    </table>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary btn-lg">Update</button>
+    </div>
+</form>
+{{end}}
