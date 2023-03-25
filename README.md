@@ -25,7 +25,7 @@ Some out-of-the-box highlights:
   - [Browserless](#browserless)
   - [Authentication](#Authentication)
 - [Filters](#filters)
-  - [Cron](#cron)
+  - [Schedule](#schedule)
   - [Get URL](#get-url)
   - [Get URLs](#get-urls)
   - [CSS](#css)
@@ -379,15 +379,19 @@ Change the `Host` label to the correct ip/hostname and generate a user/password 
 
 GoWatch comes with many filters that cover most typical use cases.  
 
-## Cron
+## Schedule
 
-The `cron` filter is used to schedule when your watch will run.  
+The `Schedule` filter is used to schedule when your watch will run.  
 It uses the [cron](https://pkg.go.dev/github.com/robfig/cron/v3@v3.0.0#section-readme) package to schedule Go routines, some common examples would be:  
 - `@every 15m`: will trigger every 15 minutes starting on server start.
 - `@hourly`: will trigger on the hour.
 - `30 * * * *`: will trigger every hour on the half hour.  
 
 More detailed instructions can be found in its documentation.
+
+Optionally one or more 'jitter' duration strings can be added:  
+- `@every 15m + 10m`: Will trigger every 15 to 25 minutes
+- `@every 15m + 5m + 5m`: Same as above, but more centered around 20 minutes
 
 ## Get URL
 
