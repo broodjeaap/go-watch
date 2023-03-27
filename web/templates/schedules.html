@@ -7,8 +7,8 @@ GoWatch
     <table class="table table-striped table-hover">
         <thead class="table-dark">
             <tr>
-                <th>WatchID</th>
                 <th>Watch</th>
+                <th>Name</th>
                 <th>Schedule</th>
                 <th>Last</th>
                 <th>Next</th>
@@ -19,9 +19,9 @@ GoWatch
             {{ range $watch, $scheduleFilters := .watchSchedules }}
                 {{ range $i, $scheduleFilter := $scheduleFilters }}
                     <tr>
-                        <td class="h3">{{ $watch.ID }}</td>
                         <td class="h3">{{ $watch.Name }}</td>
                         <td class="h3">{{ $scheduleFilter.Name }}</td>
+                        <td class="h3">{{ $scheduleFilter.Var1 }}</td>
                         {{ if $scheduleFilter.CronEntry }}
                             <td class="h3">{{ $scheduleFilter.CronEntry.Prev.Format "2006-01-02 15:04:05" }}</td>
                             <td class="h3">{{ $scheduleFilter.CronEntry.Next.Format "2006-01-02 15:04:05" }}</td>
