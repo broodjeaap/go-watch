@@ -455,6 +455,11 @@ It's recommended to do this after reducing inputs to a single value (Minimum/Max
 Outputs a value when it has no inputs, useful to do something (notify) when something goes wrong with your Watch.  
 Will only trigger once and can be set to wait multiple times before triggering.
 
+## Disable Schedules
+
+Disables all schedules of a watch when it gets any inputs from its parents.  
+Should be used with an [expect](#expect) filter, useful for disabling a Watch when it keeps failing.
+
 ## Notify
 
 Executes the given template and sends the resulting string as a message to the given notifier(s).  
