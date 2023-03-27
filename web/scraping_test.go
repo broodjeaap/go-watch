@@ -2222,7 +2222,6 @@ func TestWatchWithExpect3TriggeringDB(t *testing.T) {
 	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
 	if len(expectFails) != 1 {
 		t.Errorf("Found %d ExpectFail values, expected 1!", len(expectFails))
-		log.Println(expectFails)
 	}
 
 	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
@@ -2230,7 +2229,6 @@ func TestWatchWithExpect3TriggeringDB(t *testing.T) {
 	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
 	if len(expectFails) != 2 {
 		t.Errorf("Found %d ExpectFail values, expected 2!", len(expectFails))
-		log.Println(expectFails)
 	}
 
 	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
@@ -2238,14 +2236,208 @@ func TestWatchWithExpect3TriggeringDB(t *testing.T) {
 	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
 	if len(expectFails) != 3 {
 		t.Errorf("Found %d ExpectFail values, expected 3! (1)", len(expectFails))
-		log.Println(expectFails)
 	}
 	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
 
 	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
 	if len(expectFails) != 3 {
 		t.Errorf("Found %d ExpectFail values, expected 3! (2)", len(expectFails))
-		log.Println(expectFails)
+	}
+
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestWatchWithExpectNotTriggeringWithDisableDB(t *testing.T) {
+	db := getTestDB()
+	watch := Watch{
+		Name: "Test",
+	}
+	db.Create(&watch)
+	filters := []Filter{
+		{
+			WatchID: watch.ID,
+			Name:    "Schedule",
+			Type:    "cron",
+			Var2:    "yes",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Echo",
+			Type:    "echo",
+			Var1:    HTML_STRING,
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "XPath",
+			Type:    "xpath",
+			Var1:    "//td[@class='price']",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Expect",
+			Type:    "expect",
+			Var1:    "1",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Disable",
+			Type:    "disable",
+		},
+	}
+	db.Create(&filters)
+	scheduleFilter := &filters[0]
+	echoFilter := &filters[1]
+	xpathFilter := &filters[2]
+	expectFilter := &filters[3]
+	disableFilter := &filters[4]
+
+	connections := []FilterConnection{
+		{
+			WatchID:  watch.ID,
+			OutputID: scheduleFilter.ID,
+			InputID:  echoFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: echoFilter.ID,
+			InputID:  xpathFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: xpathFilter.ID,
+			InputID:  expectFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: expectFilter.ID,
+			InputID:  disableFilter.ID,
+		},
+	}
+	db.Create(&connections)
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	var expectFails []ExpectFail
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) > 0 {
+		t.Errorf("Found ExpectFail values expected none!")
+	}
+
+	var scheduleFilterFromDb Filter
+	db.Model(&Filter{}).First(&scheduleFilterFromDb, scheduleFilter.ID)
+	if scheduleFilterFromDb.Var2 != "yes" {
+		t.Errorf("Schedule filter is disabled!")
+	}
+
+	err := os.Remove("./test.db")
+	if err != nil {
+		log.Println("Could not remove test db:", err)
+	}
+}
+
+func TestWatchWithExpect3TriggeringAndDisableDB(t *testing.T) {
+	db := getTestDB()
+	watch := Watch{
+		Name: "Test",
+	}
+	db.Create(&watch)
+	filters := []Filter{
+		{
+			WatchID: watch.ID,
+			Name:    "Schedule",
+			Type:    "cron",
+			Var2:    "yes",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Echo",
+			Type:    "echo",
+			Var1:    HTML_STRING,
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "XPath",
+			Type:    "xpath",
+			Var1:    "//div[@class='price']",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Expect",
+			Type:    "expect",
+			Var1:    "3",
+		},
+		{
+			WatchID: watch.ID,
+			Name:    "Disable",
+			Type:    "disable",
+		},
+	}
+	db.Create(&filters)
+	scheduleFilter := &filters[0]
+	echoFilter := &filters[1]
+	xpathFilter := &filters[2]
+	expectFilter := &filters[3]
+	disableFilter := &filters[4]
+
+	connections := []FilterConnection{
+		{
+			WatchID:  watch.ID,
+			OutputID: scheduleFilter.ID,
+			InputID:  echoFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: echoFilter.ID,
+			InputID:  xpathFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: xpathFilter.ID,
+			InputID:  expectFilter.ID,
+		},
+		{
+			WatchID:  watch.ID,
+			OutputID: expectFilter.ID,
+			InputID:  disableFilter.ID,
+		},
+	}
+	db.Create(&connections)
+
+	var expectFails []ExpectFail
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 1 {
+		t.Errorf("Found %d ExpectFail values, expected 1!", len(expectFails))
+	}
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 2 {
+		t.Errorf("Found %d ExpectFail values, expected 2!", len(expectFails))
+	}
+
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 3 {
+		t.Errorf("Found %d ExpectFail values, expected 3! (1)", len(expectFails))
+	}
+	TriggerSchedule(watch.ID, &Web{db: db}, &scheduleFilter.ID)
+
+	db.Model(&ExpectFail{}).Find(&expectFails, "watch_id = ?", watch.ID)
+	if len(expectFails) != 3 {
+		t.Errorf("Found %d ExpectFail values, expected 3! (2)", len(expectFails))
+	}
+
+	var scheduleFilterFromDb Filter
+	db.Model(&Filter{}).First(&scheduleFilterFromDb, scheduleFilter.ID)
+	if scheduleFilterFromDb.Var2 != "no" {
+		t.Errorf("Schedule filter not disabled!")
 	}
 
 	err := os.Remove("./test.db")

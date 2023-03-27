@@ -234,6 +234,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 		{
 			getFilterResultExpect(filter, web, debug)
 		}
+	case filter.Type == "disable":
+		{
+			getFilterResultDisableSchedules(filter, web, debug)
+		}
 	case filter.Type == "notify":
 		{
 			notifyFilter(filters, filter, watch, web, debug)
@@ -1289,6 +1293,32 @@ func getFilterResultExpect(filter *Filter, web *Web, debug bool) {
 		Time:    time.Now(),
 	}
 	web.db.Create(&expectFail)
+}
+
+// getFilterResultDisableSchedules disables all schedules of a watch if it gets any inputs
+func getFilterResultDisableSchedules(filter *Filter, web *Web, debug bool) {
+	if len(filter.Parents) == 0 {
+		filter.Logs = append(filter.Logs, "Need Parents")
+		return
+	}
+	anyParentWithResults := false
+	for i := range filter.Parents {
+		parent := filter.Parents[i]
+		if len(parent.Results) > 0 {
+			anyParentWithResults = true
+			break
+		}
+	}
+	if !anyParentWithResults {
+		return
+	}
+
+	if debug {
+		filter.Results = append(filter.Results, "Would have disabled Schedules")
+		return
+	}
+
+	web.db.Model(&Filter{}).Where("watch_id = ?", filter.WatchID).Update("Var2", "no")
 }
 
 // getFilterResultEcho is a debug filter type, used to bootstrap some tests

@@ -330,6 +330,27 @@ function onTypeChange(node: DiagramNode | null = null){
             var2Div.appendChild(var2Input);
             break;
         }
+        case "disable": {
+            let var1Input = document.createElement("input");
+            var1Input.name = "var1";
+            var1Input.id = "var1Input";
+            var1Input.value = var1Value;
+            var1Input.classList.add("form-control")
+            var1Input.disabled = true;
+            var1Label.innerHTML = "-";
+            var1Input.placeholder = "";
+            var1Div.appendChild(var1Input);
+
+            let var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control")
+            var2Input.disabled = true;
+            var2Label.innerHTML = "-";
+            var2Div.appendChild(var2Input);
+            break;
+        }
         case "unique": {
             let var1Input = document.createElement("input");
             var1Input.name = "var1";
