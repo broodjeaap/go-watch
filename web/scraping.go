@@ -97,7 +97,7 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 
 			// for schedule filters during editing, just check the schedule string and set to processed
 			if debug && filter.Type == "cron" {
-				if filter.Var2 != nil && *filter.Var2 == "no" {
+				if filter.Var2 == "no" {
 					filter.Log("Schedule is disabled")
 				}
 				processedMap[filter.ID] = true
@@ -380,11 +380,7 @@ func getURLContent(filter *Filter, fetchURL string) (string, error) {
 
 // getFilterResultBrowserlessURL Fetches the given URL and outputs the HTTP response through Browserless
 func getFilterResultBrowserlessURL(filter *Filter, urlCache map[string]string, debug bool) {
-	if filter.Var2 == nil {
-		filter.Log("filter.Var2 == nil")
-		return
-	}
-	fetchURL := *filter.Var2
+	fetchURL := filter.Var2
 	val, exists := urlCache["b"+fetchURL]
 	if debug && exists {
 		filter.Results = append(filter.Results, val)
@@ -499,10 +495,7 @@ func getBrowserlessFunctionContent(filter *Filter, result string) (string, error
 		return "", errors.New("browserless.url not set")
 	}
 	browserlessURL := viper.GetString("browserless.url")
-	if filter.Var2 == nil {
-		return "", errors.New("filter.Var2 == nil")
-	}
-	code := *filter.Var2
+	code := filter.Var2
 	data := struct {
 		Code     string             `json:"code"`
 		Context  BrowserlessContext `json:"context"`
@@ -533,10 +526,7 @@ func getBrowserlessFunctionContent(filter *Filter, result string) (string, error
 
 // getFilterResultXPath Filters the results of its parents based on an XPath query
 func getFilterResultXPath(filter *Filter) {
-	selectType := "node"
-	if filter.Var2 != nil {
-		selectType = *filter.Var2
-	}
+	selectType := filter.Var2
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			doc, err := htmlquery.Parse(strings.NewReader(result))
@@ -596,10 +586,7 @@ func getFilterResultJSON(filter *Filter) {
 
 // getFilterResultCSS Filters the results of its parents based on an CSS query
 func getFilterResultCSS(filter *Filter) {
-	selectType := "node"
-	if filter.Var2 != nil {
-		selectType = *filter.Var2
-	}
+	selectType := filter.Var2
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
 			doc, err := html.Parse(strings.NewReader(result))
@@ -659,11 +646,7 @@ func getFilterResultReplace(filter *Filter) {
 	}
 	for _, parent := range filter.Parents {
 		for _, result := range parent.Results {
-			if filter.Var2 == nil {
-				filter.Results = append(filter.Results, r.ReplaceAllString(result, ""))
-			} else {
-				filter.Results = append(filter.Results, r.ReplaceAllString(result, *filter.Var2))
-			}
+			filter.Results = append(filter.Results, r.ReplaceAllString(result, filter.Var2))
 		}
 	}
 }
@@ -759,7 +742,7 @@ func getFilterResultSubstring(filter *Filter) {
 // getFilterResultContains performs a regex contains on all the results of its parents
 func getFilterResultContains(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
-	invert, err := strconv.ParseBool(*filter.Var2)
+	invert, err := strconv.ParseBool(filter.Var2)
 	if err != nil {
 		invert = false
 	}
@@ -893,13 +876,9 @@ func roundFloat(val float64, precision uint) float64 {
 // getFilterResultRound outputs the rounded value of every numerical input
 func getFilterResultRound(filter *Filter) {
 	var decimals int64 = 0
-	if filter.Var2 != nil {
-		d, err := strconv.ParseInt(*filter.Var2, 10, 32)
-		if err != nil {
-			decimals = 0
-		} else {
-			decimals = d
-		}
+	d, err := strconv.ParseInt(filter.Var2, 10, 32)
+	if err == nil {
+		decimals = d
 	}
 
 	for _, parent := range filter.Parents {
@@ -1023,13 +1002,9 @@ func getFilterResultConditionLowest(filter *Filter, db *gorm.DB) {
 
 // getFilterResultConditionLowerThan outputs any input that is lower than a given value
 func getFilterResultConditionLowerThan(filter *Filter) {
-	if filter.Var2 == nil {
-		filter.Log("No threshold given")
-		return
-	}
-	threshold, err := strconv.ParseFloat(*filter.Var2, 64)
+	threshold, err := strconv.ParseFloat(filter.Var2, 64)
 	if err != nil {
-		filter.Log("Could not convert convert threshold to number: '", *filter.Var2, "'")
+		filter.Log("Could not convert convert threshold to number: '", filter.Var2, "'")
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -1117,13 +1092,9 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 
 // getFilterResultConditionHigherThan outputs any input that is higher than a given value
 func getFilterResultConditionHigherThan(filter *Filter) {
-	if filter.Var2 == nil {
-		filter.Log("No threshold given for Higher Than Filter")
-		return
-	}
-	threshold, err := strconv.ParseFloat(*filter.Var2, 64)
+	threshold, err := strconv.ParseFloat(filter.Var2, 64)
 	if err != nil {
-		filter.Log("Could not convert convert threshold to number: '", *filter.Var2, "'")
+		filter.Log("Could not convert convert threshold to number: '", filter.Var2, "'")
 		return
 	}
 	for _, parent := range filter.Parents {
@@ -1195,10 +1166,7 @@ func notifyFilter(filters []Filter, filter *Filter, watch *Watch, web *Web, debu
 		filter.Results = append(filter.Results, buffer.String())
 	} else {
 		notifier := filter.Var2
-		if notifier == nil {
-			return
-		}
-		web.notify(*notifier, buffer.String())
+		web.notify(notifier, buffer.String())
 	}
 
 }

@@ -55,7 +55,6 @@ func DeepEqualStringSlice(a []string, b []string) bool {
 }
 
 func TestFilterXPathNode(t *testing.T) {
-	var2 := "node"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -79,7 +78,7 @@ func TestFilterXPathNode(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
-				Var2: &var2,
+				Var2: "node",
 			}
 			getFilterResultXPath(
 				&filter,
@@ -92,7 +91,6 @@ func TestFilterXPathNode(t *testing.T) {
 }
 
 func TestFilterXPathInnerHTML(t *testing.T) {
-	var2 := "inner"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -115,7 +113,7 @@ func TestFilterXPathInnerHTML(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
-				Var2: &var2,
+				Var2: "inner",
 			}
 			getFilterResultXPath(
 				&filter,
@@ -128,7 +126,6 @@ func TestFilterXPathInnerHTML(t *testing.T) {
 }
 
 func TestFilterXPathAttributes(t *testing.T) {
-	var2 := "attr"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -150,7 +147,7 @@ func TestFilterXPathAttributes(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
-				Var2: &var2,
+				Var2: "attr",
 			}
 			getFilterResultXPath(
 				&filter,
@@ -194,7 +191,6 @@ func TestFilterJSON(t *testing.T) {
 }
 
 func TestFilterCSSNode(t *testing.T) {
-	var2 := "node"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -216,7 +212,7 @@ func TestFilterCSSNode(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
-				Var2: &var2,
+				Var2: "node",
 			}
 			getFilterResultCSS(
 				&filter,
@@ -229,7 +225,6 @@ func TestFilterCSSNode(t *testing.T) {
 }
 
 func TestFilterCSSInnerHTML(t *testing.T) {
-	var2 := "inner"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -251,7 +246,7 @@ func TestFilterCSSInnerHTML(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
-				Var2: &var2,
+				Var2: "inner",
 			}
 			getFilterResultCSS(
 				&filter,
@@ -264,7 +259,6 @@ func TestFilterCSSInnerHTML(t *testing.T) {
 }
 
 func TestFilterCSSAttributes(t *testing.T) {
-	var2 := "attr"
 	var tests = []struct {
 		Query string
 		Want  []string
@@ -286,7 +280,7 @@ func TestFilterCSSAttributes(t *testing.T) {
 					{Results: []string{HTML_STRING}},
 				},
 				Var1: test.Query,
-				Var2: &var2,
+				Var2: "attr",
 			}
 			getFilterResultCSS(
 				&filter,
@@ -342,7 +336,7 @@ func TestFilterReplace(t *testing.T) {
 					{Results: []string{test.Input}},
 				},
 				Var1: test.Var1,
-				Var2: &test.Var2,
+				Var2: test.Var2,
 			}
 			getFilterResultReplace(
 				&filter,
@@ -486,7 +480,7 @@ func TestFilterContains(t *testing.T) {
 					{Results: test.Input},
 				},
 				Var1: test.Query,
-				Var2: &test.Invert,
+				Var2: test.Invert,
 			}
 			getFilterResultContains(
 				&filter,
@@ -685,7 +679,7 @@ func TestFilterRound(t *testing.T) {
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
-				Var2: &test.Query,
+				Var2: test.Query,
 			}
 			getFilterResultRound(
 				&filter,
@@ -791,7 +785,7 @@ func TestConditionDiff(t *testing.T) {
 			filter := Filter{
 				WatchID: test.WatchID,
 				Name:    "Test",
-				Var2:    &testName,
+				Var2:    testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -911,7 +905,7 @@ func TestConditionLowerLast(t *testing.T) {
 			filter := Filter{
 				WatchID: test.WatchID,
 				Name:    testName,
-				Var2:    &testName,
+				Var2:    testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -1018,7 +1012,7 @@ func TestConditionLowest(t *testing.T) {
 			filter := Filter{
 				WatchID: test.WatchID,
 				Name:    testName,
-				Var2:    &testName,
+				Var2:    testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -1060,7 +1054,7 @@ func TestFilterLowerThan(t *testing.T) {
 						Results: test.Input,
 					},
 				},
-				Var2: &test.Threshold,
+				Var2: test.Threshold,
 			}
 			getFilterResultConditionLowerThan(
 				&filter,
@@ -1173,7 +1167,7 @@ func TestConditionHigherLast(t *testing.T) {
 			filter := Filter{
 				WatchID: test.WatchID,
 				Name:    testName,
-				Var2:    &testName,
+				Var2:    testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -1280,7 +1274,7 @@ func TestConditionHighest(t *testing.T) {
 			filter := Filter{
 				WatchID: test.WatchID,
 				Name:    testName,
-				Var2:    &testName,
+				Var2:    testName,
 				Parents: []*Filter{
 					{Results: test.Input},
 				},
@@ -1322,7 +1316,7 @@ func TestFilterHigherThan(t *testing.T) {
 						Results: test.Input,
 					},
 				},
-				Var2: &test.Threshold,
+				Var2: test.Threshold,
 			}
 			getFilterResultConditionHigherThan(
 				&filter,

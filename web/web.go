@@ -88,7 +88,7 @@ func (web *Web) addCronJobIfCronFilter(filter *Filter, startup bool) {
 	if filter.Type != "cron" {
 		return
 	}
-	if filter.Var2 != nil && *filter.Var2 == "no" {
+	if filter.Var2 == "no" {
 		return
 	}
 	scheduleSplit := strings.Split(filter.Var1, "+")
@@ -538,7 +538,6 @@ func (web *Web) schedulesView(c *gin.Context) {
 			entry := web.cron.Entry(entryID)
 			filter.CronEntry = &entry
 		}
-		filter.Enabled = *filter.Var2
 		watch := watchMap[filter.WatchID]
 		watchSchedules[watch] = append(watchSchedules[watch], filter)
 	}
@@ -569,8 +568,7 @@ func (web *Web) schedulesUpdate(c *gin.Context) {
 			web.cron.Remove(entryID)
 			delete(web.cronWatch, cronFilter.ID)
 		} else if !exist && checked {
-			yes := "yes"
-			cronFilter.Var2 = &yes
+			cronFilter.Var2 = "yes"
 			web.addCronJobIfCronFilter(cronFilter, false)
 		}
 	}

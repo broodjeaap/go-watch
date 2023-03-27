@@ -17,13 +17,12 @@ type Filter struct {
 	Y         int         `form:"y" yaml:"y" json:"y" validate:"default=0"`
 	Type      FilterType  `form:"filter_type" yaml:"filter_type" json:"filter_type" binding:"required" validate:"oneof=url xpath json css replace match substring math store condition cron"`
 	Var1      string      `form:"var1" yaml:"var1" json:"var1" binding:"required"`
-	Var2      *string     `form:"var2" yaml:"var2" json:"var2"`
+	Var2      string      `form:"var2" yaml:"var2" json:"var2"`
 	Parents   []*Filter   `gorm:"-:all"`
 	Children  []*Filter   `gorm:"-:all"`
 	Results   []string    `gorm:"-:all"`
 	Logs      []string    `gorm:"-:all"`
 	CronEntry *cron.Entry `gorm:"-:all"`
-	Enabled   string      `gorm:"-:all"` // lazy fix for not being able to pointer deref in golang template....
 }
 
 func (filter *Filter) Log(v ...any) {

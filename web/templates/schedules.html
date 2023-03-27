@@ -28,7 +28,7 @@ GoWatch
                         {{ else }}
                             <td colspan="2" class="h3">Not scheduled</td>
                         {{ end }}
-                        {{ if eq $scheduleFilter.Enabled "yes" }}
+                        {{ if eq $scheduleFilter.Var2 "yes" }}
                             <td class="h2">
                                 <input class="form-check-input" id="schedules_{{ $scheduleFilter.ID }}" type="checkbox" value="{{ $scheduleFilter.ID }}" name="schedules" checked>
                             </td>
