@@ -114,7 +114,6 @@ func (web *Web) addCronJitter(watchID WatchID, filter *Filter) {
 	}
 
 	for _, duration := range durations {
-		log.Println("Delaying by:", duration)
 		time.Sleep(duration)
 	}
 	TriggerSchedule(filter.WatchID, web, &filter.ID)
