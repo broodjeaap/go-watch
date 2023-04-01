@@ -72,18 +72,24 @@ Some out-of-the-box highlights:
 
 GoWatch works through filters, a filter performs operations on the input it recieves.  
 Here is an example of a 'Watch' that calculates the lowest and average price of 4090s on NewEgg and notifies the user if the lowest price changed:  
-![NewEgg 4090](docs/images/newegg_4090.png)  
+![4090_watch](docs/images/4090_watch.png)  
 
 Note that everything, including scheduling/storing/notifying, is a `filter`.  
 
-`Schedule` is a [cron](#cron) filter with a '@every 15m' value, this will run every 15 minutes.  
+`Schedule` is a [cron](#cron) filter with a '@every 15m + 5m' value, this will run every 15-20 minutes.  
 
-`NewEgg Fetch` is a [Get URL](#get-url) filter with a 'https://www.newegg.com/p/pl?N=100007709&d=4090&isdeptsrh=1&PageSize=96' value, it's output will be the HTTP response.  
 
-`Select Price` is a [CSS](#css) filter with the value '.item-container .item-action strong[class!="item-buying-choices-price"]' value, it's output will be the html elements containing the prices.  
-An [XPath](#xpath) filter could also have been used.  
+`MicroCenterFetch` is a [Browserless Get URL](#browserless-get-url) filter with a 'https://www.microcenter.com/search/search_results.aspx?Ntk=all&sortby=match&N=4294966937+4294821460+4294805677+4294805676&myStore=true' value, it's output will be the HTTP response.  
 
-`Sanitize` is a [Replace](#replace) filter, using a regular expression ('[^0-9]') it removes anything that's not a number.  
+`XPath` is an [XPath](#xpath) filter, with the value '//span[@itemprop='price']', its output will be the `span` elements containing the prices.  
+
+`Match` is a [Match](#match) filter, with the value '[0-9]+', it will, for every result from its parent, return just the numbers.
+
+`NewEggFetch` is a [Get URL](#get-url) filter with a 'https://www.newegg.com/p/pl?N=100007709&d=4090&isdeptsrh=1&PageSize=96' value, it's output will be the HTTP response.  
+
+`CSS` is a [CSS](#css) filter with the value '.item-container .item-action strong[class!="item-buying-choices-price"]' value, it's output will be the html elements containing the prices.  
+
+`Replace` is a [Replace](#replace) filter, using a regular expression ('[^0-9]') it removes anything that's not a number.  
 
 `Avg` is an [Average](#average) filter, it calculates the average value of its inputs.  
 
@@ -94,6 +100,11 @@ An [XPath](#xpath) filter could also have been used.
 `Diff` is a [Different Than Last](#different-than-last) filter, only passing on the inputs that are different then the last value stored in the database.  
 
 `Notify` is a [Notify](#notify) filter, if there are any inputs to this filter, it will execute a template and send the result to a user defined 'notifier' (Telegram/Discord/etc).
+
+`Expect` is an [Expect](#expect) filter, it only outputs if it gets no inputs.  
+`Disable` is a [Disable Schedules](#disable-schedules) filter, it disables all schedules of a watch when it gets any inputs.  
+`DisableNotify` is another [Notify](#notify) filter.  
+These 3 filters disable the watch when there are no prices to be found, something is probably going wrong, so we don't want to keep spamming these websites.
 # Run
 
 ## Binary
