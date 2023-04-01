@@ -193,6 +193,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 		{
 			getFilterResultSubstring(filter)
 		}
+	case filter.Type == "subset":
+		{
+			getFilterResultSubset(filter)
+		}
 	case filter.Type == "contains":
 		{
 			getFilterResultContains(filter)
@@ -694,10 +698,11 @@ func getFilterResultSubstring(filter *Filter) {
 					if hasFrom && err != nil {
 						filter.Log("Could not parse left side of: '", substring, "'")
 						return
-					} else if from < 0 {
-						from = len(asRunes) + from
 					}
 					if from < 0 {
+						from = len(asRunes) + from
+					}
+					if from < 0 || from > len(asRunes) {
 						filter.Log("Out of bounds:", from_to)
 						continue
 					}
@@ -712,13 +717,15 @@ func getFilterResultSubstring(filter *Filter) {
 					if hasTo && err != nil {
 						filter.Log("Could not parse right side of: '", substring, "'")
 						return
-					} else if to < 0 {
-						to = len(asRunes) + to
 					}
 					if to < 0 {
+						to = len(asRunes) + to
+					}
+					if to < 0 || to > len(asRunes) {
 						filter.Log("Out of bounds:", from_to)
 						continue
 					}
+
 					if hasFrom && hasTo {
 						_, err := sb.WriteString(string(asRunes[from:to]))
 						if err != nil {
@@ -735,10 +742,99 @@ func getFilterResultSubstring(filter *Filter) {
 						filter.Log("Could not parse: '", substring, "'")
 						return
 					}
+					if pos < 0 || pos >= int64(len(asRunes)) {
+						filter.Log("Out of bounds:", pos)
+						continue
+					}
 					sb.WriteRune(asRunes[pos])
 				}
 			}
 			filter.Results = append(filter.Results, sb.String())
+		}
+	}
+}
+
+// getFilterResultSubset performs a subset selection on all the results of its parents
+func getFilterResultSubset(filter *Filter) {
+	numResults := 0
+	for _, parent := range filter.Parents {
+		numResults += len(parent.Results)
+	}
+
+	results := make([]string, 0, numResults)
+
+	for _, parent := range filter.Parents {
+		for _, result := range parent.Results {
+			results = append(results, result)
+		}
+	}
+
+	substrings := strings.Split(filter.Var1, ",")
+	for _, substring := range substrings {
+		if strings.Contains(substring, ":") {
+			from_to := strings.Split(substring, ":")
+			if len(from_to) != 2 {
+				filter.Log("Missing value in range: '", substring, "'")
+				return
+			}
+			fromStr := from_to[0]
+			var hasFrom bool = true
+			if fromStr == "" {
+				hasFrom = false
+			}
+			from64, err := strconv.ParseInt(fromStr, 10, 32)
+			var from = int(from64)
+			if hasFrom && err != nil {
+				filter.Log("Could not parse left side of: '", substring, "'")
+				return
+			}
+			if from < 0 {
+				from = len(results) + from
+			}
+			if from < 0 || from > len(results) {
+				filter.Log("Out of bounds:", from_to)
+				continue
+			}
+
+			toStr := from_to[1]
+			var hasTo bool = true
+			if toStr == "" {
+				hasTo = false
+			}
+			to64, err := strconv.ParseInt(toStr, 10, 32)
+			var to = int(to64)
+			if hasTo && err != nil {
+				filter.Log("Could not parse right side of: '", substring, "'")
+				return
+			}
+			if to < 0 {
+				to = len(results) + to
+			}
+			if to < 0 || to > len(results) {
+				filter.Log("Out of bounds:", from_to)
+				continue
+			}
+			if hasFrom && hasTo {
+				filter.Results = append(filter.Results, results[from:to]...)
+				if err != nil {
+					filter.Log("Could not substring: ", err)
+				}
+			} else if hasFrom {
+				filter.Results = append(filter.Results, results[from:]...)
+			} else if hasTo {
+				filter.Results = append(filter.Results, results[:to]...)
+			}
+		} else {
+			pos, err := strconv.ParseInt(substring, 10, 32)
+			if err != nil || pos < 0 {
+				filter.Log("Could not parse: '", substring, "'")
+				return
+			}
+			if pos < 0 || pos >= int64(numResults) {
+				filter.Log("Out of bounds:", pos)
+				continue
+			}
+			filter.Results = append(filter.Results, results[pos])
 		}
 	}
 }
@@ -1318,7 +1414,7 @@ func getFilterResultDisableSchedules(filter *Filter, web *Web, debug bool) {
 		return
 	}
 
-	web.db.Model(&Filter{}).Where("watch_id = ?", filter.WatchID).Update("Var2", "no")
+	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", filter.WatchID).Update("Var2", "no")
 }
 
 // getFilterResultEcho is a debug filter type, used to bootstrap some tests

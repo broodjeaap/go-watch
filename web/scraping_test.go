@@ -436,8 +436,11 @@ func TestFilterSubstringOutOfBounds(t *testing.T) {
 		Input string
 		Query string
 	}{
+		{"01234", "0:8"},
 		{"01234", ":-6"},
 		{"01234", "-6:"},
+		{"01234", "-1"},
+		{"01234", "6"},
 	}
 
 	for _, test := range tests {
@@ -450,6 +453,79 @@ func TestFilterSubstringOutOfBounds(t *testing.T) {
 				Var1: test.Query,
 			}
 			getFilterResultSubstring(
+				&filter,
+			)
+			if len(filter.Logs) == 0 {
+				t.Errorf("No log message, expected one for OoB")
+			}
+		})
+	}
+}
+
+func TestFilterSubset(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Query string
+		Want  []string
+	}{
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0", []string{"zero"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "6", []string{"six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-1", []string{}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "7", []string{}},
+
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0,3,6", []string{"zero", "three", "six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0,2:5,6", []string{"zero", "two", "three", "four", "six"}},
+
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "3:6", []string{"three", "four", "five"}},
+
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0:7", []string{"zero", "one", "two", "three", "four", "five", "six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, ":7", []string{"zero", "one", "two", "three", "four", "five", "six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0:", []string{"zero", "one", "two", "three", "four", "five", "six"}},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+				Var1: test.Query,
+			}
+			getFilterResultSubset(
+				&filter,
+			)
+			if !DeepEqualStringSlice(filter.Results, test.Want) {
+				t.Errorf("Got %s, want %s", filter.Results, test.Want)
+			}
+		})
+	}
+}
+
+func TestFilterSubsetOutOfBounds(t *testing.T) {
+	var tests = []struct {
+		Input []string
+		Query string
+	}{
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "9"},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-10"},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-10:9"},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-10:"},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, ":9"},
+
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0,1,2,8,4"},
+	}
+
+	for _, test := range tests {
+		testname := fmt.Sprintf("%s %s", test.Input, test.Query)
+		t.Run(testname, func(t *testing.T) {
+			filter := Filter{
+				Parents: []*Filter{
+					{Results: test.Input},
+				},
+				Var1: test.Query,
+			}
+			getFilterResultSubset(
 				&filter,
 			)
 			if len(filter.Logs) == 0 {
