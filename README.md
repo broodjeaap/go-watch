@@ -440,7 +440,25 @@ For the input string 'Hello World!':
 - `6,0,7`: WHo
 - `-6:`: World!
 - `-6:,:5`: World!Hello
+## Subset
 
+Subset allows for a [Python like](https://learnpython.com/blog/substring-of-string-python/) subset selection of its inputs.  
+For a filter with parents with these results:
+- First parent
+  - `zero`
+  - `one`
+- Second parent
+  - `two`
+- Third parent
+  - `three`
+  - `four`
+Then:  
+- `0`: `zero`
+- `-1`: `four`
+- `0,3`: `zero`, `three`
+- `2:4`: `two`, `three`
+- `-2:`: `three`, `four`
+- `:-2`: `zero`, `one`, `two`, `three`
 ## Contains
 
 Inputs pass if they contain the given regex.

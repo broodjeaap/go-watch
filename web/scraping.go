@@ -738,9 +738,12 @@ func getFilterResultSubstring(filter *Filter) {
 					}
 				} else {
 					pos, err := strconv.ParseInt(substring, 10, 32)
-					if err != nil || pos < 0 {
+					if err != nil {
 						filter.Log("Could not parse: '", substring, "'")
 						return
+					}
+					if pos < 0 {
+						pos = int64(len(asRunes)) + pos
 					}
 					if pos < 0 || pos >= int64(len(asRunes)) {
 						filter.Log("Out of bounds:", pos)
@@ -826,9 +829,12 @@ func getFilterResultSubset(filter *Filter) {
 			}
 		} else {
 			pos, err := strconv.ParseInt(substring, 10, 32)
-			if err != nil || pos < 0 {
+			if err != nil {
 				filter.Log("Could not parse: '", substring, "'")
 				return
+			}
+			if pos < 0 {
+				pos = int64(len(results)) + pos
 			}
 			if pos < 0 || pos >= int64(numResults) {
 				filter.Log("Out of bounds:", pos)

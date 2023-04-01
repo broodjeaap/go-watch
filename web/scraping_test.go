@@ -389,6 +389,8 @@ func TestFilterSubstring(t *testing.T) {
 	}{
 		{"0123456789", "0", "0"},
 		{"0123456789", "9", "9"},
+		{"0123456789", "-1", "9"},
+
 		{"0123456789", "0,9", "09"},
 		{"0123456789", "0:3", "012"},
 		{"0123456789", ":3", "012"},
@@ -439,7 +441,6 @@ func TestFilterSubstringOutOfBounds(t *testing.T) {
 		{"01234", "0:8"},
 		{"01234", ":-6"},
 		{"01234", "-6:"},
-		{"01234", "-1"},
 		{"01234", "6"},
 	}
 
@@ -470,10 +471,11 @@ func TestFilterSubset(t *testing.T) {
 	}{
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0", []string{"zero"}},
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "6", []string{"six"}},
-		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-1", []string{}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-1", []string{"six"}},
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "7", []string{}},
 
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0,3,6", []string{"zero", "three", "six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0,3,-2", []string{"zero", "three", "five"}},
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0,2:5,6", []string{"zero", "two", "three", "four", "six"}},
 
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "3:6", []string{"three", "four", "five"}},
@@ -481,6 +483,8 @@ func TestFilterSubset(t *testing.T) {
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0:7", []string{"zero", "one", "two", "three", "four", "five", "six"}},
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, ":7", []string{"zero", "one", "two", "three", "four", "five", "six"}},
 		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "0:", []string{"zero", "one", "two", "three", "four", "five", "six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, "-2:", []string{"five", "six"}},
+		{[]string{"zero", "one", "two", "three", "four", "five", "six"}, ":-2", []string{"zero", "one", "two", "three", "four"}},
 	}
 
 	for _, test := range tests {
