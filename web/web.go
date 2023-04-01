@@ -1285,12 +1285,35 @@ func (web *Web) backupRestore(c *gin.Context) {
 		return
 	}
 
+	web.cron.Stop()
+
 	err = web.db.Transaction(func(tx *gorm.DB) error {
-		delete := tx.Where("1 = 1").Delete(&Watch{})
-		if delete.Error != nil {
+		connections := tx.Where("1 = 1").Delete(&FilterConnection{})
+		if connections.Error != nil {
 			return err
 		}
-
+		values := tx.Where("1 = 1").Delete(&FilterOutput{})
+		if values.Error != nil {
+			return err
+		}
+		filters := tx.Where("1 = 1").Delete(&Filter{})
+		if filters.Error != nil {
+			return err
+		}
+		watches := tx.Where("1 = 1").Delete(&Watch{})
+		if watches.Error != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		c.HTML(http.StatusOK, "backupView", gin.H{
+			"Error":     err,
+			"urlPrefix": web.urlPrefix,
+		})
+		return
+	}
+	err = web.db.Transaction(func(tx *gorm.DB) error {
 		watches := tx.Create(&backup.Watches)
 		if watches.Error != nil {
 			return err
@@ -1313,12 +1336,14 @@ func (web *Web) backupRestore(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
-		c.HTML(http.StatusOK, "backupRestore", gin.H{
+		c.HTML(http.StatusOK, "backupView", gin.H{
 			"Error":     err,
 			"urlPrefix": web.urlPrefix,
 		})
 		return
 	}
+
+	go web.initCronJobs()
 
 	c.HTML(http.StatusOK, "backupRestore", gin.H{
 		"Backup":     backup,
