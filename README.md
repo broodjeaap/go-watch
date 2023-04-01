@@ -8,6 +8,7 @@ Some out-of-the-box highlights:
 - A small runtime footprint, a basic instance uses around 20MB of memory
 - Supports Lua scripting to filter/modify/reduce your data any way you want
 - Send notifications through Discord, Matrix, Slack, Telegram and many more services
+- Disable watches on (repeated) failures
 
 # Index
 - [Intro](#intro)
