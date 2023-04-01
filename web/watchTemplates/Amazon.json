@@ -1,22 +1,23 @@
 {
     "filters": [
       {
-        "filter_id": 1,
-        "filter_watch_id": 1,
+        "filter_id": 80,
+        "filter_watch_id": 2,
         "filter_name": "Fetch",
         "x": 144,
         "y": 242,
-        "filter_type": "brow",
-        "var1": "gurl",
-        "var2": "-",
+        "filter_type": "gurl",
+        "var1": "-",
+        "var2": "",
         "Parents": null,
         "Children": null,
         "Results": null,
-        "Logs": null
+        "Logs": null,
+        "CronEntry": null
       },
       {
-        "filter_id": 2,
-        "filter_watch_id": 1,
+        "filter_id": 81,
+        "filter_watch_id": 2,
         "filter_name": "XPath",
         "x": 362,
         "y": 245,
@@ -26,11 +27,12 @@
         "Parents": null,
         "Children": null,
         "Results": null,
-        "Logs": null
+        "Logs": null,
+        "CronEntry": null
       },
       {
-        "filter_id": 3,
-        "filter_watch_id": 1,
+        "filter_id": 82,
+        "filter_watch_id": 2,
         "filter_name": "Sanitize",
         "x": 584,
         "y": 244,
@@ -40,11 +42,12 @@
         "Parents": null,
         "Children": null,
         "Results": null,
-        "Logs": null
+        "Logs": null,
+        "CronEntry": null
       },
       {
-        "filter_id": 4,
-        "filter_watch_id": 1,
+        "filter_id": 83,
+        "filter_watch_id": 2,
         "filter_name": "Price",
         "x": 815,
         "y": 245,
@@ -54,11 +57,12 @@
         "Parents": null,
         "Children": null,
         "Results": null,
-        "Logs": null
+        "Logs": null,
+        "CronEntry": null
       },
       {
-        "filter_id": 5,
-        "filter_watch_id": 1,
+        "filter_id": 84,
+        "filter_watch_id": 2,
         "filter_name": "Diff",
         "x": 813,
         "y": 379,
@@ -68,11 +72,12 @@
         "Parents": null,
         "Children": null,
         "Results": null,
-        "Logs": null
+        "Logs": null,
+        "CronEntry": null
       },
       {
-        "filter_id": 6,
-        "filter_watch_id": 1,
+        "filter_id": 85,
+        "filter_watch_id": 2,
         "filter_name": "Schedule",
         "x": 104,
         "y": 70,
@@ -82,39 +87,103 @@
         "Parents": null,
         "Children": null,
         "Results": null,
-        "Logs": null
+        "Logs": null,
+        "CronEntry": null
+      },
+      {
+        "filter_id": 86,
+        "filter_watch_id": 2,
+        "filter_name": "Expect",
+        "x": 540,
+        "y": 557,
+        "filter_type": "expect",
+        "var1": "2",
+        "var2": "",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null,
+        "CronEntry": null
+      },
+      {
+        "filter_id": 87,
+        "filter_watch_id": 2,
+        "filter_name": "Disable",
+        "x": 735,
+        "y": 557,
+        "filter_type": "disable",
+        "var1": "",
+        "var2": "",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null,
+        "CronEntry": null
+      },
+      {
+        "filter_id": 88,
+        "filter_watch_id": 2,
+        "filter_name": "DisableNotify",
+        "x": 733,
+        "y": 659,
+        "filter_type": "notify",
+        "var1": "Disabled schedule for {{ .WatchName }}",
+        "var2": "All",
+        "Parents": null,
+        "Children": null,
+        "Results": null,
+        "Logs": null,
+        "CronEntry": null
       }
     ],
     "connections": [
       {
-        "filter_connection_id": 1,
-        "connection_watch_id": 1,
-        "filter_output_id": 1,
-        "filter_input_id": 2
+        "filter_connection_id": 72,
+        "connection_watch_id": 2,
+        "filter_output_id": 80,
+        "filter_input_id": 81
       },
       {
-        "filter_connection_id": 2,
-        "connection_watch_id": 1,
-        "filter_output_id": 2,
-        "filter_input_id": 3
+        "filter_connection_id": 73,
+        "connection_watch_id": 2,
+        "filter_output_id": 81,
+        "filter_input_id": 82
       },
       {
-        "filter_connection_id": 3,
-        "connection_watch_id": 1,
-        "filter_output_id": 3,
-        "filter_input_id": 4
+        "filter_connection_id": 74,
+        "connection_watch_id": 2,
+        "filter_output_id": 82,
+        "filter_input_id": 83
       },
       {
-        "filter_connection_id": 4,
-        "connection_watch_id": 1,
-        "filter_output_id": 4,
-        "filter_input_id": 5
+        "filter_connection_id": 75,
+        "connection_watch_id": 2,
+        "filter_output_id": 83,
+        "filter_input_id": 84
       },
       {
-        "filter_connection_id": 5,
-        "connection_watch_id": 1,
-        "filter_output_id": 6,
-        "filter_input_id": 1
+        "filter_connection_id": 76,
+        "connection_watch_id": 2,
+        "filter_output_id": 85,
+        "filter_input_id": 80
+      },
+      {
+        "filter_connection_id": 77,
+        "connection_watch_id": 2,
+        "filter_output_id": 81,
+        "filter_input_id": 86
+      },
+      {
+        "filter_connection_id": 78,
+        "connection_watch_id": 2,
+        "filter_output_id": 86,
+        "filter_input_id": 87
+      },
+      {
+        "filter_connection_id": 79,
+        "connection_watch_id": 2,
+        "filter_output_id": 86,
+        "filter_input_id": 88
       }
     ]
   }
