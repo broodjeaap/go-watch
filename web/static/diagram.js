@@ -395,8 +395,8 @@ var _diagram;
 function tick() {
     _diagram.tick();
     setTimeout(function () {
-        tick(), 1000 / 60;
-    });
+        tick();
+    }, 1000 / 60);
 }
 function diagramOnResize() {
     _diagram.onresize();

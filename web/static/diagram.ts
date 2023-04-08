@@ -473,8 +473,8 @@ let _diagram: Diagrams;
 function tick(){
     _diagram.tick();
     setTimeout(() => {
-        tick(), 1000/60;
-    });
+        tick();
+    }, 1000/60);
 }
 function diagramOnResize(){
     _diagram.onresize();
