@@ -30,3 +30,19 @@ trigger:
   - master
   event:
   - push
+---
+kind: pipeline
+type: kubernetes
+name: sonarqube
+steps:
+- name: sonar scanner
+  image: sonarsource/sonar-scanner-cli
+  environment:
+    SONAR_HOST_URL: https://sonarqube.broodjeaap.net
+    SONAR_LOGIN:
+      from_secret: sonarqube_token
+trigger:
+  branch:
+  - master
+  event:
+  - push
