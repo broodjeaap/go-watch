@@ -7,13 +7,13 @@ steps:
     commands:
       - go build
       - go test -v github.com/broodjeaap/go-watch/web -coverprofile=bin/cov.out
-    - name: sonarqube
-      image: sonarsource/sonar-scanner-cli
-      environment:
-        SONAR_HOST_URL: https://sonarqube.broodjeaap.net
-        SONAR_SCANNER_OPTS: -Dsonar.projectKey=go-watch -Dsonar.projectBaseDir=/drone/src/.git/ -Dsonar.sources=. -Dsonar.exclusions=**/*_test.go -Dsonar.tests=. -Dsonar.test.inclusions=**/*_test.go -Dsonar.go.coverage.reportPaths=bin/cov.out
-        SONAR_LOGIN:
-          from_secret: sonarqube_token
+  - name: sonarqube
+    image: sonarsource/sonar-scanner-cli
+    environment:
+      SONAR_HOST_URL: https://sonarqube.broodjeaap.net
+      SONAR_SCANNER_OPTS: -Dsonar.projectKey=go-watch -Dsonar.projectBaseDir=/drone/src/.git/ -Dsonar.sources=. -Dsonar.exclusions=**/*_test.go -Dsonar.tests=. -Dsonar.test.inclusions=**/*_test.go -Dsonar.go.coverage.reportPaths=bin/cov.out
+      SONAR_LOGIN:
+        from_secret: sonarqube_token
 trigger:
   branch:
     - master
