@@ -22,7 +22,7 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-var CanvasObject = /** @class */ (function () {
+var CanvasObject = (function () {
     function CanvasObject(x, y, width, height) {
         this.x = x;
         this.y = y;
@@ -47,7 +47,7 @@ var CanvasObject = /** @class */ (function () {
     };
     return CanvasObject;
 }());
-var Button = /** @class */ (function (_super) {
+var Button = (function (_super) {
     __extends(Button, _super);
     function Button(x, y, label, ctx, callback, node) {
         var _this = _super.call(this, x, y, 0, 0) || this;
@@ -84,7 +84,7 @@ var circleTopRadians = Math.PI / 2;
 var circleRightRadians = (Math.PI * 3) / 2;
 var circleBottomRadians = Math.PI + (Math.PI * 3);
 var circleLeftRadians = Math.PI;
-var NodeIO = /** @class */ (function (_super) {
+var NodeIO = (function (_super) {
     __extends(NodeIO, _super);
     function NodeIO(node, input) {
         var _this = _super.call(this, 0, 0, 0, 0) || this;
@@ -129,7 +129,7 @@ var NodeIO = /** @class */ (function (_super) {
     };
     return NodeIO;
 }(CanvasObject));
-var NodeConnection = /** @class */ (function (_super) {
+var NodeConnection = (function (_super) {
     __extends(NodeConnection, _super);
     function NodeConnection(output, input) {
         var _this = _super.call(this, 0, 0, 0, 0) || this;
@@ -187,7 +187,7 @@ var NodeConnection = /** @class */ (function (_super) {
     };
     return NodeConnection;
 }(CanvasObject));
-var NewConnection = /** @class */ (function (_super) {
+var NewConnection = (function (_super) {
     __extends(NewConnection, _super);
     function NewConnection(output) {
         var _this = _super.call(this, 0, 0, 0, 0) || this;
@@ -255,7 +255,7 @@ var NewConnection = /** @class */ (function (_super) {
     };
     return NewConnection;
 }(CanvasObject));
-var DiagramNode = /** @class */ (function (_super) {
+var DiagramNode = (function (_super) {
     __extends(DiagramNode, _super);
     function DiagramNode(id, x, y, label, meta, ctx, results, logs) {
         if (meta === void 0) { meta = {}; }
@@ -354,10 +354,8 @@ var DiagramNode = /** @class */ (function (_super) {
         ctx.strokeRect(ms.offset.x + this.x, ms.offset.y + this.y, this.width, this.height);
     };
     DiagramNode.prototype.fixType = function () {
-        // @ts-ignore
         this.type = this.meta.type;
         if (["math", "condition"].indexOf(this.type) >= 0) {
-            // @ts-ignore
             this.type = this.meta.var1;
         }
     };
@@ -377,7 +375,6 @@ var DiagramNode = /** @class */ (function (_super) {
         return this.pointNearNode(p) && (_super.prototype.pointInObject.call(this, p) || this.input.pointInObject(p) || this.output.pointInObject(p));
     };
     DiagramNode.prototype.pointNearNode = function (p) {
-        // including the input/output circles
         if (p.x < this.x - this.input.radius) {
             return false;
         }
@@ -419,7 +416,7 @@ function diagramOnWheel(ev) {
 function diagramOnContext(ev) {
     ev.preventDefault();
 }
-var Point = /** @class */ (function () {
+var Point = (function () {
     function Point(x, y) {
         if (x === void 0) { x = 0; }
         if (y === void 0) { y = 0; }
@@ -430,7 +427,7 @@ var Point = /** @class */ (function () {
     }
     return Point;
 }());
-var MouseState = /** @class */ (function () {
+var MouseState = (function () {
     function MouseState() {
         this.canvas = new Point();
         this.absCanvas = new Point();
@@ -446,7 +443,7 @@ var MouseState = /** @class */ (function () {
     }
     return MouseState;
 }());
-var Diagrams = /** @class */ (function () {
+var Diagrams = (function () {
     function Diagrams(canvasId, editNodeCallback, deleteNodeCallback) {
         if (editNodeCallback === void 0) { editNodeCallback = function () { }; }
         if (deleteNodeCallback === void 0) { deleteNodeCallback = function () { }; }
@@ -724,13 +721,12 @@ var Diagrams = /** @class */ (function () {
     Diagrams.prototype.fillParent = function () {
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
-        //this.draw();
     };
     return Diagrams;
 }());
-// http://www.independent-software.com/determining-coordinates-on-a-html-canvas-bezier-curve.html
 function getBezierXY(t, sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey) {
     return new Point(Math.pow(1 - t, 3) * sx + 3 * t * Math.pow(1 - t, 2) * cp1x
         + 3 * t * t * (1 - t) * cp2x + t * t * t * ex, Math.pow(1 - t, 3) * sy + 3 * t * Math.pow(1 - t, 2) * cp1y
         + 3 * t * t * (1 - t) * cp2y + t * t * t * ey);
 }
+//# sourceMappingURL=diagram.js.map

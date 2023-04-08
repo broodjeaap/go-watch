@@ -19,3 +19,4 @@ function initOnChange() {
     fileInput.onchange = fileOnChange;
 }
 document.addEventListener('DOMContentLoaded', initOnChange, false);
+//# sourceMappingURL=create.js.map

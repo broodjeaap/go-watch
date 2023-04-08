@@ -1,4 +1,3 @@
-// @ts-ignore
 var urlPrefix = getURLPrefix();
 function testSubmit() {
     var form = document.getElementById("uploadForm");
@@ -17,3 +16,4 @@ function initUploadSubmit() {
     restoreSubmitInput.onclick = restoreSubmit;
 }
 document.addEventListener('DOMContentLoaded', initUploadSubmit, false);
+//# sourceMappingURL=backup.js.map

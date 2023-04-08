@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "target": "ES5",
+        "lib": ["ES2020", "dom"],
+        "noImplicitAny": false,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "downlevelIteration": true
+    },
+    "include": [
+        "web/static/*.ts"
+    ],
+}

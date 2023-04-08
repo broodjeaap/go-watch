@@ -29,14 +29,10 @@ var __spread = (this && this.__spread) || function () {
     for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
     return ar;
 };
-// @ts-ignore
 var urlPrefix = getURLPrefix();
 function onTypeChange(node) {
     var e_1, _a, e_2, _b;
     if (node === void 0) { node = null; }
-    // onTypeChange handles changing of the type of a DiagramNode while editing or creating a new Node
-    // It removes all input elements and each case is responsible for adding the input it needs
-    // @ts-ignore
     var urlPrefix = getURLPrefix();
     var select = document.getElementById("typeInput");
     var type = select.value;
@@ -52,9 +48,7 @@ function onTypeChange(node) {
     var var1Value = "";
     var var2Value = "";
     if (node != null) {
-        // @ts-ignore
         var1Value = node.meta.var1;
-        // @ts-ignore
         var2Value = node.meta.var2;
     }
     switch (type) {
@@ -493,7 +487,6 @@ function onTypeChange(node) {
             var2Input.id = "var2Input";
             var2Input.classList.add("form-control");
             try {
-                // @ts-ignore
                 for (var notifiers_1 = __values(notifiers), notifiers_1_1 = notifiers_1.next(); !notifiers_1_1.done; notifiers_1_1 = notifiers_1.next()) {
                     var notifier = notifiers_1_1.value;
                     if (notifier == "") {
@@ -599,7 +592,6 @@ function onTypeChange(node) {
             }
             var1Input_1.rows = 10;
             var1Div.appendChild(var1Input_1);
-            // dev copy link
             var devCopyA_1 = document.createElement('a');
             var results = node == null ? [] : node.results;
             var luaScript_1 = "inputs = {\"" + results.join('","') + "\"}\noutputs = {}\n\n " + var1Input_1.value;
@@ -642,7 +634,6 @@ function onTypeChange(node) {
                 snippetDiv.appendChild(gap);
             };
             try {
-                // add snippets
                 for (var luaSnippets_1 = __values(luaSnippets), luaSnippets_1_1 = luaSnippets_1.next(); !luaSnippets_1_1.done; luaSnippets_1_1 = luaSnippets_1.next()) {
                     var _c = __read(luaSnippets_1_1.value, 2), name_1 = _c[0], snippet = _c[1];
                     _loop_1(name_1, snippet);
@@ -671,7 +662,6 @@ function onTypeChange(node) {
 }
 function onMathChange(node) {
     if (node === void 0) { node = null; }
-    // onMatchChange handles the changing of the inputs when type == math
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
     var var2Input = document.getElementById("var2Input");
@@ -679,7 +669,6 @@ function onMathChange(node) {
     var var3Label = document.getElementById("var3Label");
     var var2Value = "";
     if (node != null) {
-        // @ts-ignore
         var2Value = node.meta.var2;
     }
     if (var1Input.value == "round") {
@@ -698,7 +687,6 @@ function onMathChange(node) {
 function onConditionChange(node) {
     var e_3, _a;
     if (node === void 0) { node = null; }
-    // onConditionChange handles the changing of the inputs when type == condition
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
     var var1Div = document.getElementById("var1Div");
@@ -711,10 +699,8 @@ function onConditionChange(node) {
     var var1Value = "";
     var var2Value = "";
     if (node != null) {
-        // @ts-ignore
         var1Value = node.meta.var1;
         var1Input.value = var1Value;
-        // @ts-ignore
         var2Value = node.meta.var2;
     }
     else {
@@ -779,7 +765,6 @@ function onConditionChange(node) {
     }
 }
 function onBrowserlessChange(node) {
-    // onBrowserlessChange handles the changing of the inputs when type == browserless
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
@@ -794,10 +779,8 @@ function onBrowserlessChange(node) {
     var var1Value = "";
     var var2Value = "";
     if (node != null) {
-        // @ts-ignore
         var1Value = node.meta.var1;
         var1Input.value = var1Value;
-        // @ts-ignore
         var2Value = node.meta.var2;
     }
     else {
@@ -883,7 +866,6 @@ function onBrowserlessChange(node) {
     }
 }
 function onSubmitNewFilter() {
-    // onSubmitNewFilter collects all the values from the input elements, and calls _diagram.addNode() with it
     var nameInput = document.getElementById("nameInput");
     var name = nameInput.value;
     var selectType = document.getElementById("typeInput");
@@ -898,15 +880,11 @@ function onSubmitNewFilter() {
 }
 function editNode(node) {
     var e_4, _a, e_5, _b;
-    // editNode resets the edit/new Node modal to reflect the values of 'node'
     var addFilterButton = document.getElementById("filterButton");
     addFilterButton.click();
     var name = node.label;
-    // @ts-ignore
     var type = node.meta.type;
-    // @ts-ignore
     var var1 = node.meta.var1;
-    // @ts-ignore
     var var2 = node.meta.var2;
     if (var2 === undefined) {
         var2 = "";
@@ -988,7 +966,6 @@ function editNode(node) {
     submitButton.onclick = function () { submitEditNode(node); };
 }
 function deleteNode(node) {
-    // deleteNode deletes a node from _diagram and removes all connections to/from it
     _diagram.nodes.delete(node.id);
     for (var i = 0; i < _diagram.connections.length; i++) {
         var connection = _diagram.connections[i];
@@ -1001,17 +978,13 @@ function deleteNode(node) {
     }
 }
 function submitEditNode(node) {
-    // submitEditNode saves the changes to the input elements to the underlying node
     var nameInput = document.getElementById("nameInput");
     node.label = nameInput.value;
     var selectType = document.getElementById("typeInput");
-    // @ts-ignore
     node.meta.type = selectType.value;
     var var1Input = document.getElementById("var1Input");
-    // @ts-ignore
     node.meta.var1 = var1Input.value;
     var var2Input = document.getElementById("var2Input");
-    // @ts-ignore
     node.meta.var2 = var2Input.value;
     node.fixType();
     node.resize(_diagram.ctx);
@@ -1021,7 +994,6 @@ function submitEditNode(node) {
 }
 function saveWatch() {
     var e_6, _a, e_7, _b;
-    // saveWatch collects all the state (nodes/connections), turns it into JSON and submits it through a hidden form
     var watchIdInput = document.getElementById("watch_id");
     var watchId = Number(watchIdInput.value);
     var filters = new Array();
@@ -1034,11 +1006,8 @@ function saveWatch() {
                 filter_name: filter.label,
                 x: Math.round(filter.x),
                 y: Math.round(filter.y),
-                // @ts-ignore
                 filter_type: filter.meta.type,
-                // @ts-ignore
                 var1: filter.meta.var1,
-                // @ts-ignore
                 var2: filter.meta.var2,
             });
         }
@@ -1078,7 +1047,6 @@ function saveWatch() {
     saveWatchForm.submit();
 }
 function addFilterButtonClicked() {
-    // addFilterButtonClicked opens up the new/edit filter modal and empties it
     var submitButton = document.getElementById("submitFilterButton");
     submitButton.onclick = onSubmitNewFilter;
     submitButton.innerHTML = "Add Filter";
@@ -1089,7 +1057,6 @@ function addFilterButtonClicked() {
     onTypeChange();
 }
 function pageInit() {
-    // pageInit sets all the onclick/onchange trigger events
     var select = document.getElementById("typeInput");
     select.onchange = function () { onTypeChange(); };
     var addFilterButton = document.getElementById("filterButton");
@@ -1101,10 +1068,9 @@ function pageInit() {
 }
 document.addEventListener('DOMContentLoaded', pageInit, false);
 function clearCache() {
-    // POSTs to cache/clear and reloads if clearing the cache was succesful
     var confirmed = confirm("Do you want to clear the URL cache?");
     if (!confirmed) {
-        return; // do nothing
+        return;
     }
     var data = new URLSearchParams();
     fetch(urlPrefix + "cache/clear", {
@@ -1123,3 +1089,4 @@ function clearCacheButtonInit() {
     clearCacheButton.onclick = clearCache;
 }
 document.addEventListener('DOMContentLoaded', clearCacheButtonInit, false);
+//# sourceMappingURL=edit.js.map
