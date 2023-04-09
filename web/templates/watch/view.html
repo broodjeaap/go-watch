@@ -79,9 +79,9 @@ GoWatch {{ .Watch.Name }}
 
 {{ define "scripts"}}
 {{ if .numericalMap }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/luxon@^2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@^1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" integrity="sha256-+8RZJua0aEWg+QVVKg4LEzEEm/8RFez5Tb4JBNiV5xA=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@2.0.0/build/global/luxon.min.js" integrity="sha256-s186wNBmHyMNKGofG9uwL+TaIOevLbvXpyNulL/8UF0=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js" integrity="sha256-qk+I9RaF57Ium9VLcn0ZYWjuhbjOXOCCwBl+xnaXa1s=" crossorigin="anonymous"></script>
 
 <script>
     function canvasInit() {
