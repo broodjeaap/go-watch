@@ -12,7 +12,7 @@ steps:
     environment:
       SONAR_HOST_URL: https://sonarqube.broodjeaap.net
       SONAR_SCANNER_OPTS: -Dsonar.projectKey=go-watch -Dsonar.projectBaseDir=/drone/src/ -Dsonar.sources=. -Dsonar.exclusions=**/*.js,**/*_test.go -Dsonar.tests=. -Dsonar.test.inclusions=**/*_test.go -Dsonar.go.coverage.reportPaths=/drone/src/cov.out
-      SONAR_LOGIN:
+      SONAR_TOKEN:
         from_secret: sonarqube_token
 trigger:
   branch:
