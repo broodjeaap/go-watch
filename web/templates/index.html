@@ -5,17 +5,12 @@ GoWatch
 {{define "content"}}
 {{ if .warnings }}
     <div class="h3 text-center text-danger" id="logHeader">Startup Warnings</div>
-    <table class="table table-striped table-hover">
-        <tbody>
-            {{ range .warnings }}
-            <tr>
-                <td class="h5 text-center text-danger">{{ . }}</td>
-            </tr>
-            {{ end }}
-        </tbody>
-    </table>
+    {{ range .warnings }}
+        <div class="h5 text-center text-danger">{{ . }}</div>
+    {{ end }}
 {{ end }}
-<table class="table table-striped table-hover">
+<table class="table table-striped table-hover caption-top">
+    <caption class="h3 text-center">Watches</caption>
     <thead class="table-dark">
         <tr>
             <th>Name</th>

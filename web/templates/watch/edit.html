@@ -16,7 +16,7 @@ GoWatch Edit {{ .Watch.Name }}
 {{end}}
 
 {{ define "left" }}
-<table>
+<table role="presentation">
     <tr>
         <td>
             <button type="button" id="filterButton" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#FilterModal">
@@ -115,7 +115,7 @@ GoWatch Edit {{ .Watch.Name }}
                         <button class="btn btn-primary mt-4"  data-bs-dismiss="modal" id="submitFilterButton">Add Filter</button>
                     </div>
                     <div class="h3 text-center text-danger" id="logHeader">Logs</div>
-                    <table class="table table-hover table-sm" id="logTable">
+                    <table class="table table-hover table-sm" role="presentation" id="logTable">
                         <tbody id="logTableBody">
 
                         </tbody>

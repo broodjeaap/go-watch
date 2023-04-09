@@ -897,8 +897,7 @@ func getFilterResultMin(filter *Filter) {
 				}
 			} else {
 				if len(result) > 50 {
-					filter.Log("Could not convert value, '", result, "', to number")
-					//filter.Log("Could not convert value, with length ", len(result), ", to number")
+					filter.Log("Could not convert value, with length ", len(result), ", to number")
 				} else {
 					filter.Log("Could not convert value, '", result, "', to number")
 				}
