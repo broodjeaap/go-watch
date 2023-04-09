@@ -33,7 +33,6 @@ var urlPrefix = getURLPrefix();
 function onTypeChange(node) {
     var e_1, _a, e_2, _b;
     if (node === void 0) { node = null; }
-    var urlPrefix = getURLPrefix();
     var select = document.getElementById("typeInput");
     var type = select.value;
     var var1Div = document.getElementById("var1Div");
@@ -44,7 +43,6 @@ function onTypeChange(node) {
     var var2Label = document.getElementById("var2Label");
     var var3Div = document.getElementById("var3Div");
     var3Div.innerHTML = "";
-    var var3Label = document.getElementById("var3Label");
     var var1Value = "";
     var var2Value = "";
     if (node != null) {
@@ -663,10 +661,8 @@ function onTypeChange(node) {
 function onMathChange(node) {
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
-    var var1Label = document.getElementById("var1Label");
     var var2Input = document.getElementById("var2Input");
     var var2Label = document.getElementById("var2Label");
-    var var3Label = document.getElementById("var3Label");
     var var2Value = "";
     if (node != null) {
         var2Value = node.meta.var2;
@@ -689,13 +685,9 @@ function onConditionChange(node) {
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
-    var var1Div = document.getElementById("var1Div");
-    var var2Input = document.getElementById("var2Input");
     var var2Label = document.getElementById("var2Label");
     var var2Div = document.getElementById("var2Div");
     var2Div.innerHTML = "";
-    var var3Label = document.getElementById("var3Label");
-    var var3Div = document.getElementById("var3Div");
     var var1Value = "";
     var var2Value = "";
     if (node != null) {
@@ -709,25 +701,25 @@ function onConditionChange(node) {
     var1Label.innerHTML = "Condition";
     switch (var1Value) {
         case "lowert": {
-            var var2Input_1 = document.createElement("input");
-            var2Input_1.name = "var2";
-            var2Input_1.id = "var2Input";
-            var2Input_1.type = "number";
-            var2Input_1.value = var2Value;
-            var2Input_1.classList.add("form-control");
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.type = "number";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
             var2Label.innerHTML = "Threshold";
-            var2Div.appendChild(var2Input_1);
+            var2Div.appendChild(var2Input);
             break;
         }
         case "highert": {
-            var var2Input_2 = document.createElement("input");
-            var2Input_2.name = "var2";
-            var2Input_2.id = "var2Input";
-            var2Input_2.type = "number";
-            var2Input_2.value = var2Value;
-            var2Input_2.classList.add("form-control");
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.type = "number";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
             var2Label.innerHTML = "Threshold";
-            var2Div.appendChild(var2Input_2);
+            var2Div.appendChild(var2Input);
             break;
         }
         default: {
@@ -768,8 +760,6 @@ function onBrowserlessChange(node) {
     if (node === void 0) { node = null; }
     var var1Input = document.getElementById("var1Input");
     var var1Label = document.getElementById("var1Label");
-    var var1Div = document.getElementById("var1Div");
-    var var2Input = document.getElementById("var2Input");
     var var2Label = document.getElementById("var2Label");
     var var2Div = document.getElementById("var2Div");
     var2Div.innerHTML = "";
@@ -789,37 +779,37 @@ function onBrowserlessChange(node) {
     var1Label.innerHTML = "Function";
     switch (var1Value) {
         case "gurl": {
-            var var2Input_3 = document.createElement("input");
-            var2Input_3.name = "var2";
-            var2Input_3.id = "var2Input";
-            var2Input_3.value = var2Value;
-            var2Input_3.classList.add("form-control");
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = var2Value;
+            var2Input.classList.add("form-control");
             var2Label.innerHTML = "URL";
-            var2Div.appendChild(var2Input_3);
+            var2Div.appendChild(var2Input);
             break;
         }
         case "gurls": {
-            var var2Input_4 = document.createElement("input");
-            var2Input_4.name = "var2";
-            var2Input_4.id = "var2Input";
-            var2Input_4.value = "";
-            var2Input_4.disabled = true;
-            var2Input_4.classList.add("form-control");
+            var var2Input = document.createElement("input");
+            var2Input.name = "var2";
+            var2Input.id = "var2Input";
+            var2Input.value = "";
+            var2Input.disabled = true;
+            var2Input.classList.add("form-control");
             var2Label.innerHTML = "-";
-            var2Div.appendChild(var2Input_4);
+            var2Div.appendChild(var2Input);
             break;
         }
         case "func": {
-            var var2Input_5 = document.createElement("textarea");
-            var2Input_5.name = "var2Input";
-            var2Input_5.id = "var2Input";
-            var2Input_5.value = "module.exports = async ({ page, context }) => {\n  await page.goto(\"https://192.168.178.254:8000\");\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
-            var2Input_5.classList.add("form-control");
-            var2Input_5.rows = 15;
+            var var2Input = document.createElement("textarea");
+            var2Input.name = "var2Input";
+            var2Input.id = "var2Input";
+            var2Input.value = "module.exports = async ({ page, context }) => {\n  await page.goto(\"https://192.168.178.254:8000\");\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
+            var2Input.classList.add("form-control");
+            var2Input.rows = 15;
             var2Label.innerHTML = "Code";
-            var2Div.appendChild(var2Input_5);
+            var2Div.appendChild(var2Input);
             if (var2Value != "") {
-                var2Input_5.value = var2Value;
+                var2Input.value = var2Value;
             }
             var3Label.innerHTML = "Help";
             var helpLink1 = document.createElement("a");
@@ -837,16 +827,16 @@ function onBrowserlessChange(node) {
             break;
         }
         case "funcs": {
-            var var2Input_6 = document.createElement("textarea");
-            var2Input_6.name = "var2Input";
-            var2Input_6.id = "var2Input";
-            var2Input_6.value = "module.exports = async ({ page, context }) => {\n  const { result } = context;\n  await page.goto(result);\n\n  // click something\n  //await page.click(\"#elem\");\n  \n  // fill input\n  //await page.$eval('#elem', el => el.value = 'some text');\n  \n  // select dropdown\n  // await page.select('#elem', 'value')\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
-            var2Input_6.classList.add("form-control");
-            var2Input_6.rows = 15;
+            var var2Input = document.createElement("textarea");
+            var2Input.name = "var2Input";
+            var2Input.id = "var2Input";
+            var2Input.value = "module.exports = async ({ page, context }) => {\n  const { result } = context;\n  await page.goto(result);\n\n  // click something\n  //await page.click(\"#elem\");\n  \n  // fill input\n  //await page.$eval('#elem', el => el.value = 'some text');\n  \n  // select dropdown\n  // await page.select('#elem', 'value')\n\n  const data = await page.content();\n\n  return {\n    data,\n    type: 'text/plain', // 'application/html' 'application/json'\n  };\n};";
+            var2Input.classList.add("form-control");
+            var2Input.rows = 15;
             var2Label.innerHTML = "Code";
-            var2Div.appendChild(var2Input_6);
+            var2Div.appendChild(var2Input);
             if (var2Value != "") {
-                var2Input_6.value = var2Value;
+                var2Input.value = var2Value;
             }
             var3Label.innerHTML = "Help";
             var helpLink1 = document.createElement("a");
@@ -884,7 +874,6 @@ function editNode(node) {
     addFilterButton.click();
     var name = node.label;
     var type = node.meta.type;
-    var var1 = node.meta.var1;
     var var2 = node.meta.var2;
     if (var2 === undefined) {
         var2 = "";
@@ -942,8 +931,8 @@ function editNode(node) {
             console.log("code");
         }
         else {
-            result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            code.innerHTML = "'" + result + "'";
+            var cleanResult = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            code.innerHTML = "'" + cleanResult + "'";
         }
         cardDiv.appendChild(cardBody);
         pre.appendChild(code);
@@ -967,15 +956,7 @@ function editNode(node) {
 }
 function deleteNode(node) {
     _diagram.nodes.delete(node.id);
-    for (var i = 0; i < _diagram.connections.length; i++) {
-        var connection = _diagram.connections[i];
-        var output = connection.output;
-        var input = connection.input;
-        if (node.id == output.id || node.id == input.id) {
-            _diagram.connections.splice(i, 1);
-            i--;
-        }
-    }
+    _diagram.connections = _diagram.connections.filter(function (conn) { return !(node.id == conn.input.id || node.id == conn.output.id); });
 }
 function submitEditNode(node) {
     var nameInput = document.getElementById("nameInput");
@@ -1072,7 +1053,6 @@ function clearCache() {
     if (!confirmed) {
         return;
     }
-    var data = new URLSearchParams();
     fetch(urlPrefix + "cache/clear", {
         method: "POST"
     }).then(function (response) {

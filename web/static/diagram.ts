@@ -209,10 +209,6 @@ class NodeConnection extends CanvasObject {
         ctx.stroke();
         ctx.closePath();
     }
-
-    reposition(){
-        
-    }
 }
 
 class NewConnection extends CanvasObject {
@@ -278,10 +274,6 @@ class NewConnection extends CanvasObject {
         ctx.stroke();
         ctx.closePath();
     }
-
-    reposition(){
-        
-    }
 }
 
 class DiagramNode extends CanvasObject {
@@ -316,8 +308,8 @@ class DiagramNode extends CanvasObject {
         x: number, 
         y: number, 
         label: string,
-        meta: Object = {},
         ctx: CanvasRenderingContext2D,
+        meta: Object = {},
         results: Array<string> = new Array(),
         logs: Array<string> = new Array(),
     ){
@@ -551,11 +543,11 @@ class Diagrams {
         ){
         this.canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         if (this.canvas === null){
-            throw `Could not getElementById ${canvasId}`;
+            throw new Error(`Could not getElementById ${canvasId}`);
         }
         let ctx = this.canvas.getContext("2d");
         if (ctx === null){
-            throw `Could not get 2d rendering context`
+            throw new Error(`Could not get 2d rendering context`)
         }
         _diagram = this;
         this.ctx = ctx;
@@ -720,7 +712,7 @@ class Diagrams {
             results: Array<string> = new Array(),
             logs: Array<string> = new Array()
         ){
-        let node = new DiagramNode(id, x, y, label, meta, this.ctx, results, logs);
+        let node = new DiagramNode(id, x, y, label, this.ctx, meta, results, logs);
         this.nodes.set(id, node);
     }
 
@@ -759,7 +751,6 @@ class Diagrams {
     fillParent(){
         this.canvas.width = this.canvas.clientWidth;
         this.canvas.height = this.canvas.clientHeight;
-        //this.draw();
     }
 }
 

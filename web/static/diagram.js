@@ -183,8 +183,6 @@ var NodeConnection = (function (_super) {
         ctx.stroke();
         ctx.closePath();
     };
-    NodeConnection.prototype.reposition = function () {
-    };
     return NodeConnection;
 }(CanvasObject));
 var NewConnection = (function (_super) {
@@ -251,13 +249,11 @@ var NewConnection = (function (_super) {
         ctx.stroke();
         ctx.closePath();
     };
-    NewConnection.prototype.reposition = function () {
-    };
     return NewConnection;
 }(CanvasObject));
 var DiagramNode = (function (_super) {
     __extends(DiagramNode, _super);
-    function DiagramNode(id, x, y, label, meta, ctx, results, logs) {
+    function DiagramNode(id, x, y, label, ctx, meta, results, logs) {
         if (meta === void 0) { meta = {}; }
         if (results === void 0) { results = new Array(); }
         if (logs === void 0) { logs = new Array(); }
@@ -462,11 +458,11 @@ var Diagrams = (function () {
         this.deleteNodeCallback = function () { };
         this.canvas = document.getElementById(canvasId);
         if (this.canvas === null) {
-            throw "Could not getElementById " + canvasId;
+            throw new Error("Could not getElementById " + canvasId);
         }
         var ctx = this.canvas.getContext("2d");
         if (ctx === null) {
-            throw "Could not get 2d rendering context";
+            throw new Error("Could not get 2d rendering context");
         }
         _diagram = this;
         this.ctx = ctx;
@@ -674,7 +670,7 @@ var Diagrams = (function () {
         if (meta === void 0) { meta = {}; }
         if (results === void 0) { results = new Array(); }
         if (logs === void 0) { logs = new Array(); }
-        var node = new DiagramNode(id, x, y, label, meta, this.ctx, results, logs);
+        var node = new DiagramNode(id, x, y, label, this.ctx, meta, results, logs);
         this.nodes.set(id, node);
     };
     Diagrams.prototype.addConnection = function (A, B) {

@@ -5,7 +5,6 @@ function onTypeChange(node: DiagramNode | null = null){
     // onTypeChange handles changing of the type of a DiagramNode while editing or creating a new Node
     // It removes all input elements and each case is responsible for adding the input it needs
     // @ts-ignore
-    let urlPrefix = getURLPrefix();
     let select = document.getElementById("typeInput") as HTMLSelectElement;
     let type = select.value;
     
@@ -19,7 +18,6 @@ function onTypeChange(node: DiagramNode | null = null){
     
     let var3Div = document.getElementById("var3Div") as HTMLDivElement;
     var3Div.innerHTML = "";
-    let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
 
     let var1Value = "";
     let var2Value = "";
@@ -785,10 +783,8 @@ end
 function onMathChange(node: DiagramNode | null = null){
     // onMatchChange handles the changing of the inputs when type == math
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
-    let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
     let var2Input = document.getElementById("var2Input") as HTMLInputElement;
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
-    let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
 
     let var2Value = "";
     if (node != null){
@@ -813,13 +809,9 @@ function onConditionChange(node: DiagramNode | null = null){
     // onConditionChange handles the changing of the inputs when type == condition
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
-    let var1Div = document.getElementById("var1Div") as HTMLDivElement;
-    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
     let var2Div = document.getElementById("var2Div") as HTMLDivElement;
     var2Div.innerHTML = "";
-    let var3Label = document.getElementById("var3Label") as HTMLLabelElement;
-    let var3Div = document.getElementById("var3Div") as HTMLDivElement;
 
     let var1Value = "";
     let var2Value = "";
@@ -889,8 +881,6 @@ function onBrowserlessChange(node: DiagramNode | null = null){
 
     let var1Input = document.getElementById("var1Input") as HTMLSelectElement;
     let var1Label = document.getElementById("var1Label") as HTMLLabelElement;
-    let var1Div = document.getElementById("var1Div") as HTMLDivElement;
-    let var2Input = document.getElementById("var2Input") as HTMLInputElement;
     let var2Label = document.getElementById("var2Label") as HTMLLabelElement;
     let var2Div = document.getElementById("var2Div") as HTMLDivElement;
     var2Div.innerHTML = "";
@@ -1057,8 +1047,6 @@ function editNode(node: DiagramNode){
     // @ts-ignore
     let type = node.meta.type;
     // @ts-ignore
-    let var1 = node.meta.var1;
-    // @ts-ignore
     let var2 = node.meta.var2;
     if (var2 === undefined){
         var2 = "";
@@ -1070,6 +1058,8 @@ function editNode(node: DiagramNode){
     let selectType = document.getElementById("typeInput") as HTMLSelectElement;
     selectType.value = type;
 
+
+
     onTypeChange(node);
     let submitButton = document.getElementById("submitFilterButton") as HTMLButtonElement;
     submitButton.innerHTML = "Save";
@@ -1080,7 +1070,7 @@ function editNode(node: DiagramNode){
     } else {
         logHeader.innerHTML = "";
     }
-    let logBody = document.getElementById("logTableBody") as HTMLElement;
+    let logBody = document.getElementById("logTableBody") as HTMLTableSectionElement;
     logBody.innerHTML = "";
     for (let log of node.logs){
         let row = document.createElement("tr");
@@ -1109,8 +1099,8 @@ function editNode(node: DiagramNode){
             code = showResultLink;
             console.log("code");
         } else {
-            result = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-            code.innerHTML = `'${result}'`;
+            let cleanResult = result.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            code.innerHTML = `'${cleanResult}'`;
         }
         cardDiv.appendChild(cardBody);
         pre.appendChild(code);
@@ -1123,15 +1113,9 @@ function editNode(node: DiagramNode){
 function deleteNode(node: DiagramNode){
     // deleteNode deletes a node from _diagram and removes all connections to/from it
     _diagram.nodes.delete(node.id)
-    for (let i = 0; i < _diagram.connections.length; i++){
-        let connection = _diagram.connections[i];
-        let output = connection.output;
-        let input = connection.input;
-        if (node.id == output.id || node.id == input.id){
-            _diagram.connections.splice(i, 1)
-            i--;
-        }
-    }
+    _diagram.connections = _diagram.connections.filter(
+        conn => !(node.id == conn.input.id || node.id == conn.output.id)
+    );
 }
 
 function submitEditNode(node: DiagramNode){
@@ -1235,7 +1219,6 @@ function clearCache(){
     if (!confirmed){
         return // do nothing
     }
-    let data = new URLSearchParams();
     fetch(urlPrefix+"cache/clear", {
             method: "POST"
     }).then((response) => {
@@ -1247,7 +1230,7 @@ function clearCache(){
     });
 }
 function clearCacheButtonInit(){
-    let clearCacheButton = document.getElementById("clearCacheButton") as HTMLElement;
+    let clearCacheButton = document.getElementById("clearCacheButton") as HTMLButtonElement;
     clearCacheButton.onclick = clearCache;
 }
 document.addEventListener('DOMContentLoaded', clearCacheButtonInit, false);
