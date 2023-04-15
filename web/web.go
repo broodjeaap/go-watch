@@ -1201,6 +1201,9 @@ func (web *Web) backupFromFile(importID int, backup *Backup) (string, error) {
 	}
 	defer backupReader.Close()
 	rawBytes, err := io.ReadAll(backupReader)
+	if err != nil {
+		return "", err
+	}
 	err = json.Unmarshal(rawBytes, backup)
 	if err != nil {
 		return "", err
@@ -1227,7 +1230,9 @@ func (web *Web) backupFromUpload(c *gin.Context, backup *Backup) (string, error)
 	}
 	defer backupReader.Close()
 	rawBytes, err := io.ReadAll(backupReader)
-
+	if err != nil {
+		return "", err
+	}
 	err = json.Unmarshal(rawBytes, &backup)
 	if err != nil {
 		return "", err
@@ -1539,7 +1544,7 @@ func (web *Web) importWatch(c *gin.Context) {
 	}
 	importType := c.PostForm("type")
 	if !(importType == "clear" || importType == "add") {
-		c.AbortWithError(http.StatusBadRequest, errors.New("Unknown Import Type"))
+		c.AbortWithError(http.StatusBadRequest, errors.New("unknown umport type"))
 		return
 	}
 	clearFilters := importType == "clear"

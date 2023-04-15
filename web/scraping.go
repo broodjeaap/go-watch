@@ -43,7 +43,7 @@ func ProcessFilters(filters []Filter, web *Web, watch *Watch, debug bool, schedu
 	// print out the name of the watch and schedule filter that called this function
 	for _, filter := range filters {
 		if scheduleID != nil && filter.ID == *scheduleID {
-			log.Println(fmt.Sprintf("Scheduled Watch for '%s', triggered by schedule '%s'", watch.Name, filter.Name))
+			log.Printf("Scheduled Watch for '%s', triggered by schedule '%s'", watch.Name, filter.Name)
 		}
 	}
 
@@ -200,6 +200,10 @@ func getFilterResult(filters []Filter, filter *Filter, watch *Watch, web *Web, d
 	case filter.Type == "contains":
 		{
 			getFilterResultContains(filter)
+		}
+	case filter.Type == "unique":
+		{
+			getFilterResultUnique(filter)
 		}
 	case filter.Type == "math":
 		{
@@ -767,9 +771,7 @@ func getFilterResultSubset(filter *Filter) {
 	results := make([]string, 0, numResults)
 
 	for _, parent := range filter.Parents {
-		for _, result := range parent.Results {
-			results = append(results, result)
-		}
+		results = append(results, parent.Results...)
 	}
 
 	substrings := strings.Split(filter.Var1, ",")
@@ -848,6 +850,9 @@ func getFilterResultSubset(filter *Filter) {
 // getFilterResultContains performs a regex contains on all the results of its parents
 func getFilterResultContains(filter *Filter) {
 	r, err := regexp.Compile(filter.Var1)
+	if err != nil {
+		filter.Log("Could not parse:", filter.Var1)
+	}
 	invert, err := strconv.ParseBool(filter.Var2)
 	if err != nil {
 		invert = false
@@ -1165,15 +1170,13 @@ func getFilterResultConditionHighest(filter *Filter, db *gorm.DB) {
 	var previousOutputs []FilterOutput
 	db.Model(&FilterOutput{}).Where("watch_id = ? AND name = ?", filter.WatchID, filter.Var2).Find(&previousOutputs)
 	highest := -math.MaxFloat64
-	if previousOutputs != nil {
-		for _, previousOutput := range previousOutputs {
-			number, err := strconv.ParseFloat(previousOutput.Value, 64)
-			if err != nil {
-				continue
-			}
-			if number > highest {
-				highest = number
-			}
+	for _, previousOutput := range previousOutputs {
+		number, err := strconv.ParseFloat(previousOutput.Value, 64)
+		if err != nil {
+			continue
+		}
+		if number > highest {
+			highest = number
 		}
 	}
 
