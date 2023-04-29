@@ -71,7 +71,7 @@ Some out-of-the-box highlights:
 # Intro
 
 GoWatch works through filters, a filter performs operations on the input it recieves.  
-Here is an example of a 'Watch' that calculates the lowest and average price of 4090s on NewEgg and notifies the user if the lowest price changed:  
+Here is an example of a 'Watch' that calculates the lowest and average price of 4090s from NewEgg and MicroCenter and notifies the user if the lowest price changed:  
 ![4090_watch](docs/images/4090_watch.png)  
 
 Note that everything, including scheduling/storing/notifying, is a `filter`.  
@@ -116,7 +116,7 @@ And make it executable:
 `chmod +x ./gowatch`
 
 Download the config template:  
-`wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/config.tmpl -O ./config.yaml`
+`wget https://raw.githubusercontent.com/broodjeaap/go-watch/master/web/config.tmpl -O ./config.yaml`
 
 Or use the binary to generate it:  
 ```bash
