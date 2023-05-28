@@ -1,5 +1,8 @@
 # GoWatch
 [![Build Status](https://drone.broodjeaap.net/api/badges/broodjeaap/go-watch/status.svg)](https://drone.broodjeaap.net/broodjeaap/go-watch)
+[![Maintainability](https://sonarqube.broodjeaap.net/api/project_badges/measure?project=go-watch&metric=sqale_rating&token=sqb_7549038bebbcea93381917d4944968aad542b09a)](https://sonarqube.broodjeaap.net/dashboard?id=go-watch)
+[![Reliability Rating](https://sonarqube.broodjeaap.net/api/project_badges/measure?project=go-watch&metric=reliability_rating&token=sqb_7549038bebbcea93381917d4944968aad542b09a)](https://sonarqube.broodjeaap.net/dashboard?id=go-watch)
+[![Security Rating](https://sonarqube.broodjeaap.net/api/project_badges/measure?project=go-watch&metric=security_rating&token=sqb_7549038bebbcea93381917d4944968aad542b09a)](https://sonarqube.broodjeaap.net/dashboard?id=go-watch)
 
 A change detection server that can notify through various services, written in Go
 
