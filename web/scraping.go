@@ -1424,12 +1424,16 @@ func getFilterResultDisableSchedules(filter *Filter, web *Web, debug bool) {
 
 	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", filter.WatchID).Update("Var2", "no")
 
-	entryID, exist := web.cronWatch[filter.ID]
-	if !exist {
-		return
+	var cronFilters []Filter
+	web.db.Model(&Filter{}).Where("watch_id = ? AND type = 'cron'", filter.WatchID).Find(&cronFilters)
+	for _, cronFilter := range cronFilters {
+		entryID, exist := web.cronWatch[cronFilter.ID]
+		if !exist {
+			return
+		}
+		web.cron.Remove(entryID)
+		delete(web.cronWatch, filter.ID)
 	}
-	web.cron.Remove(entryID)
-	delete(web.cronWatch, filter.ID)
 }
 
 // getFilterResultEcho is a debug filter type, used to bootstrap some tests
